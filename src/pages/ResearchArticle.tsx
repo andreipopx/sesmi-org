@@ -1,97 +1,108 @@
-import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AnimatedEntry from '../components/AnimatedEntry';
 import WaitlistForm from '../components/WaitlistForm';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const ArticleContent = () => (
-  <>
-    <AnimatedEntry>
-      <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
-        01. Demografía y capital humano
-      </h2>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <p className="mb-6">
-        Talavera de la Reina lleva dos décadas perdiendo población en términos netos. No es un caso único entre las ciudades medias españolas, pero sí especialmente significativo: la ciudad que fue tercera de Castilla-La Mancha por población ha visto cómo su base demográfica se erosiona lenta pero constantemente.
-      </p>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <div className="border-l-[3px] border-warm pl-6 py-4 my-8">
-        <p className="font-display italic text-xl text-ink leading-relaxed">
-          "Las ciudades que pierden población no pierden personas — pierden las decisiones que esas personas habrían tomado aquí."
+const ArticleContent = () => {
+  const { lang } = useLanguage();
+
+  if (lang === 'en') {
+    return (
+      <>
+        <AnimatedEntry>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+            01. Context: the investment and the city
+          </h2>
+        </AnimatedEntry>
+        <AnimatedEntry>
+          <p className="mb-6">
+            In early 2024, Meta announced the construction of its largest data center in southern Europe in Talavera de la Reina, a mid-sized city in central Spain with roughly 83,000 inhabitants. The investment: €750 million. The question this report asks is straightforward — how much of that money actually stays in the city?
+          </p>
+        </AnimatedEntry>
+        <AnimatedEntry>
+          <div className="border-l-[3px] border-warm pl-6 py-4 my-8">
+            <p className="font-display italic text-xl text-ink leading-relaxed">
+              "A €750 million investment doesn't automatically mean €750 million in local benefit. The real question is about retention — how much stays, and under what conditions."
+            </p>
+          </div>
+        </AnimatedEntry>
+        <AnimatedEntry>
+          <p className="mb-6">
+            Talavera sits 120km southwest of Madrid, connected by highway and a struggling rail service. It has experienced two decades of population decline, economic stagnation, and a persistent brain drain of its youngest and most qualified residents. Meta's arrival represents, numerically, the largest private investment in the city's modern history.
+          </p>
+        </AnimatedEntry>
+        <AnimatedEntry>
+          <div className="bg-bg2 p-8 my-8 text-center">
+            <p className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Total announced investment</p>
+            <p className="font-mono text-5xl md:text-6xl text-warm font-bold">€750M</p>
+            <p className="font-mono text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Source: Meta, public records</p>
+          </div>
+        </AnimatedEntry>
+        <AnimatedEntry>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+            02. Direct and indirect economic impact
+          </h2>
+        </AnimatedEntry>
+        <AnimatedEntry>
+          <p className="mb-6">
+            Data centers are capital-intensive but labor-light. The construction phase generates significant temporary employment, but the operational phase typically requires a small, highly specialized workforce. This creates a fundamental tension between the headline investment figure and the actual long-term economic footprint.
+          </p>
+        </AnimatedEntry>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <AnimatedEntry>
+        <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+          01. Contexto: la inversión y la ciudad
+        </h2>
+      </AnimatedEntry>
+      <AnimatedEntry>
+        <p className="mb-6">
+          A principios de 2024, Meta anunció la construcción de su mayor data center del sur de Europa en Talavera de la Reina, una ciudad de unos 83.000 habitantes en el centro de España. La inversión: 750 millones de euros. La pregunta que este informe plantea es directa — ¿cuánto de ese dinero se queda realmente en la ciudad?
         </p>
-      </div>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <p className="mb-6">
-        Entre 2001 y 2024, Talavera ha perdido aproximadamente un 8% de su población censal. Pero la cifra agregada esconde lo que realmente importa: la composición de esa pérdida. No se van todos por igual. Se van los que tienen entre 25 y 39 años, los que tienen formación universitaria, los que podrían estar creando empresas o liderando proyectos.
-      </p>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <div className="bg-bg2 p-8 my-8 text-center">
-        <p className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Población perdida 2001–2024</p>
-        <p className="font-mono text-5xl md:text-6xl text-warm font-bold">-8,2%</p>
-        <p className="font-mono text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Fuente: INE, Padrón Municipal</p>
-      </div>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <p className="mb-6">
-        Esta selectividad migratoria genera un círculo vicioso bien documentado en la literatura académica: los jóvenes cualificados se van porque no encuentran oportunidades; las oportunidades no se crean porque no hay suficiente capital humano cualificado. Romper ese ciclo requiere intervenciones deliberadas y bien diseñadas.
-      </p>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
-        02. Mercado de trabajo
-      </h2>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <p className="mb-6">
-        El mercado de trabajo talaverano presenta una paradoja que comparte con muchas ciudades medias españolas: tasas de desempleo superiores a la media nacional coexistiendo con sectores que reportan dificultades para encontrar trabajadores cualificados.
-      </p>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <div className="my-8 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-ink text-sesmi-white">
-              <th className="text-left p-3 font-mono text-[0.6rem] uppercase tracking-wider">Indicador</th>
-              <th className="text-left p-3 font-mono text-[0.6rem] uppercase tracking-wider">Talavera</th>
-              <th className="text-left p-3 font-mono text-[0.6rem] uppercase tracking-wider">España</th>
-              <th className="text-left p-3 font-mono text-[0.6rem] uppercase tracking-wider">Diferencial</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              ['Tasa de paro', '18,4%', '11,7%', '+6,7pp'],
-              ['Paro juvenil', '34,2%', '27,4%', '+6,8pp'],
-              ['Temporalidad', '28,1%', '22,3%', '+5,8pp'],
-              ['Salario medio', '18.200€', '25.800€', '-29,5%'],
-            ].map((row, i) => (
-              <tr key={i} className={i % 2 === 0 ? 'bg-bg' : 'bg-bg2'}>
-                {row.map((cell, j) => (
-                  <td key={j} className={`p-3 ${j === 0 ? 'font-medium' : 'font-mono text-[0.75rem]'}`}>{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </AnimatedEntry>
-    <AnimatedEntry>
-      <p className="mb-6">
-        Los datos son claros: el mercado laboral talaverano ofrece menos empleo, peor pagado y más precario que la media nacional. Esto no es una opinión — son cifras del SEPE y la EPA. Y son cifras que, de alguna manera, la discusión pública local rara vez incorpora con la claridad que merecen.
-      </p>
-    </AnimatedEntry>
-  </>
-);
+      </AnimatedEntry>
+      <AnimatedEntry>
+        <div className="border-l-[3px] border-warm pl-6 py-4 my-8">
+          <p className="font-display italic text-xl text-ink leading-relaxed">
+            "Una inversión de 750 millones no significa automáticamente 750 millones en beneficio local. La pregunta real es sobre retención — cuánto se queda, y bajo qué condiciones."
+          </p>
+        </div>
+      </AnimatedEntry>
+      <AnimatedEntry>
+        <p className="mb-6">
+          Talavera se sitúa a 120 km al suroeste de Madrid, conectada por autovía y un servicio ferroviario en dificultades. Ha experimentado dos décadas de declive demográfico, estancamiento económico y una fuga persistente de sus residentes más jóvenes y cualificados. La llegada de Meta representa, numéricamente, la mayor inversión privada en la historia moderna de la ciudad.
+        </p>
+      </AnimatedEntry>
+      <AnimatedEntry>
+        <div className="bg-bg2 p-8 my-8 text-center">
+          <p className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Inversión total anunciada</p>
+          <p className="font-mono text-5xl md:text-6xl text-warm font-bold">750M€</p>
+          <p className="font-mono text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Fuente: Meta, registros públicos</p>
+        </div>
+      </AnimatedEntry>
+      <AnimatedEntry>
+        <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+          02. Impacto económico directo e indirecto
+        </h2>
+      </AnimatedEntry>
+      <AnimatedEntry>
+        <p className="mb-6">
+          Los data centers son intensivos en capital pero ligeros en empleo. La fase de construcción genera empleo temporal significativo, pero la fase operativa típicamente requiere una plantilla pequeña y altamente especializada. Esto crea una tensión fundamental entre la cifra de inversión titular y la huella económica real a largo plazo.
+        </p>
+      </AnimatedEntry>
+    </>
+  );
+};
 
 const ResearchArticle = () => {
-  const { id } = useParams();
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState<'divulgativa' | 'paper'>('divulgativa');
+  const { t } = useLanguage();
 
   useEffect(() => {
     const onScroll = () => {
@@ -105,40 +116,39 @@ const ResearchArticle = () => {
 
   return (
     <Layout>
-      {/* Reading progress */}
       <div className="reading-progress" style={{ width: `${progress}%` }} />
 
       <article className="max-w-4xl mx-auto px-6 pt-20 pb-12">
         <AnimatedEntry>
           <div className="flex gap-3 mb-6 flex-wrap items-center">
             <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-warm">
-              INFORME · ECONOMÍA TERRITORIAL
+              {t.article.category}
             </span>
             <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-muted2 border border-sesmi-line px-2 py-0.5">
-              SESMI-001
+              {t.article.code}
             </span>
           </div>
         </AnimatedEntry>
 
         <AnimatedEntry delay={0.1}>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-ink mb-4 leading-tight">
-            La economía de Talavera de la Reina
+            {t.article.title}
           </h1>
         </AnimatedEntry>
         <AnimatedEntry delay={0.15}>
           <p className="font-display italic text-sesmi-muted text-xl mb-6">
-            Diagnóstico económico independiente
+            {t.article.subtitle}
           </p>
         </AnimatedEntry>
         <AnimatedEntry delay={0.2}>
           <div className="flex flex-wrap gap-4 font-mono text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mb-8">
-            <span>Sesmi Research</span>
+            <span>{t.article.author}</span>
             <span>·</span>
             <span>2025</span>
             <span>·</span>
-            <span>~25 min lectura</span>
+            <span>{t.article.readTime}</span>
             <span>·</span>
-            <span className="text-[#6FCF97]">En elaboración</span>
+            <span className="text-[#6FCF97]">{t.article.status}</span>
           </div>
         </AnimatedEntry>
 
@@ -150,7 +160,7 @@ const ResearchArticle = () => {
                 activeTab === 'divulgativa' ? 'bg-ink text-sesmi-white' : 'text-sesmi-muted hover:text-ink'
               }`}
             >
-              Versión divulgativa
+              {t.article.tabDivulgativa}
             </button>
             <button
               onClick={() => setActiveTab('paper')}
@@ -158,28 +168,20 @@ const ResearchArticle = () => {
                 activeTab === 'paper' ? 'bg-ink text-sesmi-white' : 'text-sesmi-muted hover:text-ink'
               }`}
             >
-              Paper completo
+              {t.article.tabPaper}
             </button>
           </div>
         </AnimatedEntry>
 
-        {/* Article body */}
         <div className="max-w-[680px] mx-auto" style={{ fontSize: '1.1rem', lineHeight: 1.95 }}>
           <ArticleContent />
         </div>
 
-        {/* About this analysis */}
         <div className="max-w-[680px] mx-auto mt-16 pt-12 border-t border-sesmi-line">
           <AnimatedEntry>
-            <p className="label-style text-warm mb-4">// SOBRE ESTE ANÁLISIS</p>
+            <p className="label-style text-warm mb-4">{t.article.aboutLabel}</p>
             <p className="text-sm text-sesmi-muted leading-relaxed mb-2">
-              <strong className="text-ink">Metodología:</strong> Análisis descriptivo y comparativo basado exclusivamente en fuentes de datos públicas (INE, SEPE, Banco de España, Hacienda, IGAE).
-            </p>
-            <p className="text-sm text-sesmi-muted leading-relaxed mb-2">
-              <strong className="text-ink">Comparadores:</strong> Ciudad Real, Toledo, Guadalajara, Puertollano.
-            </p>
-            <p className="text-sm text-sesmi-muted leading-relaxed">
-              <strong className="text-ink">Período:</strong> 2001–2024. Actualización prevista: trimestral.
+              <strong className="text-ink">{t.research.featured.methodology.split('·')[0].replace('Metodología: ', '').replace('Methodology: ', '')}</strong>
             </p>
           </AnimatedEntry>
         </div>

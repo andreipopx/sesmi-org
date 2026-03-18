@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const navLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/research', label: 'Research' },
-  { to: '/services', label: 'Services' },
-  { to: '/learning', label: 'Learning' },
-  { to: '/nosotros', label: 'Nosotros' },
+  { to: '/', key: 'home' as const },
+  { to: '/research', key: 'research' as const },
+  { to: '/services', key: 'services' as const },
+  { to: '/learning', key: 'learning' as const },
+  { to: '/nosotros', key: 'about' as const },
 ];
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { lang, setLang, t } = useLanguage();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-[60px] border-b border-sesmi-line" style={{ backgroundColor: 'rgba(247,243,238,0.92)', backdropFilter: 'blur(16px)' }}>
@@ -20,7 +22,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 interactive">
           <span className="logo-dot inline-block w-[8px] h-[8px] rounded-full bg-warm" />
-          <span className="font-mono text-sm tracking-[0.18em] uppercase font-medium text-ink">SESMI</span>
+          <span className="font-mono text-sm tracking-[0.18em] lowercase font-medium text-ink">sesmi</span>
         </Link>
 
         {/* Desktop links */}
@@ -33,17 +35,35 @@ const Navbar = () => {
                 location.pathname === link.to ? 'text-ink' : 'text-sesmi-muted hover:text-ink'
               }`}
             >
-              {link.label}
+              {t.nav[link.key]}
               {location.pathname === link.to && (
                 <span className="block w-1 h-1 rounded-full bg-warm mx-auto mt-1" />
               )}
             </Link>
           ))}
+
+          {/* Language switcher */}
+          <div className="flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.12em]">
+            <button
+              onClick={() => setLang('es')}
+              className={`px-1.5 py-0.5 transition-colors interactive ${lang === 'es' ? 'text-ink' : 'text-muted2 hover:text-ink'}`}
+            >
+              ES
+            </button>
+            <span className="text-muted2">/</span>
+            <button
+              onClick={() => setLang('en')}
+              className={`px-1.5 py-0.5 transition-colors interactive ${lang === 'en' ? 'text-ink' : 'text-muted2 hover:text-ink'}`}
+            >
+              EN
+            </button>
+          </div>
+
           <Link
             to="/nosotros#contacto"
             className="font-mono text-[0.62rem] uppercase tracking-[0.12em] bg-ink text-sesmi-white px-4 py-2 hover:bg-ink2 transition-colors interactive"
           >
-            Contacto
+            {t.nav.contact}
           </Link>
         </div>
 
@@ -80,15 +100,21 @@ const Navbar = () => {
                     location.pathname === link.to ? 'text-warm' : 'text-sesmi-muted'
                   }`}
                 >
-                  {link.label}
+                  {t.nav[link.key]}
                 </Link>
               ))}
+              {/* Mobile language switcher */}
+              <div className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] py-1">
+                <button onClick={() => setLang('es')} className={lang === 'es' ? 'text-warm' : 'text-sesmi-muted'}>ES</button>
+                <span className="text-muted2">/</span>
+                <button onClick={() => setLang('en')} className={lang === 'en' ? 'text-warm' : 'text-sesmi-muted'}>EN</button>
+              </div>
               <Link
                 to="/nosotros#contacto"
                 onClick={() => setOpen(false)}
                 className="font-mono text-[0.7rem] uppercase tracking-[0.12em] bg-ink text-sesmi-white px-4 py-2 w-fit"
               >
-                Contacto
+                {t.nav.contact}
               </Link>
             </div>
           </motion.div>
