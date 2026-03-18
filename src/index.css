@@ -2,95 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
+    --background: 30 25% 95%;
+    --foreground: 24 18% 10%;
+    --card: 30 20% 92%;
+    --card-foreground: 24 18% 10%;
+    --popover: 30 25% 95%;
+    --popover-foreground: 24 18% 10%;
+    --primary: 27 55% 50%;
+    --primary-foreground: 30 25% 97%;
+    --secondary: 30 18% 90%;
+    --secondary-foreground: 24 18% 10%;
+    --muted: 28 8% 50%;
+    --muted-foreground: 28 8% 50%;
+    --accent: 30 18% 90%;
+    --accent-foreground: 24 18% 10%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
+    --border: 24 18% 10% / 0.1;
+    --input: 24 18% 10% / 0.1;
+    --ring: 27 55% 50%;
+    --radius: 0px;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sesmi custom tokens */
+    --sesmi-bg: #F7F3EE;
+    --sesmi-bg2: #F0EBE3;
+    --sesmi-bg3: #E8E1D6;
+    --sesmi-ink: #1C1814;
+    --sesmi-ink2: #2E2720;
+    --sesmi-warm: #C8793A;
+    --sesmi-warm2: #D4884A;
+    --sesmi-sand: #D4C4A8;
+    --sesmi-muted: #8A7F74;
+    --sesmi-muted2: #B5AA9E;
+    --sesmi-white: #FAF8F5;
+    --sesmi-line: rgba(28,24,20,0.1);
   }
 }
 
@@ -98,8 +45,129 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 300;
+    background-color: var(--sesmi-bg);
+    color: var(--sesmi-ink);
+    line-height: 1.85;
+    cursor: none;
   }
+  @media (pointer: coarse) {
+    body {
+      cursor: auto;
+    }
+  }
+  h1, h2, h3, h4 {
+    line-height: 1.15;
+  }
+}
+
+/* Grain texture overlay */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Grid background for hero */
+.grid-bg {
+  background-image:
+    linear-gradient(var(--sesmi-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--sesmi-line) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Ticker animation */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track {
+  animation: ticker-scroll 40s linear infinite;
+}
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* Card hover line effect */
+.card-hover-line {
+  position: relative;
+  overflow: hidden;
+}
+.card-hover-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--sesmi-warm);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+.card-hover-line:hover::before {
+  transform: scaleX(1);
+}
+
+/* Custom cursor pulse */
+@keyframes cursor-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.logo-dot {
+  animation: cursor-pulse 2.8s ease-in-out infinite;
+}
+
+/* Reading progress bar */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--sesmi-warm);
+  z-index: 100;
+  transition: width 0.1s linear;
+}
+
+/* Section header ASCII lines */
+.section-header-line {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sesmi-muted);
+  text-align: center;
+}
+
+/* Label style */
+.label-style {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--sesmi-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sesmi-sand);
+  border-radius: 3px;
+}
+
+/* Focus visible for input */
+input:focus-visible, textarea:focus-visible {
+  outline: none;
+  border-color: var(--sesmi-warm) !important;
 }
