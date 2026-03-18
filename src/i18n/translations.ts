@@ -329,4 +329,4 @@ export const translations = {
       aboutLabel: '// ABOUT THIS ANALYSIS',
     },
   },
-} as const;
+};

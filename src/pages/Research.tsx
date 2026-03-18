@@ -73,7 +73,7 @@ const Research = () => {
                       <span className="text-sm text-sesmi-white/80">{ch.title}</span>
                     </div>
                     <span className={`font-mono text-[0.5rem] uppercase tracking-[0.12em] ${
-                      ch.status === 'EN CURSO' || ch.status === 'IN PROGRESS' ? 'text-warm' : 'text-sesmi-white/30'
+                      ['EN CURSO', 'IN PROGRESS'].includes(ch.status) ? 'text-warm' : 'text-sesmi-white/30'
                     }`}>
                       [{ch.status}]
                     </span>
