@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import Index from "./pages/Index";
 import Research from "./pages/Research";
 import ResearchArticle from "./pages/ResearchArticle";
@@ -15,18 +16,20 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/research" element={<Research />} />
-          <Route path="/research/:id" element={<ResearchArticle />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/learning" element={<Learning />} />
-          <Route path="/nosotros" element={<Nosotros />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <LanguageProvider>
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/research" element={<Research />} />
+            <Route path="/research/:id" element={<ResearchArticle />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/learning" element={<Learning />} />
+            <Route path="/nosotros" element={<Nosotros />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

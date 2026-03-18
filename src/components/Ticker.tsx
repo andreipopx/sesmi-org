@@ -1,6 +1,8 @@
+import { useLanguage } from '../contexts/LanguageContext';
+
 const Ticker = () => {
-  const text = 'Services ◆ Research ◆ Learning ◆ Talavera de la Reina ◆ Debo saber ◆ Ciudades medias ◆ Open data ◆ Economía aplicada ◆ Consultoría independiente';
-  const repeated = `${text} ◆ ${text} ◆ ${text} ◆ `;
+  const { t } = useLanguage();
+  const repeated = `${t.ticker} ◆ ${t.ticker} ◆ ${t.ticker} ◆ `;
 
   return (
     <div className="h-[38px] bg-bg3 border-y border-sesmi-line overflow-hidden flex items-center">
