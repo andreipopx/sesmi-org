@@ -2,12 +2,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const fadeUp = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: 'easeOut' },
-};
-
 const HeroSection = () => {
   const { t } = useLanguage();
 
@@ -24,7 +18,9 @@ const HeroSection = () => {
     >
       {/* Eyebrow */}
       <motion.p
-        {...fadeUp}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' as const }}
         className="font-mono uppercase text-muted"
         style={{ fontSize: '11px', letterSpacing: '0.08em', marginBottom: '24px' }}
       >
@@ -33,9 +29,9 @@ const HeroSection = () => {
 
       {/* Title */}
       <motion.h1
-        initial={fadeUp.initial}
-        animate={fadeUp.animate}
-        transition={{ ...fadeUp.transition, delay: 0.1 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' as const, delay: 0.1 }}
         className="font-editorial text-ink"
         style={{
           fontSize: 'clamp(32px, 5vw, 52px)',
@@ -54,9 +50,9 @@ const HeroSection = () => {
 
       {/* Subtitle / description */}
       <motion.p
-        initial={fadeUp.initial}
-        animate={fadeUp.animate}
-        transition={{ ...fadeUp.transition, delay: 0.2 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' as const, delay: 0.2 }}
         className="font-editorial"
         style={{
           fontSize: '18px',
@@ -72,9 +68,9 @@ const HeroSection = () => {
 
       {/* CTAs */}
       <motion.div
-        initial={fadeUp.initial}
-        animate={fadeUp.animate}
-        transition={{ ...fadeUp.transition, delay: 0.3 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' as const, delay: 0.3 }}
         className="flex items-center flex-wrap"
         style={{ gap: '16px' }}
       >
