@@ -59,6 +59,7 @@ export default {
       fontFamily: {
         grotezk: ["Apfel Grotezk Mittel", "serif"],
         editorial: ["Junicode", "Georgia", "serif"],
+        haas: ["Alte Haas Grotesk", "sans-serif"],
         mono: ["Liberation Mono", "monospace"],
       },
       borderRadius: {
