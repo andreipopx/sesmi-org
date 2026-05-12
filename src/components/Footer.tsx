@@ -20,7 +20,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 const orgLineStyle: React.CSSProperties = {
-  fontSize: '12px',
+  fontSize: '10px',
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
   color: 'var(--muted)',
