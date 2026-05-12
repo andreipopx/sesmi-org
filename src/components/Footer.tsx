@@ -103,43 +103,46 @@ const Footer = () => {
           </span>
         </div>
 
-        {/* Col 2: nav */}
-        <div className="flex flex-col items-start" style={{ textAlign: 'left' }}>
-          <span className="font-haas" style={labelStyle}>
-            {t.footer.navLabel}
-          </span>
-          <div className="flex flex-col items-start" style={{ gap: '10px' }}>
-            {navItems.map(renderNavItem)}
-          </div>
-        </div>
-
-        {/* Col 3: contact */}
-        <div className="flex flex-col items-start" style={{ textAlign: 'left' }}>
-          <span className="font-haas" style={labelStyle}>
-            {t.footer.contactLabel}
-          </span>
-          <div className="flex flex-col items-start" style={{ gap: '10px' }}>
-            <a
-              href="mailto:hola@sesmi.org"
-              className="font-haas"
-              style={contactStyle}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-            >
-              hola@sesmi.org
-            </a>
-            <span className="font-haas" style={contactStyle}>
-              sesmi.org
+        {/* Middle group: nav + contact */}
+        <div className="flex flex-col md:flex-row" style={{ gap: '64px' }}>
+          {/* nav */}
+          <div className="flex flex-col items-start" style={{ textAlign: 'left' }}>
+            <span className="font-haas" style={labelStyle}>
+              {t.footer.navLabel}
             </span>
-            <Link
-              to="/nosotros"
-              className="font-haas"
-              style={linkStyle}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-            >
-              {t.nav.about.toUpperCase()}
-            </Link>
+            <div className="flex flex-col items-start" style={{ gap: '10px' }}>
+              {navItems.map(renderNavItem)}
+            </div>
+          </div>
+
+          {/* contact */}
+          <div className="flex flex-col items-start" style={{ textAlign: 'left' }}>
+            <span className="font-haas" style={labelStyle}>
+              {t.footer.contactLabel}
+            </span>
+            <div className="flex flex-col items-start" style={{ gap: '10px' }}>
+              <a
+                href="mailto:hola@sesmi.org"
+                className="font-haas"
+                style={contactStyle}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+              >
+                hola@sesmi.org
+              </a>
+              <span className="font-haas" style={contactStyle}>
+                sesmi.org
+              </span>
+              <Link
+                to="/nosotros"
+                className="font-haas"
+                style={linkStyle}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+              >
+                {t.nav.about.toUpperCase()}
+              </Link>
+            </div>
           </div>
         </div>
 
