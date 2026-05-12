@@ -49,7 +49,7 @@ const Academia = () => {
             margin: '0 auto',
           }}
         >
-          <div style={{ ...labelStyle, marginBottom: 16 }}>Academia · sesmi</div>
+          
           <h1
             style={{
               fontFamily: 'var(--font-editorial)',
