@@ -14,8 +14,8 @@ const navItems: NavItem[] = [
 ];
 
 const linkBaseStyle: React.CSSProperties = {
-  fontSize: '10px',
-  letterSpacing: '0.12em',
+  fontSize: '11px',
+  letterSpacing: '0.10em',
   transition: 'opacity 150ms ease',
   color: 'var(--ink)',
 };
@@ -52,7 +52,7 @@ const LangSwitcher = () => {
           cursor: 'pointer',
         }}
       >
-        <Globe size={16} strokeWidth={1.5} />
+        <Globe size={18} strokeWidth={1.5} />
       </button>
       {open && (
         <div
