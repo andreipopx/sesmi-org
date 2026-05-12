@@ -11,11 +11,10 @@ const Layout = ({ children }: { children: ReactNode }) => (
       aria-label="sesmi"
       className="hidden lg:block fixed right-0 top-1/2 side-wordmark"
       style={{
-        transform: 'translateY(-50%)',
+        transform: 'translateY(-50%) rotate(180deg)',
         zIndex: 40,
         writingMode: 'vertical-rl',
         textOrientation: 'mixed',
-        rotate: '180deg',
         fontSize: '11px',
         letterSpacing: '0.15em',
         padding: '16px 8px',
