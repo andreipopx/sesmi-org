@@ -114,8 +114,9 @@ const Services = () => {
               margin: 0,
             }}
           >
-            La investigación de sesmi financia nuestra independencia. Los servicios que ofrecemos
-            son los mismos análisis que hacemos para nosotros — aplicados a tu problema concreto.
+            La investigación de <span className="wm">sesmi</span> financia nuestra independencia.
+            Los servicios que ofrecemos son los mismos análisis que hacemos para nosotros —
+            aplicados a tu problema concreto.
           </p>
           <div style={{ borderTop: '1px solid var(--line)', marginTop: 48 }} />
         </motion.section>
