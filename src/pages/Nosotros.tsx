@@ -34,8 +34,8 @@ const principles = [
     text: 'El conocimiento económico es un bien público. Toda nuestra investigación es gratuita y de acceso libre.',
   },
   {
-    title: 'Rigor sin pedantería',
-    text: 'Escribimos para personas inteligentes, no para impresionar a otros economistas. La claridad es una forma de respeto.',
+    title: 'Empirismo',
+    text: 'Tenemos sesgos, como todo el mundo. Por eso publicamos la metodología, los datos y el código: para que cualquiera pueda encontrar los errores que nosotros no vemos. La imparcialidad no es un punto de llegada, es un esfuerzo constante.',
   },
 ];
 
