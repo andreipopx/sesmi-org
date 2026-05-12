@@ -4,11 +4,36 @@ export const translations = {
   es: {
     nav: {
       home: 'Home',
-      research: 'Research',
-      services: 'Services',
+      research: 'Investigación',
+      academy: 'Academia',
+      services: 'Servicios',
       learning: 'Learning',
       about: 'Nosotros',
       contact: 'Contacto',
+    },
+    home: {
+      kicker: 'Investigación económica independiente · Talavera de la Reina',
+      worksLabel: 'Investigación en curso',
+      statusBadge: '● EN ELABORACIÓN',
+      readCta: 'Leer investigación →',
+      featured: {
+        code: 'SESMI-001',
+        title: 'Bienvenido, Mr. Meta',
+        subtitle: 'Un análisis económico independiente del Meta Data Center en Talavera de la Reina.',
+        lede: 'Meta llega a Talavera con 750 millones de euros y el data center más grande del sur de Europa. ¿Cuánto de ese dinero se queda realmente en la ciudad? ¿Qué condiciones debería negociar Talavera para maximizar el beneficio local?',
+      },
+      secondary: {
+        code: 'SESMI-002',
+        title: 'Talavera, la ciudad que no arranca',
+        subtitle: 'Diagnóstico económico independiente de una ciudad media española.',
+      },
+      about: {
+        text: 'sesmi —Sociedad Económica de San Miguel— nace de una convicción simple: las ciudades medias merecen el mismo rigor analítico que las capitales. Análisis económico independiente, honesto, escrito para que lo entienda cualquier persona inteligente.',
+        cta: 'Quiénes somos →',
+      },
+      newsletter: {
+        text: 'Si quieres saber cuándo publicamos, déjanos tu email.',
+      },
     },
     hero: {
       tag: '// sesmi — 2025',
@@ -169,10 +194,35 @@ export const translations = {
     nav: {
       home: 'Home',
       research: 'Research',
+      academy: 'Academy',
       services: 'Services',
       learning: 'Learning',
       about: 'About',
       contact: 'Contact',
+    },
+    home: {
+      kicker: 'Independent economic research · Talavera de la Reina, Spain',
+      worksLabel: 'Work in progress',
+      statusBadge: '● IN PROGRESS',
+      readCta: 'Read research →',
+      featured: {
+        code: 'SESMI-001',
+        title: 'Welcome, Mr. Meta',
+        subtitle: 'An independent economic analysis of the Meta Data Center in Talavera de la Reina.',
+        lede: 'Meta arrives in Talavera with €750 million and the largest data center in southern Europe. How much of that money actually stays in the city? What conditions should Talavera negotiate to maximize local benefit?',
+      },
+      secondary: {
+        code: 'SESMI-002',
+        title: 'Talavera, the city that won\'t take off',
+        subtitle: 'An independent economic diagnosis of a mid-sized Spanish city.',
+      },
+      about: {
+        text: 'sesmi —San Miguel Economic Society— was born from a simple conviction: mid-sized cities deserve the same analytical rigor as the capitals. Independent, honest economic analysis, written so any intelligent person can understand it.',
+        cta: 'About us →',
+      },
+      newsletter: {
+        text: 'If you want to know when we publish, leave us your email.',
+      },
     },
     hero: {
       tag: '// sesmi — 2025',
