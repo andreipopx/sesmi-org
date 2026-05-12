@@ -13,29 +13,62 @@ const container: React.CSSProperties = {
 };
 
 // Tokens funcionales (Alte Haas)
-const labelStyle: React.CSSProperties = { fontSize: '9px', letterSpacing: '0.18em' };
+const labelStyle: React.CSSProperties = { fontSize: '11px', letterSpacing: '0.18em' };
 const navOrButton: React.CSSProperties = { fontSize: '10px', letterSpacing: '0.10em' };
-const badgeStyle: React.CSSProperties = { fontSize: '8px', letterSpacing: '0.12em' };
+const badgeStyle: React.CSSProperties = { fontSize: '10px', letterSpacing: '0.12em' };
 // IDs (Liberation Mono)
-const idStyle: React.CSSProperties = { fontSize: '10px', letterSpacing: '0.04em' };
+const idStyle: React.CSSProperties = { fontSize: '12px', letterSpacing: '0.04em' };
 
 const readLinkHover = (e: React.MouseEvent<HTMLAnchorElement>, color: string) => {
   e.currentTarget.style.color = color;
 };
 
 const Index = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const h = t.home;
+  const tagline =
+    lang === 'en'
+      ? 'Independent economic research for mid-sized cities.'
+      : 'Investigación económica independiente para ciudades medias.';
 
   return (
     <Layout>
       {/* 1. CABECERA */}
-      <section style={{ ...container, paddingTop: '48px' }}>
-        <p className="font-haas uppercase" style={{ ...labelStyle, color: 'var(--muted)' }}>
-          {h.kicker}
-        </p>
-        <div style={{ marginTop: '28px', borderTop: '1px solid var(--line)' }} />
+      <section style={{ ...container, paddingTop: '64px', paddingBottom: '48px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <span
+            className="wm lowercase home-wm"
+            style={{
+              display: 'block',
+              fontWeight: 400,
+              lineHeight: 1,
+              color: 'var(--ink)',
+              marginBottom: '24px',
+            }}
+          >
+            sesmi
+          </span>
+          <p
+            className="font-editorial italic"
+            style={{
+              fontSize: '18px',
+              lineHeight: 1.5,
+              color: 'var(--muted)',
+              marginBottom: 0,
+            }}
+          >
+            {tagline}
+          </p>
+        </div>
+        <div style={{ marginTop: '48px', borderTop: '1px solid var(--line)' }} />
       </section>
+
+      <style>{`
+        .home-wm { font-size: clamp(48px, 12vw, 72px); }
+        @media (min-width: 768px) {
+          .home-wm { font-size: clamp(64px, 10vw, 96px); }
+        }
+      `}</style>
 
       {/* 2. TRABAJOS EN CURSO */}
       <section style={{ ...container, paddingTop: '48px', paddingBottom: '48px' }}>
@@ -62,14 +95,14 @@ const Index = () => {
           </p>
           <h2
             className="font-editorial text-ink"
-            style={{ fontSize: '34px', fontWeight: 700, lineHeight: 1.2, marginBottom: '14px' }}
+            style={{ fontSize: '38px', fontWeight: 700, lineHeight: 1.2, marginBottom: '14px' }}
           >
             {h.featured.title}
           </h2>
           <p
             className="font-editorial italic"
             style={{
-              fontSize: '20px',
+              fontSize: '21px',
               fontWeight: 400,
               lineHeight: 1.65,
               color: 'var(--ink-secondary)',
@@ -128,7 +161,7 @@ const Index = () => {
           </p>
           <h3
             className="font-editorial text-ink"
-            style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1.25, marginBottom: '14px' }}
+            style={{ fontSize: '30px', fontWeight: 700, lineHeight: 1.25, marginBottom: '14px' }}
           >
             {h.secondary.title}
           </h3>
