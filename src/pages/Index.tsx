@@ -24,12 +24,8 @@ const readLinkHover = (e: React.MouseEvent<HTMLAnchorElement>, color: string) =>
 };
 
 const Index = () => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const h = t.home;
-  const tagline =
-    lang === 'en'
-      ? 'Independent economic research for mid-sized cities.'
-      : 'Investigación económica independiente para ciudades medias.';
 
   return (
     <Layout>
@@ -43,30 +39,18 @@ const Index = () => {
               fontWeight: 400,
               lineHeight: 1,
               color: 'var(--ink)',
-              marginBottom: '24px',
             }}
           >
             sesmi
           </span>
-          <p
-            className="font-editorial italic"
-            style={{
-              fontSize: '18px',
-              lineHeight: 1.5,
-              color: 'var(--muted)',
-              marginBottom: 0,
-            }}
-          >
-            {tagline}
-          </p>
         </div>
-        <div style={{ marginTop: '48px', borderTop: '1px solid var(--line)' }} />
+        <div style={{ marginTop: '40px', borderTop: '1px solid var(--line)' }} />
       </section>
 
       <style>{`
-        .home-wm { font-size: clamp(72px, 20vw, 110px); }
+        .home-wm { font-size: clamp(90px, 22vw, 130px); }
         @media (min-width: 768px) {
-          .home-wm { font-size: clamp(64px, 10vw, 96px); }
+          .home-wm { font-size: clamp(96px, 13vw, 140px); }
         }
       `}</style>
 
