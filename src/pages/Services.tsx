@@ -94,15 +94,16 @@ const Services = () => {
           
           <h1
             style={{
-              fontFamily: 'var(--font-editorial)',
-              fontSize: 'clamp(28px, 4vw, 42px)',
-              fontWeight: 400,
+              fontFamily: 'var(--font-haas)',
+              fontSize: 'clamp(36px, 5vw, 56px)',
+              fontWeight: 700,
               color: 'var(--ink)',
-              lineHeight: 1.2,
-              marginBottom: 24,
+              lineHeight: 1.1,
+              letterSpacing: '-0.01em',
+              marginBottom: 20,
             }}
           >
-            Análisis económico independiente para quien toma decisiones.
+            Servicios.
           </h1>
           <p
             style={{
@@ -114,9 +115,8 @@ const Services = () => {
               margin: 0,
             }}
           >
-            La investigación de <span className="wm">sesmi</span> financia nuestra independencia.
-            Los servicios que ofrecemos son los mismos análisis que hacemos para nosotros —
-            aplicados a tu problema concreto.
+            La investigación de sesmi financia nuestra independencia. Los servicios que ofrecemos
+            son los mismos análisis que hacemos para nosotros, aplicados a tu problema concreto.
           </p>
           <div style={{ borderTop: '1px solid var(--line)', marginTop: 48 }} />
         </motion.section>
