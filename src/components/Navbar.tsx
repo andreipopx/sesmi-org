@@ -102,17 +102,23 @@ const Navbar = () => {
     (t.nav as Record<string, string>)[item.key].toUpperCase();
 
   const renderItem = (item: NavItem, onClick?: () => void) => {
+    const active = isActive(item.to);
     return (
       <Link
         key={item.key}
         to={item.to}
         onClick={onClick}
         className="font-haas uppercase"
-        style={{ ...linkBaseStyle, opacity: isActive(item.to) ? 1 : undefined }}
-        onMouseEnter={(e) => ((e.target as HTMLElement).style.opacity = '0.6')}
-        onMouseLeave={(e) =>
-          ((e.target as HTMLElement).style.opacity = isActive(item.to) ? '1' : '1')
-        }
+        style={{
+          ...linkBaseStyle,
+          color: 'var(--ink)',
+          fontWeight: active ? 700 : 400,
+          textDecoration: 'none',
+        }}
+        onMouseEnter={(e) => {
+          if (!active) (e.target as HTMLElement).style.opacity = '0.6';
+        }}
+        onMouseLeave={(e) => ((e.target as HTMLElement).style.opacity = '1')}
       >
         {renderLabel(item)}
       </Link>

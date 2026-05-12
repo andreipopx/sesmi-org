@@ -33,7 +33,7 @@ const Research = () => {
   const copy = isEn
     ? {
         label: 'Research',
-        title: 'Independent economic analysis.',
+        title: 'Research.',
         desc: 'We publish our work openly. No paywalls. Economic knowledge is a public good.',
         filters: { all: 'All', inProgress: 'In progress', published: 'Published' },
         showChapters: 'Show chapters ↓',
@@ -52,7 +52,7 @@ const Research = () => {
       }
     : {
         label: 'Investigación',
-        title: 'Análisis económico independiente.',
+        title: 'Investigación.',
         desc: 'Publicamos nuestros trabajos de forma abierta. Sin paywalls. El conocimiento económico es un bien público.',
         filters: { all: 'Todo', inProgress: 'En elaboración', published: 'Publicado' },
         showChapters: 'Ver capítulos ↓',
@@ -180,10 +180,11 @@ const Research = () => {
           
           <h1
             style={{
-              fontFamily: 'var(--font-editorial)',
-              fontSize: 'clamp(28px, 4vw, 40px)',
-              fontWeight: 400,
-              lineHeight: 1.2,
+              fontFamily: 'var(--font-haas)',
+              fontSize: 'clamp(36px, 5vw, 56px)',
+              fontWeight: 700,
+              lineHeight: 1.1,
+              letterSpacing: '-0.01em',
               color: 'var(--ink)',
               marginBottom: '20px',
             }}
