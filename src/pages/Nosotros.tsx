@@ -122,7 +122,6 @@ const Nosotros = () => {
           </p>
 
           <div style={{ marginTop: 40, borderTop: '1px solid var(--line)' }} />
-          <div style={{ borderTop: '1px solid var(--line)' }} />
         </section>
 
         {/* Equipo */}
