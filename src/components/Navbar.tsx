@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const navLinks = [
@@ -16,52 +15,106 @@ const Navbar = () => {
   const location = useLocation();
   const { lang, setLang, t } = useLanguage();
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-[60px] border-b border-sesmi-line" style={{ backgroundColor: 'rgba(247,243,238,0.92)', backdropFilter: 'blur(16px)' }}>
-      <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 interactive">
-          <span className="logo-dot inline-block w-[8px] h-[8px] rounded-full bg-warm" />
-          <span className="font-mono text-sm tracking-[0.18em] lowercase font-medium text-ink">sesmi</span>
+    <nav
+      className="sticky top-0 z-50 border-b border-line"
+      style={{
+        height: 'var(--nav-height)',
+        backgroundColor: 'rgba(247, 243, 238, 0.92)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+      }}
+    >
+      <div
+        className="mx-auto flex h-full items-center justify-between"
+        style={{
+          maxWidth: '1280px',
+          paddingLeft: 'clamp(24px, 4vw, 48px)',
+          paddingRight: 'clamp(24px, 4vw, 48px)',
+        }}
+      >
+        {/* Wordmark */}
+        <Link
+          to="/"
+          className="font-grotezk lowercase text-ink"
+          style={{ fontSize: '20px' }}
+        >
+          sesmi
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center" style={{ gap: '32px' }}>
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`font-mono text-[0.62rem] uppercase tracking-[0.12em] transition-colors interactive ${
-                location.pathname === link.to ? 'text-ink' : 'text-sesmi-muted hover:text-ink'
-              }`}
+              className="font-mono uppercase text-ink"
+              style={{
+                fontSize: '11px',
+                letterSpacing: '0.08em',
+                opacity: isActive(link.to) ? 1 : undefined,
+                transition: 'opacity 150ms ease',
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.opacity = '0.6';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.opacity = isActive(link.to) ? '1' : '';
+              }}
             >
               {t.nav[link.key]}
-              {location.pathname === link.to && (
-                <span className="block w-1 h-1 rounded-full bg-warm mx-auto mt-1" />
-              )}
             </Link>
           ))}
 
           {/* Language switcher */}
-          <div className="flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.12em]">
+          <div
+            className="flex items-center font-mono uppercase"
+            style={{ fontSize: '11px', letterSpacing: '0.08em' }}
+          >
             <button
               onClick={() => setLang('es')}
-              className={`px-1.5 py-0.5 transition-colors interactive ${lang === 'es' ? 'text-ink' : 'text-muted2 hover:text-ink'}`}
+              className="px-1 py-0.5"
+              style={{
+                color: lang === 'es' ? 'var(--ink)' : 'var(--muted)',
+                fontWeight: lang === 'es' ? 700 : 400,
+                transition: 'color 150ms ease',
+              }}
             >
               ES
             </button>
-            <span className="text-muted2">/</span>
+            <span className="text-muted"> / </span>
             <button
               onClick={() => setLang('en')}
-              className={`px-1.5 py-0.5 transition-colors interactive ${lang === 'en' ? 'text-ink' : 'text-muted2 hover:text-ink'}`}
+              className="px-1 py-0.5"
+              style={{
+                color: lang === 'en' ? 'var(--ink)' : 'var(--muted)',
+                fontWeight: lang === 'en' ? 700 : 400,
+                transition: 'color 150ms ease',
+              }}
             >
               EN
             </button>
           </div>
 
+          {/* CTA */}
           <Link
             to="/nosotros#contacto"
-            className="font-mono text-[0.62rem] uppercase tracking-[0.12em] bg-ink text-sesmi-white px-4 py-2 hover:bg-ink2 transition-colors interactive"
+            className="font-mono uppercase text-offwhite"
+            style={{
+              fontSize: '11px',
+              letterSpacing: '0.08em',
+              backgroundColor: 'var(--ink)',
+              padding: '8px 16px',
+              transition: 'background-color 150ms ease',
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.backgroundColor = 'var(--ink-secondary)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.backgroundColor = 'var(--ink)';
+            }}
           >
             {t.nav.contact}
           </Link>
@@ -69,57 +122,110 @@ const Navbar = () => {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden flex flex-col gap-1.5 interactive p-2"
+          className="md:hidden flex flex-col"
+          style={{ gap: '5px', padding: '8px' }}
           onClick={() => setOpen(!open)}
           aria-label="Menu"
+          aria-expanded={open}
         >
-          <span className={`block w-5 h-[1px] bg-ink transition-transform ${open ? 'rotate-45 translate-y-[3.5px]' : ''}`} />
-          <span className={`block w-5 h-[1px] bg-ink transition-opacity ${open ? 'opacity-0' : ''}`} />
-          <span className={`block w-5 h-[1px] bg-ink transition-transform ${open ? '-rotate-45 -translate-y-[3.5px]' : ''}`} />
+          <span
+            className="block bg-ink"
+            style={{ width: '20px', height: '1px' }}
+          />
+          <span
+            className="block bg-ink"
+            style={{ width: '20px', height: '1px' }}
+          />
+          <span
+            className="block bg-ink"
+            style={{ width: '20px', height: '1px' }}
+          />
         </button>
       </div>
 
       {/* Mobile menu */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="md:hidden overflow-hidden border-b border-sesmi-line"
-            style={{ backgroundColor: 'rgba(247,243,238,0.98)', backdropFilter: 'blur(16px)' }}
+      {open && (
+        <div
+          className="md:hidden border-t border-line"
+          style={{
+            backgroundColor: 'var(--bg)',
+            animation: 'fadeIn 150ms ease forwards',
+          }}
+        >
+          <div
+            className="flex flex-col"
+            style={{
+              paddingLeft: 'clamp(24px, 4vw, 48px)',
+              paddingRight: 'clamp(24px, 4vw, 48px)',
+              paddingTop: '24px',
+              paddingBottom: '24px',
+              gap: '16px',
+            }}
           >
-            <div className="px-6 py-6 flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setOpen(false)}
-                  className={`font-mono text-[0.7rem] uppercase tracking-[0.12em] py-1 ${
-                    location.pathname === link.to ? 'text-warm' : 'text-sesmi-muted'
-                  }`}
-                >
-                  {t.nav[link.key]}
-                </Link>
-              ))}
-              {/* Mobile language switcher */}
-              <div className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] py-1">
-                <button onClick={() => setLang('es')} className={lang === 'es' ? 'text-warm' : 'text-sesmi-muted'}>ES</button>
-                <span className="text-muted2">/</span>
-                <button onClick={() => setLang('en')} className={lang === 'en' ? 'text-warm' : 'text-sesmi-muted'}>EN</button>
-              </div>
+            {navLinks.map((link) => (
               <Link
-                to="/nosotros#contacto"
+                key={link.to}
+                to={link.to}
                 onClick={() => setOpen(false)}
-                className="font-mono text-[0.7rem] uppercase tracking-[0.12em] bg-ink text-sesmi-white px-4 py-2 w-fit"
+                className="font-mono uppercase text-ink"
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '0.08em',
+                }}
               >
-                {t.nav.contact}
+                {t.nav[link.key]}
               </Link>
+            ))}
+
+            {/* Mobile language switcher */}
+            <div
+              className="flex items-center font-mono uppercase"
+              style={{ fontSize: '11px', letterSpacing: '0.08em', gap: '4px' }}
+            >
+              <button
+                onClick={() => setLang('es')}
+                style={{
+                  color: lang === 'es' ? 'var(--ink)' : 'var(--muted)',
+                  fontWeight: lang === 'es' ? 700 : 400,
+                }}
+              >
+                ES
+              </button>
+              <span className="text-muted">/</span>
+              <button
+                onClick={() => setLang('en')}
+                style={{
+                  color: lang === 'en' ? 'var(--ink)' : 'var(--muted)',
+                  fontWeight: lang === 'en' ? 700 : 400,
+                }}
+              >
+                EN
+              </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <Link
+              to="/nosotros#contacto"
+              onClick={() => setOpen(false)}
+              className="font-mono uppercase text-offwhite w-fit"
+              style={{
+                fontSize: '11px',
+                letterSpacing: '0.08em',
+                backgroundColor: 'var(--ink)',
+                padding: '8px 16px',
+              }}
+            >
+              {t.nav.contact}
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </nav>
   );
 };
