@@ -39,7 +39,7 @@
 
     --font-grotezk: 'Apfel Grotezk Mittel', serif;
     --font-editorial: 'Junicode', Georgia, serif;
-    --font-mono: 'Liberation Mono', monospace;
+    --font-mono: 'Liberation Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
     --max-prose: 680px;
     --nav-height: 60px;
