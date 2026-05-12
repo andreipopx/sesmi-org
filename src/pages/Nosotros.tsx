@@ -1,191 +1,353 @@
-import { useState } from 'react';
+import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
-import AnimatedEntry from '../components/AnimatedEntry';
 import { useLanguage } from '../contexts/LanguageContext';
 import { wm } from '../lib/wm';
 
-const cities = [
-  { name: 'Talavera de la Reina', active: true },
-  { name: 'Ponferrada', active: false },
-  { name: 'Mérida', active: false },
-  { name: 'Linares', active: false },
-  { name: 'Alcoy', active: false },
-  { name: 'Sagunto', active: false },
+const labelStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-haas)',
+  fontSize: '9px',
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--muted)',
+};
+
+const team = [
+  {
+    name: 'Tu nombre aquí',
+    role: 'Fundador · Economista',
+    bio: 'Texto de presentación pendiente.',
+    links: [] as Array<{ label: string; href: string }>,
+  },
+];
+
+const principles = [
+  {
+    title: 'Independencia',
+    text: 'Sin financiación institucional. Sin agenda política. Las conclusiones las dictan los datos.',
+  },
+  {
+    title: 'Metodología abierta',
+    text: 'Todo lo que publicamos incluye la metodología completa. Cualquiera puede replicar, criticar o mejorar nuestro trabajo.',
+  },
+  {
+    title: 'Sin paywalls',
+    text: 'El conocimiento económico es un bien público. Toda nuestra investigación es gratuita y de acceso libre.',
+  },
+  {
+    title: 'Rigor sin pedantería',
+    text: 'Escribimos para personas inteligentes, no para impresionar a otros economistas. La claridad es una forma de respeto.',
+  },
 ];
 
 const Nosotros = () => {
-  const [formState, setFormState] = useState({ name: '', email: '', org: '', message: '' });
-  const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
-  const { t } = useLanguage();
+  const { lang } = useLanguage();
+  const L = {
+    teamLabel: lang === 'en' ? 'Team' : 'Equipo',
+    howLabel: lang === 'en' ? 'How we work' : 'Cómo trabajamos',
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSending(true);
-    await new Promise(r => setTimeout(r, 800));
-    setSent(true);
-    setSending(false);
+  const paragraphStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-editorial)',
+    fontSize: 18,
+    lineHeight: 1.85,
+    color: 'var(--ink)',
+    margin: 0,
+    marginBottom: 20,
   };
 
   return (
     <Layout>
-      {/* About */}
-      <section className="max-w-7xl mx-auto px-6 pt-12 pb-6">
-        <AnimatedEntry>
-          <p className="font-haas text-[0.58rem] uppercase tracking-[0.2em] text-sesmi-muted mb-6">
-            {t.about.label} ───────────────────────────────
-          </p>
-        </AnimatedEntry>
-        <AnimatedEntry delay={0.1}>
-          <h1 className="font-editorial text-3xl md:text-4xl lg:text-5xl font-bold text-ink mb-10 max-w-4xl leading-tight">
-            {t.about.title}
+      <div style={{ background: 'var(--bg)' }}>
+        {/* Header */}
+        <motion.section
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          style={{
+            paddingTop: 64,
+            paddingLeft: 20,
+            paddingRight: 20,
+            maxWidth: 680,
+            margin: '0 auto',
+          }}
+        >
+          <div style={{ ...labelStyle, marginBottom: 16 }}>Nosotros · sesmi</div>
+          <h1
+            style={{
+              fontFamily: 'var(--font-editorial)',
+              fontSize: 'clamp(28px, 4vw, 42px)',
+              fontWeight: 400,
+              color: 'var(--ink)',
+              lineHeight: 1.2,
+              margin: 0,
+            }}
+          >
+            Por qué existe <span className="wm">sesmi</span>.
           </h1>
-        </AnimatedEntry>
-        <AnimatedEntry delay={0.2}>
-          <div className="max-w-3xl space-y-6 text-sesmi-muted leading-relaxed mb-10">
-            {t.about.manifesto.map((p, i) => (
-              <p key={i}>{wm(p)}</p>
-            ))}
-          </div>
-        </AnimatedEntry>
-      </section>
+          <div style={{ borderTop: '1px solid var(--line)', marginTop: 48 }} />
+        </motion.section>
 
-      {/* Team */}
-      <section className="max-w-7xl mx-auto px-6 pb-6">
-        <AnimatedEntry>
-          <p className="label-style text-warm mb-8">{t.about.teamLabel}</p>
-        </AnimatedEntry>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <AnimatedEntry delay={0.1}>
-            <div className="bg-bg2 p-8 card-hover-line">
-              <div className="w-24 h-24 bg-bg3 flex items-center justify-center mb-6">
-                <span className="font-editorial text-3xl text-sesmi-muted">F</span>
-              </div>
-              <p className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-warm mb-2">
-                {t.about.founder.role}
-              </p>
-              <p className="text-sm text-sesmi-muted leading-relaxed mb-4">{t.about.founder.bio}</p>
-              <div className="space-y-1.5">
-                {t.about.founder.credentials.map((c) => (
-                  <p key={c} className="font-haas text-[0.55rem] text-sesmi-muted">
-                    <span className="text-warm">◆</span> {c}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </AnimatedEntry>
-          <AnimatedEntry delay={0.2}>
-            <div className="bg-bg2 p-8 card-hover-line">
-              <div className="w-24 h-24 bg-bg3 flex items-center justify-center mb-6">
-                <span className="font-editorial text-3xl text-sesmi-muted">C</span>
-              </div>
-              <p className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-warm mb-2">
-                {t.about.cofounder.role}
-              </p>
-              <p className="text-sm text-sesmi-muted leading-relaxed mb-4">{t.about.cofounder.bio}</p>
-              <div className="space-y-1.5">
-                {t.about.cofounder.credentials.map((c) => (
-                  <p key={c} className="font-haas text-[0.55rem] text-sesmi-muted">
-                    <span className="text-warm">◆</span> {c}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </AnimatedEntry>
-        </div>
-      </section>
+        {/* Manifiesto */}
+        <section
+          style={{
+            paddingTop: 48,
+            paddingLeft: 20,
+            paddingRight: 20,
+            maxWidth: 680,
+            margin: '0 auto',
+          }}
+        >
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
+            style={paragraphStyle}
+          >
+            Las ciudades medias españolas concentran millones de personas, décadas de historia
+            industrial y problemas económicos reales. Casi nadie las analiza con rigor.
+          </motion.p>
+          <p style={paragraphStyle}>
+            Los think tanks trabajan para Madrid o Barcelona. Las universidades publican papers
+            que nadie lee. Los consultores cobran por informes que acaban en un cajón.
+          </p>
+          <p style={paragraphStyle}>
+            {wm(
+              'sesmi nació para hacer algo distinto: investigación económica independiente, con metodología abierta, escrita para que la entienda cualquier persona inteligente — no solo los economistas.',
+            )}
+          </p>
+          <p style={{ ...paragraphStyle, marginBottom: 0 }}>
+            El modelo es simple. Los servicios financian la investigación. La investigación es
+            pública. Sin paywalls, sin agenda política, sin financiación institucional que
+            condicione las conclusiones.
+          </p>
 
-      {/* Cities */}
-      <section className="max-w-7xl mx-auto px-6 pb-6">
-        <AnimatedEntry>
-          <p className="label-style text-warm mb-6">{t.about.citiesLabel}</p>
-          <div className="flex flex-wrap gap-3">
-            {cities.map((city) => (
-              <span
-                key={city.name}
-                className={`font-haas text-[0.6rem] uppercase tracking-[0.12em] px-3 py-1.5 border ${
-                  city.active ? 'border-warm text-warm' : 'border-sesmi-line text-sesmi-muted'
-                }`}
+          <blockquote
+            style={{
+              borderLeft: '2.5px solid var(--accent)',
+              paddingLeft: 24,
+              fontFamily: 'var(--font-editorial)',
+              fontSize: 20,
+              fontStyle: 'italic',
+              fontWeight: 400,
+              color: 'var(--ink)',
+              margin: '40px 0',
+              lineHeight: 1.5,
+            }}
+          >
+            Debo saber. Mantenerse curioso.
+          </blockquote>
+
+          <div style={{ borderTop: '1px solid var(--line)' }} />
+        </section>
+
+        {/* Equipo */}
+        <section
+          style={{
+            paddingTop: 48,
+            paddingLeft: 20,
+            paddingRight: 20,
+            maxWidth: 680,
+            margin: '0 auto',
+          }}
+        >
+          <div style={{ ...labelStyle, marginBottom: 32 }}>{L.teamLabel}</div>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {team.map((m, idx) => (
+              <li
+                key={m.name}
+                style={{
+                  borderTop: idx === 0 ? '1px solid var(--line)' : 'none',
+                  borderBottom: '1px solid var(--line)',
+                  paddingTop: 32,
+                  paddingBottom: 32,
+                }}
               >
-                {city.name} {city.active && '◆'}
-              </span>
-            ))}
-            <span className="font-haas text-[0.6rem] uppercase tracking-[0.12em] px-3 py-1.5 text-sesmi-muted">
-              + →
-            </span>
-          </div>
-        </AnimatedEntry>
-      </section>
-
-      {/* Contact */}
-      <section id="contacto" className="max-w-7xl mx-auto px-6 pb-14">
-        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-sesmi-line">
-          <AnimatedEntry className="pb-6 lg:pb-0 lg:pr-12">
-            <p className="font-haas text-[0.58rem] uppercase tracking-[0.2em] text-sesmi-muted mb-6">
-              {t.about.contactLabel} ─────────────────
-            </p>
-            <h2 className="font-editorial text-3xl md:text-4xl font-bold text-ink mb-8">
-              {t.about.contactTitle}
-            </h2>
-            <div className="space-y-4">
-              {t.about.contactInfo.map((item) => (
-                <div key={item.label} className="flex gap-6">
-                  <span className="font-haas text-[0.6rem] uppercase tracking-[0.12em] text-sesmi-muted w-20 shrink-0 pt-0.5">
-                    {item.label}
-                  </span>
-                  <span className="text-sm text-ink">{item.value}</span>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-editorial)',
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: 'var(--ink)',
+                    margin: 0,
+                    marginBottom: 4,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {m.name}
+                </h3>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-haas)',
+                    fontSize: 10,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color: 'var(--muted)',
+                    marginBottom: 16,
+                  }}
+                >
+                  {m.role}
                 </div>
-              ))}
-            </div>
-          </AnimatedEntry>
-
-          <AnimatedEntry delay={0.1} className="pt-8 lg:pt-0 lg:pl-12">
-            <div className="bg-bg2 p-8">
-              {sent ? (
-                <div className="text-center py-8">
-                  <p className="font-haas text-sm text-warm">{t.about.formLabels.success}</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {[
-                    { key: 'name', label: t.about.formLabels.name, type: 'text' },
-                    { key: 'email', label: t.about.formLabels.email, type: 'email' },
-                    { key: 'org', label: t.about.formLabels.org, type: 'text' },
-                  ].map((field) => (
-                    <div key={field.key}>
-                      <label className="label-style text-sesmi-muted block mb-2">{field.label}</label>
-                      <input
-                        type={field.type}
-                        required={field.key !== 'org'}
-                        value={formState[field.key as keyof typeof formState]}
-                        onChange={(e) => setFormState(s => ({ ...s, [field.key]: e.target.value }))}
-                        className="w-full px-4 py-3 bg-bg border border-sesmi-line font-haas text-sm text-ink"
-                      />
-                    </div>
-                  ))}
-                  <div>
-                    <label className="label-style text-sesmi-muted block mb-2">{t.about.formLabels.message}</label>
-                    <textarea
-                      required
-                      rows={4}
-                      value={formState.message}
-                      onChange={(e) => setFormState(s => ({ ...s, message: e.target.value }))}
-                      className="w-full px-4 py-3 bg-bg border border-sesmi-line font-haas text-sm text-ink resize-none"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="bg-ink text-sesmi-white font-haas text-[0.65rem] uppercase tracking-[0.12em] px-6 py-3 hover:bg-ink2 transition-colors interactive disabled:opacity-50"
+                <p
+                  style={{
+                    fontFamily: 'var(--font-editorial)',
+                    fontSize: 16,
+                    lineHeight: 1.75,
+                    color: 'var(--ink-secondary)',
+                    margin: 0,
+                  }}
+                >
+                  {m.bio}
+                </p>
+                {m.links.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      fontFamily: 'var(--font-haas)',
+                      fontSize: 9,
+                      letterSpacing: '0.10em',
+                      textTransform: 'uppercase',
+                      color: 'var(--muted)',
+                    }}
                   >
-                    {sending ? '...' : t.about.formLabels.submit}
-                  </button>
-                </form>
-              )}
-            </div>
-          </AnimatedEntry>
-        </div>
-      </section>
+                    {m.links.map((l, i) => (
+                      <span key={l.href}>
+                        {i > 0 && ' · '}
+                        <a
+                          href={l.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="team-link"
+                          style={{
+                            color: 'var(--muted)',
+                            textDecoration: 'none',
+                            transition: 'color 150ms ease',
+                          }}
+                        >
+                          {l.label}
+                        </a>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p
+            style={{
+              fontFamily: 'var(--font-editorial)',
+              fontSize: 16,
+              fontStyle: 'italic',
+              color: 'var(--muted)',
+              marginTop: 32,
+              marginBottom: 0,
+              lineHeight: 1.65,
+            }}
+          >
+            {wm(
+              'sesmi es un proyecto abierto y colaborativo. Si quieres contribuir, escríbenos.',
+            )}
+          </p>
+        </section>
+
+        {/* Principios */}
+        <section style={{ marginTop: 48, background: 'var(--bg-2)' }}>
+          <div
+            style={{
+              maxWidth: 680,
+              margin: '0 auto',
+              paddingTop: 48,
+              paddingBottom: 48,
+              paddingLeft: 20,
+              paddingRight: 20,
+            }}
+          >
+            <div style={{ ...labelStyle, marginBottom: 32 }}>{L.howLabel}</div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {principles.map((p, idx) => (
+                <li
+                  key={p.title}
+                  style={{
+                    borderTop: idx === 0 ? '1px solid var(--line)' : 'none',
+                    borderBottom: '1px solid var(--line)',
+                    paddingTop: 20,
+                    paddingBottom: 20,
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: 'var(--font-editorial)',
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: 'var(--ink)',
+                      margin: 0,
+                      marginBottom: 8,
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {p.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-editorial)',
+                      fontSize: 16,
+                      color: 'var(--ink-secondary)',
+                      lineHeight: 1.65,
+                      margin: 0,
+                    }}
+                  >
+                    {p.text}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* Contacto */}
+        <section
+          style={{
+            paddingTop: 48,
+            paddingBottom: 64,
+            paddingLeft: 20,
+            paddingRight: 20,
+            maxWidth: 680,
+            margin: '0 auto',
+          }}
+        >
+          <p
+            style={{
+              fontFamily: 'var(--font-editorial)',
+              fontSize: 18,
+              lineHeight: 1.75,
+              color: 'var(--ink-secondary)',
+              margin: 0,
+              marginBottom: 20,
+            }}
+          >
+            Si tienes preguntas, quieres colaborar o simplemente quieres saber más — escríbenos.
+          </p>
+          <a
+            href="mailto:hola@sesmi.org"
+            className="nosotros-mail"
+            style={{
+              fontFamily: 'var(--font-haas)',
+              fontSize: 11,
+              letterSpacing: '0.10em',
+              textTransform: 'uppercase',
+              color: 'var(--ink)',
+              textDecoration: 'none',
+              transition: 'color 150ms ease',
+            }}
+          >
+            hola@sesmi.org
+          </a>
+        </section>
+      </div>
+
+      <style>{`
+        .team-link:hover { color: var(--ink) !important; }
+        .nosotros-mail:hover { color: var(--muted) !important; }
+      `}</style>
     </Layout>
   );
 };
