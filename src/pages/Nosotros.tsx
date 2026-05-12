@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Layout from '../components/Layout';
 import AnimatedEntry from '../components/AnimatedEntry';
 import { useLanguage } from '../contexts/LanguageContext';
+import { wm } from '../lib/wm';
 
 const cities = [
   { name: 'Talavera de la Reina', active: true },
@@ -43,7 +44,7 @@ const Nosotros = () => {
         <AnimatedEntry delay={0.2}>
           <div className="max-w-3xl space-y-6 text-sesmi-muted leading-relaxed mb-10">
             {t.about.manifesto.map((p, i) => (
-              <p key={i}>{p}</p>
+              <p key={i}>{wm(p)}</p>
             ))}
           </div>
         </AnimatedEntry>
