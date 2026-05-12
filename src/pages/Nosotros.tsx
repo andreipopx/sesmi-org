@@ -71,7 +71,7 @@ const Nosotros = () => {
             margin: '0 auto',
           }}
         >
-          <div style={{ ...labelStyle, marginBottom: 16 }}>Nosotros · sesmi</div>
+          
           <h1
             style={{
               fontFamily: 'var(--font-editorial)',
@@ -121,23 +121,7 @@ const Nosotros = () => {
             condicione las conclusiones.
           </p>
 
-          <blockquote
-            style={{
-              borderLeft: '2.5px solid var(--accent)',
-              paddingLeft: 24,
-              fontFamily: 'var(--font-editorial)',
-              fontSize: 20,
-              fontStyle: 'italic',
-              fontWeight: 400,
-              color: 'var(--ink)',
-              margin: '40px 0',
-              lineHeight: 1.5,
-            }}
-          >
-            Debo saber. Mantenerse curioso.
-          </blockquote>
-
-          <div style={{ borderTop: '1px solid var(--line)' }} />
+          <div style={{ marginTop: 40, borderTop: '1px solid var(--line)' }} />
         </section>
 
         {/* Equipo */}

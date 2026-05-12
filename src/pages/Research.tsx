@@ -177,7 +177,7 @@ const Research = () => {
       <div style={{ background: 'var(--bg)' }}>
         {/* Header */}
         <header style={{ ...container, paddingTop: '64px' }}>
-          <p style={{ ...labelStyle, marginBottom: '16px' }}>{copy.label}</p>
+          
           <h1
             style={{
               fontFamily: 'var(--font-editorial)',

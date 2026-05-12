@@ -91,7 +91,7 @@ const Services = () => {
             margin: '0 auto',
           }}
         >
-          <div style={{ ...labelStyle, marginBottom: 16 }}>Servicios · sesmi</div>
+          
           <h1
             style={{
               fontFamily: 'var(--font-editorial)',
@@ -114,8 +114,9 @@ const Services = () => {
               margin: 0,
             }}
           >
-            La investigación de sesmi financia nuestra independencia. Los servicios que ofrecemos
-            son los mismos análisis que hacemos para nosotros — aplicados a tu problema concreto.
+            La investigación de <span className="wm">sesmi</span> financia nuestra independencia.
+            Los servicios que ofrecemos son los mismos análisis que hacemos para nosotros —
+            aplicados a tu problema concreto.
           </p>
           <div style={{ borderTop: '1px solid var(--line)', marginTop: 48 }} />
         </motion.section>
@@ -345,7 +346,7 @@ const Services = () => {
                 color: 'rgba(250, 248, 245, 0.4)',
               }}
             >
-              Los servicios financian la investigación independiente de sesmi.
+              Los servicios financian la investigación independiente de <span className="wm">sesmi</span>.
             </div>
           </div>
         </section>

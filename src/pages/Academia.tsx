@@ -49,7 +49,7 @@ const Academia = () => {
             margin: '0 auto',
           }}
         >
-          <div style={{ ...labelStyle, marginBottom: 16 }}>Academia · sesmi</div>
+          
           <h1
             style={{
               fontFamily: 'var(--font-editorial)',
@@ -72,8 +72,8 @@ const Academia = () => {
               margin: 0,
             }}
           >
-            Academia es el espacio de sesmi para compartir recursos, datos y materiales de
-            formación. Todo abierto, todo gratuito.
+            Academia es el espacio de <span className="wm">sesmi</span> para compartir recursos,
+            datos y materiales de formación. Todo abierto, todo gratuito.
           </p>
           <div style={{ borderTop: '1px solid var(--line)', marginTop: 48 }} />
         </motion.section>
