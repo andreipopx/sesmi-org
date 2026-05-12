@@ -229,9 +229,7 @@ const Nosotros = () => {
               lineHeight: 1.65,
             }}
           >
-            {wm(
-              'sesmi es un proyecto abierto y colaborativo. Si quieres contribuir, escríbenos.',
-            )}
+            sesmi es un proyecto abierto y colaborativo. Si quieres contribuir, escríbenos.
           </p>
         </section>
 
