@@ -174,7 +174,7 @@ const Footer = () => {
             margin: 0,
           }}
         >
-          © 2026 · Sociedad Económica de San Miguel · Talavera de la Reina, Toledo
+          © 2026 · Sociedad Económica de San Miguel
         </p>
       </div>
     </footer>
