@@ -52,7 +52,7 @@ const Research = () => {
       }
     : {
         label: 'Investigación',
-        title: 'Análisis económico independiente.',
+        title: 'Investigación.',
         desc: 'Publicamos nuestros trabajos de forma abierta. Sin paywalls. El conocimiento económico es un bien público.',
         filters: { all: 'Todo', inProgress: 'En elaboración', published: 'Publicado' },
         showChapters: 'Ver capítulos ↓',
