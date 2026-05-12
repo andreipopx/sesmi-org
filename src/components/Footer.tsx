@@ -1,51 +1,166 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
-import { wm } from '../lib/wm';
 
-const navLinks = [
-  { to: '/', key: 'home' as const },
-  { to: '/research', key: 'research' as const },
-  { to: '/services', key: 'services' as const },
-  { to: '/learning', key: 'learning' as const },
-  { to: '/nosotros', key: 'about' as const },
+type NavItem =
+  | { type: 'internal'; to: string; key: 'research' | 'services' | 'about' }
+  | { type: 'external'; href: string; key: 'academy' };
+
+const navItems: NavItem[] = [
+  { type: 'internal', to: '/research', key: 'research' },
+  { type: 'external', href: 'https://academia.sesmi.org', key: 'academy' },
+  { type: 'internal', to: '/services', key: 'services' },
+  { type: 'internal', to: '/nosotros', key: 'about' },
 ];
+
+const labelStyle: React.CSSProperties = {
+  fontSize: '9px',
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--muted)',
+  marginBottom: '16px',
+};
+
+const orgLineStyle: React.CSSProperties = {
+  fontSize: '9px',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
+  color: 'var(--muted)',
+};
+
+const linkStyle: React.CSSProperties = {
+  fontSize: '11px',
+  letterSpacing: '0.10em',
+  textTransform: 'uppercase',
+  color: 'var(--ink)',
+  transition: 'opacity 150ms ease',
+};
+
+const contactStyle: React.CSSProperties = {
+  fontSize: '11px',
+  color: 'var(--ink)',
+  transition: 'opacity 150ms ease',
+};
 
 const Footer = () => {
   const { t } = useLanguage();
 
+  const renderNavItem = (item: NavItem) => {
+    const label = (t.nav as Record<string, string>)[item.key].toUpperCase();
+    const onEnter = (e: React.MouseEvent<HTMLElement>) =>
+      ((e.currentTarget as HTMLElement).style.opacity = '0.6');
+    const onLeave = (e: React.MouseEvent<HTMLElement>) =>
+      ((e.currentTarget as HTMLElement).style.opacity = '1');
+
+    if (item.type === 'external') {
+      return (
+        <a
+          key={item.key}
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-haas"
+          style={linkStyle}
+          onMouseEnter={onEnter}
+          onMouseLeave={onLeave}
+        >
+          {label}
+        </a>
+      );
+    }
+    return (
+      <Link
+        key={item.key}
+        to={item.to}
+        className="font-haas"
+        style={linkStyle}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+      >
+        {label}
+      </Link>
+    );
+  };
+
   return (
-    <footer className="bg-bg2 border-t border-sesmi-line">
-      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-12">
+    <footer style={{ borderTop: '1px solid var(--line)', backgroundColor: 'var(--bg)' }}>
+      <div
+        className="mx-auto grid grid-cols-1 md:grid-cols-3"
+        style={{
+          maxWidth: '1280px',
+          paddingLeft: 'clamp(24px, 4vw, 48px)',
+          paddingRight: 'clamp(24px, 4vw, 48px)',
+          paddingTop: '48px',
+          paddingBottom: '32px',
+          gap: '32px',
+        }}
+      >
+        {/* Col 1: brand */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="logo-dot inline-block w-[7px] h-[7px] rounded-full bg-warm" />
-            <span className="wm lowercase text-ink" style={{ fontSize: '14px', letterSpacing: '0.04em' }}>sesmi</span>
+          <span
+            className="wm lowercase"
+            style={{ fontSize: '16px', color: 'var(--ink)', display: 'block' }}
+          >
+            sesmi
+          </span>
+          <p className="font-haas" style={{ ...orgLineStyle, marginTop: '12px' }}>
+            {t.footer.org}
+          </p>
+          <p className="font-haas" style={orgLineStyle}>
+            {t.footer.location}
+          </p>
+        </div>
+
+        {/* Col 2: nav */}
+        <div className="flex flex-col">
+          <span className="font-haas" style={labelStyle}>
+            {t.footer.navLabel}
+          </span>
+          <div className="flex flex-col" style={{ gap: '10px' }}>
+            {navItems.map(renderNavItem)}
           </div>
-          <p className="text-sm text-sesmi-muted leading-relaxed">{t.footer.org}</p>
-          <p className="text-sm text-sesmi-muted mt-1">{t.footer.location}</p>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <span className="label-style text-sesmi-muted mb-2">{t.footer.navLabel}</span>
-          {navLinks.map((link) => (
-            <Link key={link.to} to={link.to} className="text-sm text-sesmi-muted hover:text-ink transition-colors interactive">
-              {t.nav[link.key]}
-            </Link>
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <span className="label-style text-sesmi-muted mb-2">{t.footer.contactLabel}</span>
-          <a href="mailto:hola@sesmi.org" className="text-sm text-sesmi-muted hover:text-ink transition-colors interactive">
-            hola@<span className="wm">sesmi</span>.org
-          </a>
-          <span className="text-sm text-sesmi-muted"><span className="wm">sesmi</span>.org</span>
+        {/* Col 3: contact */}
+        <div className="flex flex-col">
+          <span className="font-haas" style={labelStyle}>
+            {t.footer.contactLabel}
+          </span>
+          <div className="flex flex-col" style={{ gap: '10px' }}>
+            <a
+              href="mailto:hola@sesmi.org"
+              className="font-haas"
+              style={contactStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+            >
+              hola@sesmi.org
+            </a>
+            <span className="font-haas" style={contactStyle}>
+              sesmi.org
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-sesmi-line px-6 py-4">
-        <p className="text-center font-haas text-[8px] tracking-[0.12em] uppercase text-muted2">
-          {wm(t.footer.copyright)}
+      {/* Copyright */}
+      <div
+        style={{
+          backgroundColor: 'var(--bg-2)',
+          borderTop: '1px solid var(--line)',
+          padding: '16px',
+        }}
+      >
+        <p
+          className="font-haas text-center"
+          style={{
+            fontSize: '9px',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--muted)',
+            margin: 0,
+          }}
+        >
+          © 2025 <span className="wm" style={{ fontSize: 'inherit' }}>sesmi</span> · Sociedad Económica de San Miguel
         </p>
       </div>
     </footer>
