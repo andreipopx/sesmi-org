@@ -74,15 +74,17 @@ const Nosotros = () => {
           
           <h1
             style={{
-              fontFamily: 'var(--font-editorial)',
-              fontSize: 'clamp(28px, 4vw, 42px)',
-              fontWeight: 400,
+              fontFamily: 'var(--font-haas)',
+              fontSize: 'clamp(36px, 5vw, 56px)',
+              fontWeight: 700,
               color: 'var(--ink)',
-              lineHeight: 1.2,
+              lineHeight: 1.1,
+              letterSpacing: '-0.01em',
               margin: 0,
+              marginBottom: 20,
             }}
           >
-            Por qué existe <span className="wm">sesmi</span>.
+            Nosotros.
           </h1>
           <div style={{ borderTop: '1px solid var(--line)', marginTop: 48 }} />
         </motion.section>
