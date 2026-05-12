@@ -1,21 +1,27 @@
-# Plan — Añadir Liberation Mono
+## Cambios en `src/components/Footer.tsx`
 
-## Copiar a `public/fonts/`
+### 1. Copyright
+- `© 2025` → `© 2026` en el bloque inferior.
 
-- `LiberationMono-Regular.ttf`
-- `LiberationMono-Bold.ttf`
-- `LiberationMono-Italic.ttf`
-- `LiberationMono-BoldItalic.ttf`
+### 2. Mover "NOSOTROS" a la columna de contacto
+- Quitar `{ type: 'internal', to: '/nosotros', key: 'about' }` del array `navItems` (queda: Investigación, Academia, Servicios).
+- En la columna 3 (Contacto), añadir un `<Link to="/nosotros">` debajo de `sesmi.org`, sin label propio, con el mismo estilo que los links de navegación (font-haas, 13px, uppercase, letter-spacing 0.10em, color ink, hover opacity 0.6).
 
-## Cambios en `index.html`
+### 3. Subir tamaños
 
-Reemplazar los dos `@font-face` actuales de `Liberation Mono` (que apuntan a `.woff2` inexistentes) por cuatro `@font-face` con `format('truetype')` para los cuatro estilos: Regular 400, Bold 700, Italic 400, BoldItalic 700.
+| Elemento | Antes | Después |
+|---|---|---|
+| `linkStyle.fontSize` (nav links) | 11px | 13px |
+| `contactStyle.fontSize` (mail + sesmi.org + nosotros) | 11px | 13px |
+| Wordmark "sesmi" col. izquierda | 16px | 20px |
+| `orgLineStyle.fontSize` (org + location) | 9px | 10px |
+| `labelStyle.fontSize` ("NAVEGACIÓN", "CONTACTO") | 9px (ya era 9, pedías 8→9, mantener 9) | 9px |
+| Copyright `<p>` fontSize | 9px | 10px |
 
-## Sin cambios
+Nota: el spec dice "Labels de 8px a 9px", pero en el código actual ya están a 9px, así que se mantienen en 9px.
 
-- `src/index.css` — `--font-mono` ya es correcto.
-- `tailwind.config.ts`, componentes — sin tocar.
+### Archivo afectado
+- `src/components/Footer.tsx` — única modificación.
 
-## Nota
-
-Los TTF pesan más que WOFF2. Si quieres optimización, en una segunda pasada los convierto.
+### Sin cambios
+- Estructura de columnas, gaps, padding, bordes, colores y comportamiento responsive intactos.
