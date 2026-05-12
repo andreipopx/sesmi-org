@@ -13,61 +13,7 @@ const Index = () => {
   return (
     <Layout>
       {/* HERO */}
-      <section className="min-h-screen flex items-center justify-center relative grid-bg">
-        <div className="text-center px-6 py-20 max-w-4xl mx-auto">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-sesmi-muted mb-8"
-          >
-            {t.hero.tag}
-          </motion.p>
-
-          <h1 className="mb-10">
-            {t.hero.lines.map((line, i) => (
-              <motion.span
-                key={i}
-                className={`block font-display italic font-normal leading-[1.05] ${
-                  i === t.hero.lines.length - 1 ? 'text-warm' : 'text-ink'
-                }`}
-                style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', letterSpacing: '-0.04em' }}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.15, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {line}
-              </motion.span>
-            ))}
-          </h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.6 }}
-            className="font-mono text-[0.58rem] uppercase tracking-[0.15em] text-sesmi-muted mb-10"
-          >
-            {t.hero.tagline}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
-            className="flex items-center justify-center gap-6 flex-wrap"
-          >
-            <Link
-              to="/research"
-              className="bg-ink text-sesmi-white font-mono text-[0.65rem] uppercase tracking-[0.12em] px-6 py-3 hover:bg-ink2 transition-colors interactive"
-            >
-              {t.hero.cta}
-            </Link>
-            <span className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted2">
-              {t.hero.scroll}
-            </span>
-          </motion.div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* TICKER */}
       <Ticker />
