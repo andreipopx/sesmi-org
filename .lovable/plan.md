@@ -1,27 +1,20 @@
-## Cambios en `src/components/Footer.tsx`
+## Plan: Simplificar cabecera de portada
 
-### 1. Copyright
-- `© 2025` → `© 2026` en el bloque inferior.
+Objetivo: En `Index.tsx`, reducir la cabecera al mínimo — solo el wordmark "sesmi" grande y el separador, eliminando el tagline y aumentando el tamaño del wordmark.
 
-### 2. Mover "NOSOTROS" a la columna de contacto
-- Quitar `{ type: 'internal', to: '/nosotros', key: 'about' }` del array `navItems` (queda: Investigación, Academia, Servicios).
-- En la columna 3 (Contacto), añadir un `<Link to="/nosotros">` debajo de `sesmi.org`, sin label propio, con el mismo estilo que los links de navegación (font-haas, 13px, uppercase, letter-spacing 0.10em, color ink, hover opacity 0.6).
+### Cambios en `src/pages/Index.tsx`
 
-### 3. Subir tamaños
+1. **Eliminar tagline**
+   - Borrar la variable `tagline` (líneas 29-32).
+   - Borrar el párrafo `<p>` con `font-editorial italic` que renderiza el tagline (líneas 51-61).
 
-| Elemento | Antes | Después |
-|---|---|---|
-| `linkStyle.fontSize` (nav links) | 11px | 13px |
-| `contactStyle.fontSize` (mail + sesmi.org + nosotros) | 11px | 13px |
-| Wordmark "sesmi" col. izquierda | 16px | 20px |
-| `orgLineStyle.fontSize` (org + location) | 9px | 10px |
-| `labelStyle.fontSize` ("NAVEGACIÓN", "CONTACTO") | 9px (ya era 9, pedías 8→9, mantener 9) | 9px |
-| Copyright `<p>` fontSize | 9px | 10px |
+2. **Agrandar wordmark**
+   - Subir los valores del `clamp()` en la clase `.home-wm`:
+     - Mobile: de `clamp(72px, 20vw, 110px)` a un rango mayor (ej. `clamp(90px, 22vw, 130px)`).
+     - Desktop: de `clamp(64px, 10vw, 96px)` a un rango mayor (ej. `clamp(80px, 12vw, 120px)`).
+   - Ajustar proporcionalmente el espaciado (`marginBottom` del `<span>` o `marginTop` del separador) para que no quede un hueco excesivo donde estaba el tagline.
 
-Nota: el spec dice "Labels de 8px a 9px", pero en el código actual ya están a 9px, así que se mantienen en 9px.
+3. **Revisar espaciado vertical**
+   - Al desaparecer el tagline, el separador bajo el wordmark puede quedar demasiado lejos. Reajustar `marginBottom` del wordmark o `marginTop` del `<div>` separador para mantener una composición ajustada.
 
-### Archivo afectado
-- `src/components/Footer.tsx` — única modificación.
-
-### Sin cambios
-- Estructura de columnas, gaps, padding, bordes, colores y comportamiento responsive intactos.
+No hay cambios en otros archivos ni en lógica de negocio.
