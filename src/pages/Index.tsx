@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import HeroSection from '../components/HeroSection';
 import Ticker from '../components/Ticker';
 import SectionHeader from '../components/SectionHeader';
 import AnimatedEntry from '../components/AnimatedEntry';
