@@ -83,14 +83,14 @@ const Footer = () => {
   return (
     <footer style={{ borderTop: '1px solid var(--line)', backgroundColor: 'var(--bg)' }}>
       <div
-        className="mx-auto grid grid-cols-1 md:grid-cols-4 items-start"
+        className="mx-auto grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_auto] items-center"
         style={{
           maxWidth: '1280px',
           paddingLeft: 'clamp(24px, 4vw, 48px)',
           paddingRight: 'clamp(24px, 4vw, 48px)',
           paddingTop: '48px',
           paddingBottom: '32px',
-          gap: '32px',
+          gap: '48px',
         }}
       >
         {/* Col 1: brand */}
@@ -101,12 +101,6 @@ const Footer = () => {
           >
             sesmi
           </span>
-          <p className="font-haas" style={{ ...orgLineStyle, marginTop: '12px' }}>
-            {t.footer.org}
-          </p>
-          <p className="font-haas" style={orgLineStyle}>
-            {t.footer.location}
-          </p>
         </div>
 
         {/* Col 2: nav */}
@@ -150,11 +144,11 @@ const Footer = () => {
         </div>
 
         {/* Col 4: logo */}
-        <div className="flex md:justify-end items-start">
+        <div className="flex md:justify-end">
           <img
             src="/logo-sesmi.svg"
             alt="sesmi"
-            style={{ height: '64px', width: 'auto', display: 'block' }}
+            style={{ height: '96px', width: 'auto', display: 'block' }}
           />
         </div>
       </div>
@@ -177,7 +171,7 @@ const Footer = () => {
             margin: 0,
           }}
         >
-          © 2026 <span className="wm" style={{ fontSize: 'inherit' }}>sesmi</span> · Sociedad Económica de San Miguel
+          © 2026 · Sociedad Económica de San Miguel · Talavera de la Reina, Toledo
         </p>
       </div>
     </footer>
