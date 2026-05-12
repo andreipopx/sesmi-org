@@ -8,6 +8,7 @@ import Research from "./pages/Research";
 import ResearchArticle from "./pages/ResearchArticle";
 import Services from "./pages/Services";
 import Learning from "./pages/Learning";
+import Academia from "./pages/Academia";
 import Nosotros from "./pages/Nosotros";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/research/:id" element={<ResearchArticle />} />
             <Route path="/services" element={<Services />} />
             <Route path="/learning" element={<Learning />} />
+            <Route path="/academia" element={<Academia />} />
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
