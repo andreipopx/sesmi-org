@@ -102,23 +102,6 @@ const Navbar = () => {
     (t.nav as Record<string, string>)[item.key].toUpperCase();
 
   const renderItem = (item: NavItem, onClick?: () => void) => {
-    if (item.type === 'external') {
-      return (
-        <a
-          key={item.key}
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={onClick}
-          className="font-haas uppercase"
-          style={linkBaseStyle}
-          onMouseEnter={(e) => ((e.target as HTMLElement).style.opacity = '0.6')}
-          onMouseLeave={(e) => ((e.target as HTMLElement).style.opacity = '1')}
-        >
-          {renderLabel(item)}
-        </a>
-      );
-    }
     return (
       <Link
         key={item.key}
