@@ -1,20 +1,22 @@
-## Plan: Simplificar cabecera de portada
+## Problema
 
-Objetivo: En `Index.tsx`, reducir la cabecera al mínimo — solo el wordmark "sesmi" grande y el separador, eliminando el tagline y aumentando el tamaño del wordmark.
+El rectángulo lateral "sesmi" se ve borroso porque:
 
-### Cambios en `src/pages/Index.tsx`
+1. `transform: translateY(-50%) rotate(180deg)` deja el elemento en coordenadas sub-píxel (la mitad de su altura no es entera) → el navegador interpola y emborrona el texto.
+2. La combinación `writing-mode: vertical-rl` + `rotate(180deg)` agrava el efecto en algunos navegadores (sobre todo Chrome en Windows/Linux).
 
-1. **Eliminar tagline**
-   - Borrar la variable `tagline` (líneas 29-32).
-   - Borrar el párrafo `<p>` con `font-editorial italic` que renderiza el tagline (líneas 51-61).
+## Solución propuesta (en `src/components/Layout.tsx`)
 
-2. **Agrandar wordmark**
-   - Subir los valores del `clamp()` en la clase `.home-wm`:
-     - Mobile: de `clamp(72px, 20vw, 110px)` a un rango mayor (ej. `clamp(90px, 22vw, 130px)`).
-     - Desktop: de `clamp(64px, 10vw, 96px)` a un rango mayor (ej. `clamp(80px, 12vw, 120px)`).
-   - Ajustar proporcionalmente el espaciado (`marginBottom` del `<span>` o `marginTop` del separador) para que no quede un hueco excesivo donde estaba el tagline.
+1. Quitar `translateY(-50%)` y centrarlo verticalmente con un wrapper:
+   - Wrapper `position: fixed; right: 0; top: 0; height: 100vh; display: flex; align-items: center; pointer-events: none;`
+   - El `<Link>` dentro con `pointer-events: auto`, sin `translateY`, solo `transform: rotate(180deg)`.
+2. Forzar rasterizado nítido en el link:
+   - `transform: rotate(180deg) translateZ(0)`
+   - `backface-visibility: hidden`
+   - `-webkit-font-smoothing: antialiased`
+   - `text-rendering: geometricPrecision` (mejor para texto rotado que `optimizeLegibility`)
+3. Mantener tamaños actuales (padding 4px 1px, font 16px).
 
-3. **Revisar espaciado vertical**
-   - Al desaparecer el tagline, el separador bajo el wordmark puede quedar demasiado lejos. Reajustar `marginBottom` del wordmark o `marginTop` del `<div>` separador para mantener una composición ajustada.
+Con esto el texto cae en píxeles enteros y se renderiza limpio.
 
-No hay cambios en otros archivos ni en lógica de negocio.
+¿Aplico el fix?
