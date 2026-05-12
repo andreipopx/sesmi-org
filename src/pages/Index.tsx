@@ -37,10 +37,9 @@ const Index = () => {
       <section style={{ ...container, paddingTop: '64px', paddingBottom: '48px' }}>
         <div style={{ textAlign: 'center' }}>
           <span
-            className="wm lowercase"
+            className="wm lowercase home-wm"
             style={{
               display: 'block',
-              fontSize: 'clamp(48px, 12vw, 96px)',
               fontWeight: 400,
               lineHeight: 1,
               color: 'var(--ink)',
@@ -65,8 +64,9 @@ const Index = () => {
       </section>
 
       <style>{`
+        .home-wm { font-size: clamp(48px, 12vw, 72px); }
         @media (min-width: 768px) {
-          .home-wm { font-size: clamp(64px, 10vw, 96px) !important; }
+          .home-wm { font-size: clamp(64px, 10vw, 96px); }
         }
       `}</style>
 
