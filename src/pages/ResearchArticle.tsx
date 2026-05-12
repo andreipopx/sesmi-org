@@ -36,7 +36,7 @@ const ArticleContent = () => {
         <AnimatedEntry>
           <div className="bg-bg2 p-8 my-8 text-center">
             <p className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Total announced investment</p>
-            <p className="font-haas text-5xl md:text-6xl text-warm font-bold">€750M</p>
+            <p className="font-mono text-5xl md:text-6xl text-warm font-bold">€750M</p>
             <p className="font-haas text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Source: Meta, public records</p>
           </div>
         </AnimatedEntry>
@@ -81,7 +81,7 @@ const ArticleContent = () => {
       <AnimatedEntry>
         <div className="bg-bg2 p-8 my-8 text-center">
           <p className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Inversión total anunciada</p>
-          <p className="font-haas text-5xl md:text-6xl text-warm font-bold">750M€</p>
+          <p className="font-mono text-5xl md:text-6xl text-warm font-bold">750M€</p>
           <p className="font-haas text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Fuente: Meta, registros públicos</p>
         </div>
       </AnimatedEntry>
@@ -124,8 +124,8 @@ const ResearchArticle = () => {
             <span className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-warm">
               {t.article.category}
             </span>
-            <span className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-muted2 border border-sesmi-line px-2 py-0.5">
-              {t.article.code}
+            <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-muted2 border border-sesmi-line px-2 py-0.5">
+                {t.article.code}
             </span>
           </div>
         </AnimatedEntry>

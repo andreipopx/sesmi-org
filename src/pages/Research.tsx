@@ -40,8 +40,8 @@ const Research = () => {
                   <span className="logo-dot inline-block w-[6px] h-[6px] rounded-full bg-[#6FCF97]" />
                   {t.research.featured.status}
                 </span>
-                <span className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-white/50 border border-sesmi-white/20 px-2 py-0.5">
-                  {t.research.featured.code}
+                <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-white/50 border border-sesmi-white/20 px-2 py-0.5">
+                {t.research.featured.code}
                 </span>
               </div>
               <h2 className="font-editorial text-3xl md:text-4xl font-bold mb-3">
@@ -90,7 +90,7 @@ const Research = () => {
         <AnimatedEntry>
           <div className="card-hover-line bg-bg2 p-8 mb-4">
             <div className="flex gap-3 mb-4 flex-wrap items-center">
-              <span className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-muted2 border border-sesmi-line px-2 py-0.5">
+              <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-muted2 border border-sesmi-line px-2 py-0.5">
                 SESMI-002
               </span>
               <span className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-muted2">
