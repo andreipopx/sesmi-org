@@ -12,7 +12,7 @@ const navItems: NavItem[] = [
 ];
 
 const labelStyle: React.CSSProperties = {
-  fontSize: '9px',
+  fontSize: '11px',
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
   color: 'var(--muted)',
@@ -20,14 +20,14 @@ const labelStyle: React.CSSProperties = {
 };
 
 const orgLineStyle: React.CSSProperties = {
-  fontSize: '10px',
+  fontSize: '12px',
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
   color: 'var(--muted)',
 };
 
 const linkStyle: React.CSSProperties = {
-  fontSize: '13px',
+  fontSize: '12px',
   letterSpacing: '0.10em',
   textTransform: 'uppercase',
   color: 'var(--ink)',
@@ -35,7 +35,7 @@ const linkStyle: React.CSSProperties = {
 };
 
 const contactStyle: React.CSSProperties = {
-  fontSize: '13px',
+  fontSize: '12px',
   color: 'var(--ink)',
   transition: 'opacity 150ms ease',
 };
