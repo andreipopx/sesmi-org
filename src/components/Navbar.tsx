@@ -13,8 +13,8 @@ const navItems: NavItem[] = [
 ];
 
 const linkBaseStyle: React.CSSProperties = {
-  fontSize: '11px',
-  letterSpacing: '0.08em',
+  fontSize: '9px',
+  letterSpacing: '0.12em',
   transition: 'opacity 150ms ease',
   color: 'var(--ink)',
 };
