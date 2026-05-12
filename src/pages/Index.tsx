@@ -64,7 +64,7 @@ const Index = () => {
       </section>
 
       <style>{`
-        .home-wm { font-size: clamp(48px, 12vw, 72px); }
+        .home-wm { font-size: clamp(72px, 20vw, 110px); }
         @media (min-width: 768px) {
           .home-wm { font-size: clamp(64px, 10vw, 96px); }
         }
