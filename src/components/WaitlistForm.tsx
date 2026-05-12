@@ -22,8 +22,8 @@ const WaitlistForm = () => {
       style={{
         backgroundColor: 'var(--bg)',
         borderTop: '1px solid var(--line)',
-        paddingTop: '56px',
-        paddingBottom: '56px',
+        paddingTop: '48px',
+        paddingBottom: '48px',
       }}
     >
       <div
@@ -56,7 +56,7 @@ const WaitlistForm = () => {
           <p
             className="font-editorial"
             style={{
-              fontSize: '16px',
+              fontSize: '18px',
               lineHeight: 1.65,
               color: 'var(--ink-secondary)',
               marginBottom: '32px',
@@ -92,7 +92,7 @@ const WaitlistForm = () => {
                   border: 'none',
                   borderBottom: '1px solid var(--line)',
                   borderRadius: 0,
-                  fontSize: '16px',
+                  fontSize: '18px',
                   padding: '8px 0',
                   outline: 'none',
                 }}

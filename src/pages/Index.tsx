@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import Layout from '../components/Layout';
 import { useLanguage } from '../contexts/LanguageContext';
+import { wm } from '../lib/wm';
 
 const container: React.CSSProperties = {
   maxWidth: 'var(--max-prose)',
@@ -10,24 +12,12 @@ const container: React.CSSProperties = {
   paddingRight: 'clamp(24px, 4vw, 48px)',
 };
 
-// Tokens tipográficos funcionales (Alte Haas)
-const labelStyle: React.CSSProperties = {
-  fontSize: '8px',
-  letterSpacing: '0.18em',
-};
-const navOrButton: React.CSSProperties = {
-  fontSize: '9px',
-  letterSpacing: '0.10em',
-};
-const badgeStyle: React.CSSProperties = {
-  fontSize: '7px',
-  letterSpacing: '0.12em',
-};
-// ID de informe (Liberation Mono)
-const idStyle: React.CSSProperties = {
-  fontSize: '9px',
-  letterSpacing: '0.04em',
-};
+// Tokens funcionales (Alte Haas)
+const labelStyle: React.CSSProperties = { fontSize: '9px', letterSpacing: '0.18em' };
+const navOrButton: React.CSSProperties = { fontSize: '10px', letterSpacing: '0.10em' };
+const badgeStyle: React.CSSProperties = { fontSize: '8px', letterSpacing: '0.12em' };
+// IDs (Liberation Mono)
+const idStyle: React.CSSProperties = { fontSize: '10px', letterSpacing: '0.04em' };
 
 const readLinkHover = (e: React.MouseEvent<HTMLAnchorElement>, color: string) => {
   e.currentTarget.style.color = color;
@@ -39,22 +29,19 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* 1. CABECERA DE PORTADA */}
-      <section style={{ ...container, paddingTop: '64px' }}>
-        <p
-          className="font-haas uppercase"
-          style={{ ...labelStyle, color: 'var(--muted)' }}
-        >
+      {/* 1. CABECERA */}
+      <section style={{ ...container, paddingTop: '48px' }}>
+        <p className="font-haas uppercase" style={{ ...labelStyle, color: 'var(--muted)' }}>
           {h.kicker}
         </p>
-        <div style={{ marginTop: '32px', borderTop: '1px solid var(--line)' }} />
+        <div style={{ marginTop: '28px', borderTop: '1px solid var(--line)' }} />
       </section>
 
       {/* 2. TRABAJOS EN CURSO */}
-      <section style={{ ...container, paddingTop: '32px' }}>
+      <section style={{ ...container, paddingTop: '48px', paddingBottom: '48px' }}>
         <p
           className="font-haas uppercase"
-          style={{ ...labelStyle, color: 'var(--muted)', marginBottom: '24px' }}
+          style={{ ...labelStyle, color: 'var(--muted)', marginBottom: '10px' }}
         >
           {h.worksLabel}
         </p>
@@ -65,29 +52,29 @@ const Index = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.4, ease: 'easeOut' as const }}
-          style={{ paddingTop: '32px', paddingBottom: '32px' }}
+          style={{ paddingTop: '28px', paddingBottom: '28px' }}
         >
           <p
             className="font-mono uppercase"
-            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '12px' }}
+            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '10px' }}
           >
             {h.featured.code}
           </p>
           <h2
             className="font-editorial text-ink"
-            style={{ fontSize: '32px', fontWeight: 700, lineHeight: 1.2, marginBottom: '16px' }}
+            style={{ fontSize: '34px', fontWeight: 700, lineHeight: 1.2, marginBottom: '14px' }}
           >
             {h.featured.title}
           </h2>
           <p
             className="font-editorial italic"
             style={{
-              fontSize: '19px',
+              fontSize: '20px',
               fontWeight: 400,
-              lineHeight: 1.6,
+              lineHeight: 1.65,
               color: 'var(--ink-secondary)',
               maxWidth: '560px',
-              marginBottom: '20px',
+              marginBottom: '16px',
             }}
           >
             {h.featured.subtitle}
@@ -95,19 +82,16 @@ const Index = () => {
           <p
             className="font-editorial"
             style={{
-              fontSize: '17px',
+              fontSize: '18px',
               lineHeight: 1.85,
               color: 'var(--ink-secondary)',
               maxWidth: '640px',
-              marginBottom: '20px',
+              marginBottom: '16px',
             }}
           >
-            {h.featured.lede}
+            {wm(h.featured.lede)}
           </p>
-          <p
-            className="font-haas uppercase"
-            style={{ ...badgeStyle, color: 'var(--accent)' }}
-          >
+          <p className="font-haas uppercase" style={{ ...badgeStyle, color: 'var(--accent)' }}>
             {h.statusBadge}
           </p>
           <Link
@@ -116,7 +100,7 @@ const Index = () => {
             style={{
               ...navOrButton,
               color: 'var(--muted)',
-              marginTop: '16px',
+              marginTop: '12px',
               transition: 'color 150ms ease',
             }}
             onMouseEnter={(e) => readLinkHover(e, 'var(--ink)')}
@@ -134,24 +118,24 @@ const Index = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.4, ease: 'easeOut' as const, delay: 0.1 }}
-          style={{ paddingTop: '32px', paddingBottom: '32px' }}
+          style={{ paddingTop: '28px', paddingBottom: '28px' }}
         >
           <p
             className="font-mono uppercase"
-            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '12px' }}
+            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '10px' }}
           >
             {h.secondary.code}
           </p>
           <h3
             className="font-editorial text-ink"
-            style={{ fontSize: '22px', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px' }}
+            style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1.25, marginBottom: '14px' }}
           >
             {h.secondary.title}
           </h3>
           <p
             className="font-editorial"
             style={{
-              fontSize: '17px',
+              fontSize: '18px',
               lineHeight: 1.85,
               color: 'var(--ink-secondary)',
               marginBottom: '16px',
@@ -159,37 +143,33 @@ const Index = () => {
           >
             {h.secondary.subtitle}
           </p>
-          <p
-            className="font-haas uppercase"
-            style={{ ...badgeStyle, color: 'var(--accent)' }}
-          >
+          <p className="font-haas uppercase" style={{ ...badgeStyle, color: 'var(--accent)' }}>
             {h.statusBadge}
           </p>
         </motion.article>
       </section>
 
-      {/* 3. SEPARADOR */}
       <div style={{ borderTop: '1px solid var(--line)' }} />
 
-      {/* 4. SOBRE SESMI */}
+      {/* 4. SOBRE sesmi */}
       <section
         style={{
           ...container,
-          paddingTop: '56px',
-          paddingBottom: '56px',
+          paddingTop: '48px',
+          paddingBottom: '48px',
           backgroundColor: 'var(--bg)',
         }}
       >
         <p
           className="font-editorial"
           style={{
-            fontSize: '17px',
+            fontSize: '18px',
             lineHeight: 1.85,
             color: 'var(--ink-secondary)',
-            marginBottom: '20px',
+            marginBottom: '16px',
           }}
         >
-          {h.about.text}
+          {wm(h.about.text)}
         </p>
         <Link
           to="/nosotros"
@@ -207,21 +187,21 @@ const Index = () => {
         style={{
           backgroundColor: 'var(--bg-2)',
           borderTop: '1px solid var(--line)',
-          paddingTop: '56px',
-          paddingBottom: '56px',
+          paddingTop: '48px',
+          paddingBottom: '48px',
         }}
       >
         <div style={container}>
           <p
             className="font-editorial"
             style={{
-              fontSize: '17px',
+              fontSize: '18px',
               lineHeight: 1.85,
               color: 'var(--ink-secondary)',
-              marginBottom: '20px',
+              marginBottom: '16px',
             }}
           >
-            {h.newsletter.text}
+            {wm(h.newsletter.text)}
           </p>
           <NewsletterForm />
         </div>
@@ -229,8 +209,6 @@ const Index = () => {
     </Layout>
   );
 };
-
-import { useState } from 'react';
 
 const NewsletterForm = () => {
   const [email, setEmail] = useState('');
@@ -251,7 +229,7 @@ const NewsletterForm = () => {
     return (
       <p
         className="font-haas uppercase"
-        style={{ fontSize: '9px', letterSpacing: '0.10em', color: 'var(--accent)' }}
+        style={{ fontSize: '10px', letterSpacing: '0.10em', color: 'var(--accent)' }}
       >
         {t.waitlist.success}
       </p>
@@ -259,11 +237,7 @@ const NewsletterForm = () => {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row sm:items-end"
-      style={{ gap: '16px' }}
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:items-end" style={{ gap: '16px' }}>
       <input
         type="email"
         value={email}
@@ -276,7 +250,7 @@ const NewsletterForm = () => {
           border: 'none',
           borderBottom: '1px solid var(--line)',
           borderRadius: 0,
-          fontSize: '17px',
+          fontSize: '18px',
           padding: '8px 0',
           outline: 'none',
         }}
@@ -288,7 +262,7 @@ const NewsletterForm = () => {
         disabled={loading}
         className="font-haas uppercase text-offwhite"
         style={{
-          fontSize: '9px',
+          fontSize: '10px',
           letterSpacing: '0.10em',
           backgroundColor: 'var(--ink)',
           padding: '10px 20px',

@@ -55,7 +55,7 @@
     background-color: var(--bg);
     color: var(--ink);
     font-family: var(--font-editorial);
-    font-size: 17px;
+    font-size: 18px;
     line-height: 1.85;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -67,6 +67,14 @@
   }
   /* Énfasis editorial: italic, no bold en cuerpo */
   p em, li em { font-style: italic; font-weight: inherit; }
+}
+
+/* Wordmark — siempre Apfel Grotezk Mittel, hereda tamaño */
+.wm {
+  font-family: 'Apfel Grotezk Mittel', serif;
+  font-style: normal;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 /* System cursor */

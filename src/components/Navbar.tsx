@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Globe } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 type NavItem =
@@ -13,16 +14,89 @@ const navItems: NavItem[] = [
 ];
 
 const linkBaseStyle: React.CSSProperties = {
-  fontSize: '9px',
+  fontSize: '10px',
   letterSpacing: '0.12em',
   transition: 'opacity 150ms ease',
   color: 'var(--ink)',
 };
 
+const LangSwitcher = () => {
+  const { lang, setLang } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  const langs: Array<'es' | 'en'> = ['es', 'en'];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Idioma"
+        aria-expanded={open}
+        className="flex items-center justify-center"
+        style={{
+          width: 28,
+          height: 28,
+          color: 'var(--ink)',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+        }}
+      >
+        <Globe size={16} strokeWidth={1.5} />
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 flex flex-col"
+          style={{
+            top: 'calc(100% + 6px)',
+            background: 'var(--bg)',
+            border: '1px solid var(--line)',
+            minWidth: 80,
+            zIndex: 60,
+          }}
+        >
+          {langs.map((l) => (
+            <button
+              key={l}
+              onClick={() => {
+                setLang(l);
+                setOpen(false);
+              }}
+              className="font-haas uppercase text-left"
+              style={{
+                fontSize: '9px',
+                letterSpacing: '0.12em',
+                padding: '8px 12px',
+                color: lang === l ? 'var(--ink)' : 'var(--muted)',
+                fontWeight: lang === l ? 700 : 400,
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {l === 'es' ? 'ES' : 'EN'}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const { lang, setLang, t } = useLanguage();
+  const { t } = useLanguage();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -38,7 +112,7 @@ const Navbar = () => {
           target="_blank"
           rel="noopener noreferrer"
           onClick={onClick}
-          className="font-mono uppercase"
+          className="font-haas uppercase"
           style={linkBaseStyle}
           onMouseEnter={(e) => ((e.target as HTMLElement).style.opacity = '0.6')}
           onMouseLeave={(e) => ((e.target as HTMLElement).style.opacity = '1')}
@@ -52,7 +126,7 @@ const Navbar = () => {
         key={item.key}
         to={item.to}
         onClick={onClick}
-        className="font-mono uppercase"
+        className="font-haas uppercase"
         style={{ ...linkBaseStyle, opacity: isActive(item.to) ? 1 : undefined }}
         onMouseEnter={(e) => ((e.target as HTMLElement).style.opacity = '0.6')}
         onMouseLeave={(e) =>
@@ -63,37 +137,6 @@ const Navbar = () => {
       </Link>
     );
   };
-
-  const LangSwitcher = () => (
-    <div
-      className="flex items-center font-mono uppercase"
-      style={{ fontSize: '11px', letterSpacing: '0.08em' }}
-    >
-      <button
-        onClick={() => setLang('es')}
-        className="px-1 py-0.5"
-        style={{
-          color: lang === 'es' ? 'var(--ink)' : 'var(--muted)',
-          fontWeight: lang === 'es' ? 700 : 400,
-          transition: 'color 150ms ease',
-        }}
-      >
-        ES
-      </button>
-      <span style={{ color: 'var(--muted)' }}> / </span>
-      <button
-        onClick={() => setLang('en')}
-        className="px-1 py-0.5"
-        style={{
-          color: lang === 'en' ? 'var(--ink)' : 'var(--muted)',
-          fontWeight: lang === 'en' ? 700 : 400,
-          transition: 'color 150ms ease',
-        }}
-      >
-        EN
-      </button>
-    </div>
-  );
 
   return (
     <nav
@@ -114,7 +157,7 @@ const Navbar = () => {
         }}
       >
         {/* Wordmark */}
-        <Link to="/" className="font-grotezk lowercase text-ink" style={{ fontSize: '20px' }}>
+        <Link to="/" className="wm lowercase text-ink" style={{ fontSize: '20px' }}>
           sesmi
         </Link>
 
@@ -126,7 +169,7 @@ const Navbar = () => {
           {navItems.map((item) => renderItem(item))}
         </div>
 
-        {/* Right: lang switcher */}
+        {/* Right: globe */}
         <div className="hidden md:flex items-center">
           <LangSwitcher />
         </div>
@@ -156,13 +199,15 @@ const Navbar = () => {
             style={{
               paddingLeft: 'clamp(24px, 4vw, 48px)',
               paddingRight: 'clamp(24px, 4vw, 48px)',
-              paddingTop: '24px',
-              paddingBottom: '24px',
-              gap: '16px',
+              paddingTop: '20px',
+              paddingBottom: '20px',
+              gap: '14px',
             }}
           >
             {navItems.map((item) => renderItem(item, () => setOpen(false)))}
-            <LangSwitcher />
+            <div style={{ paddingTop: '4px' }}>
+              <LangSwitcher />
+            </div>
           </div>
         </div>
       )}
