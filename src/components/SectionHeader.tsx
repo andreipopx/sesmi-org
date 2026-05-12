@@ -3,9 +3,16 @@ interface SectionHeaderProps {
 }
 
 const SectionHeader = ({ label }: SectionHeaderProps) => (
-  <div className="section-header-line py-8">
-    ────────────── [ {label} ] ──────────────
-  </div>
+  <p
+    className="font-mono uppercase text-muted"
+    style={{
+      fontSize: '11px',
+      letterSpacing: '0.08em',
+      marginBottom: '48px',
+    }}
+  >
+    {label}
+  </p>
 );
 
 export default SectionHeader;
