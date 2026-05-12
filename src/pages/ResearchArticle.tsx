@@ -12,7 +12,7 @@ const ArticleContent = () => {
     return (
       <>
         <AnimatedEntry>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+          <h2 className="font-editorial text-2xl md:text-3xl font-bold text-ink mt-8 mb-6">
             01. Context: the investment and the city
           </h2>
         </AnimatedEntry>
@@ -23,7 +23,7 @@ const ArticleContent = () => {
         </AnimatedEntry>
         <AnimatedEntry>
           <div className="border-l-[3px] border-warm pl-6 py-4 my-8">
-            <p className="font-display italic text-xl text-ink leading-relaxed">
+            <p className="font-editorial italic text-xl text-ink leading-relaxed">
               "A €750 million investment doesn't automatically mean €750 million in local benefit. The real question is about retention — how much stays, and under what conditions."
             </p>
           </div>
@@ -35,13 +35,13 @@ const ArticleContent = () => {
         </AnimatedEntry>
         <AnimatedEntry>
           <div className="bg-bg2 p-8 my-8 text-center">
-            <p className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Total announced investment</p>
-            <p className="font-mono text-5xl md:text-6xl text-warm font-bold">€750M</p>
-            <p className="font-mono text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Source: Meta, public records</p>
+            <p className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Total announced investment</p>
+            <p className="font-haas text-5xl md:text-6xl text-warm font-bold">€750M</p>
+            <p className="font-haas text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Source: Meta, public records</p>
           </div>
         </AnimatedEntry>
         <AnimatedEntry>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+          <h2 className="font-editorial text-2xl md:text-3xl font-bold text-ink mt-8 mb-6">
             02. Direct and indirect economic impact
           </h2>
         </AnimatedEntry>
@@ -57,7 +57,7 @@ const ArticleContent = () => {
   return (
     <>
       <AnimatedEntry>
-        <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+        <h2 className="font-editorial text-2xl md:text-3xl font-bold text-ink mt-8 mb-6">
           01. Contexto: la inversión y la ciudad
         </h2>
       </AnimatedEntry>
@@ -68,7 +68,7 @@ const ArticleContent = () => {
       </AnimatedEntry>
       <AnimatedEntry>
         <div className="border-l-[3px] border-warm pl-6 py-4 my-8">
-          <p className="font-display italic text-xl text-ink leading-relaxed">
+          <p className="font-editorial italic text-xl text-ink leading-relaxed">
             "Una inversión de 750 millones no significa automáticamente 750 millones en beneficio local. La pregunta real es sobre retención — cuánto se queda, y bajo qué condiciones."
           </p>
         </div>
@@ -80,13 +80,13 @@ const ArticleContent = () => {
       </AnimatedEntry>
       <AnimatedEntry>
         <div className="bg-bg2 p-8 my-8 text-center">
-          <p className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Inversión total anunciada</p>
-          <p className="font-mono text-5xl md:text-6xl text-warm font-bold">750M€</p>
-          <p className="font-mono text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Fuente: Meta, registros públicos</p>
+          <p className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-muted mb-2">Inversión total anunciada</p>
+          <p className="font-haas text-5xl md:text-6xl text-warm font-bold">750M€</p>
+          <p className="font-haas text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mt-2">Fuente: Meta, registros públicos</p>
         </div>
       </AnimatedEntry>
       <AnimatedEntry>
-        <h2 className="font-display text-2xl md:text-3xl font-bold text-ink mt-12 mb-6">
+        <h2 className="font-editorial text-2xl md:text-3xl font-bold text-ink mt-8 mb-6">
           02. Impacto económico directo e indirecto
         </h2>
       </AnimatedEntry>
@@ -118,30 +118,30 @@ const ResearchArticle = () => {
     <Layout>
       <div className="reading-progress" style={{ width: `${progress}%` }} />
 
-      <article className="max-w-4xl mx-auto px-6 pt-20 pb-12">
+      <article className="max-w-4xl mx-auto px-6 pt-12 pb-6">
         <AnimatedEntry>
           <div className="flex gap-3 mb-6 flex-wrap items-center">
-            <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-warm">
+            <span className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-warm">
               {t.article.category}
             </span>
-            <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-muted2 border border-sesmi-line px-2 py-0.5">
+            <span className="font-haas text-[0.55rem] uppercase tracking-[0.15em] text-muted2 border border-sesmi-line px-2 py-0.5">
               {t.article.code}
             </span>
           </div>
         </AnimatedEntry>
 
         <AnimatedEntry delay={0.1}>
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-ink mb-4 leading-tight">
+          <h1 className="font-editorial text-4xl md:text-5xl lg:text-6xl font-bold text-ink mb-4 leading-tight">
             {t.article.title}
           </h1>
         </AnimatedEntry>
         <AnimatedEntry delay={0.15}>
-          <p className="font-display italic text-sesmi-muted text-xl mb-6">
+          <p className="font-editorial italic text-sesmi-muted text-xl mb-6">
             {t.article.subtitle}
           </p>
         </AnimatedEntry>
         <AnimatedEntry delay={0.2}>
-          <div className="flex flex-wrap gap-4 font-mono text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mb-8">
+          <div className="flex flex-wrap gap-4 font-haas text-[0.5rem] uppercase tracking-[0.12em] text-muted2 mb-8">
             <span>{t.article.author}</span>
             <span>·</span>
             <span>2025</span>
@@ -153,10 +153,10 @@ const ResearchArticle = () => {
         </AnimatedEntry>
 
         <AnimatedEntry delay={0.25}>
-          <div className="border-y border-sesmi-line py-1 mb-12 flex gap-0">
+          <div className="border-y border-sesmi-line py-1 mb-8 flex gap-0">
             <button
               onClick={() => setActiveTab('divulgativa')}
-              className={`font-mono text-[0.6rem] uppercase tracking-[0.12em] px-5 py-3 transition-colors interactive ${
+              className={`font-haas text-[0.6rem] uppercase tracking-[0.12em] px-5 py-3 transition-colors interactive ${
                 activeTab === 'divulgativa' ? 'bg-ink text-sesmi-white' : 'text-sesmi-muted hover:text-ink'
               }`}
             >
@@ -164,7 +164,7 @@ const ResearchArticle = () => {
             </button>
             <button
               onClick={() => setActiveTab('paper')}
-              className={`font-mono text-[0.6rem] uppercase tracking-[0.12em] px-5 py-3 transition-colors interactive ${
+              className={`font-haas text-[0.6rem] uppercase tracking-[0.12em] px-5 py-3 transition-colors interactive ${
                 activeTab === 'paper' ? 'bg-ink text-sesmi-white' : 'text-sesmi-muted hover:text-ink'
               }`}
             >
@@ -177,7 +177,7 @@ const ResearchArticle = () => {
           <ArticleContent />
         </div>
 
-        <div className="max-w-[680px] mx-auto mt-16 pt-12 border-t border-sesmi-line">
+        <div className="max-w-[680px] mx-auto mt-10 pt-12 border-t border-sesmi-line">
           <AnimatedEntry>
             <p className="label-style text-warm mb-4">{t.article.aboutLabel}</p>
             <p className="text-sm text-sesmi-muted leading-relaxed mb-2">
