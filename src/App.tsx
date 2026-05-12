@@ -8,6 +8,7 @@ import Research from "./pages/Research";
 import ResearchArticle from "./pages/ResearchArticle";
 import Services from "./pages/Services";
 import Learning from "./pages/Learning";
+import Academia from "./pages/Academia";
 import Nosotros from "./pages/Nosotros";
 import NotFound from "./pages/NotFound";
 
