@@ -140,11 +140,12 @@ html {
 /* Reading progress bar */
 .reading-progress {
   position: fixed;
-  top: 0;
+  top: 60px;
   left: 0;
-  height: 3px;
+  height: 2px;
   background: var(--accent);
   z-index: 100;
+  border-radius: 0;
   transition: width 0.1s linear;
 }
 
