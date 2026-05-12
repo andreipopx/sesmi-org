@@ -346,7 +346,7 @@ const Services = () => {
                 color: 'rgba(250, 248, 245, 0.4)',
               }}
             >
-              Los servicios financian la investigación independiente de sesmi.
+              Los servicios financian la investigación independiente de <span className="wm">sesmi</span>.
             </div>
           </div>
         </section>
