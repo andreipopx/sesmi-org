@@ -137,6 +137,15 @@ const Footer = () => {
             <span className="font-haas" style={contactStyle}>
               sesmi.org
             </span>
+            <Link
+              to="/nosotros"
+              className="font-haas"
+              style={linkStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+            >
+              {t.nav.about.toUpperCase()}
+            </Link>
           </div>
         </div>
       </div>
@@ -152,14 +161,14 @@ const Footer = () => {
         <p
           className="font-haas text-center"
           style={{
-            fontSize: '9px',
+            fontSize: '10px',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             color: 'var(--muted)',
             margin: 0,
           }}
         >
-          © 2025 <span className="wm" style={{ fontSize: 'inherit' }}>sesmi</span> · Sociedad Económica de San Miguel
+          © 2026 <span className="wm" style={{ fontSize: 'inherit' }}>sesmi</span> · Sociedad Económica de San Miguel
         </p>
       </div>
     </footer>
