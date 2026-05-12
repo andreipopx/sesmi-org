@@ -52,15 +52,16 @@ const Academia = () => {
           
           <h1
             style={{
-              fontFamily: 'var(--font-editorial)',
-              fontSize: 'clamp(28px, 4vw, 42px)',
-              fontWeight: 400,
+              fontFamily: 'var(--font-haas)',
+              fontSize: 'clamp(36px, 5vw, 56px)',
+              fontWeight: 700,
               color: 'var(--ink)',
-              lineHeight: 1.2,
-              marginBottom: 24,
+              lineHeight: 1.1,
+              letterSpacing: '-0.01em',
+              marginBottom: 20,
             }}
           >
-            Conocimiento abierto para ciudades que quieren entenderse.
+            Academia.
           </h1>
           <p
             style={{
