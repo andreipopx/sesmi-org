@@ -20,8 +20,8 @@ const labelStyle: React.CSSProperties = {
 };
 
 const orgLineStyle: React.CSSProperties = {
-  fontSize: '12px',
-  letterSpacing: '0.12em',
+  fontSize: '11px',
+  letterSpacing: '0.10em',
   textTransform: 'uppercase',
   color: 'var(--muted)',
 };
@@ -83,7 +83,7 @@ const Footer = () => {
   return (
     <footer style={{ borderTop: '1px solid var(--line)', backgroundColor: 'var(--bg)' }}>
       <div
-        className="mx-auto grid grid-cols-1 md:grid-cols-3"
+        className="mx-auto grid grid-cols-1 md:grid-cols-3 items-start"
         style={{
           maxWidth: '1280px',
           paddingLeft: 'clamp(24px, 4vw, 48px)',
@@ -97,7 +97,7 @@ const Footer = () => {
         <div>
           <span
             className="wm lowercase"
-            style={{ fontSize: '20px', color: 'var(--ink)', display: 'block' }}
+            style={{ fontSize: '20px', color: 'var(--ink)', display: 'block', lineHeight: 1 }}
           >
             sesmi
           </span>
@@ -109,22 +109,22 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Col 2: nav */}
-        <div className="flex flex-col">
+        {/* Col 2: nav (centered) */}
+        <div className="flex flex-col items-center" style={{ textAlign: 'center' }}>
           <span className="font-haas" style={labelStyle}>
             {t.footer.navLabel}
           </span>
-          <div className="flex flex-col" style={{ gap: '10px' }}>
+          <div className="flex flex-col items-center" style={{ gap: '10px' }}>
             {navItems.map(renderNavItem)}
           </div>
         </div>
 
-        {/* Col 3: contact */}
-        <div className="flex flex-col">
+        {/* Col 3: contact (right) */}
+        <div className="flex flex-col items-end" style={{ textAlign: 'right' }}>
           <span className="font-haas" style={labelStyle}>
             {t.footer.contactLabel}
           </span>
-          <div className="flex flex-col" style={{ gap: '10px' }}>
+          <div className="flex flex-col items-end" style={{ gap: '10px' }}>
             <a
               href="mailto:hola@sesmi.org"
               className="font-haas"
