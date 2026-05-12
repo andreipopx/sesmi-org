@@ -1,315 +1,298 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
-import HeroSection from '../components/HeroSection';
-import Ticker from '../components/Ticker';
-import SectionHeader from '../components/SectionHeader';
-import AnimatedEntry from '../components/AnimatedEntry';
-import WaitlistForm from '../components/WaitlistForm';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const proseSection: React.CSSProperties = {
+const container: React.CSSProperties = {
   maxWidth: 'var(--max-prose)',
   margin: '0 auto',
   paddingLeft: 'clamp(24px, 4vw, 48px)',
   paddingRight: 'clamp(24px, 4vw, 48px)',
-  paddingTop: '80px',
-  paddingBottom: '80px',
+};
+
+const monoLabel: React.CSSProperties = {
+  fontSize: '11px',
+  letterSpacing: '0.08em',
+};
+
+const readLinkHover = (e: React.MouseEvent<HTMLAnchorElement>, color: string) => {
+  e.currentTarget.style.color = color;
 };
 
 const Index = () => {
   const { t } = useLanguage();
-  const inProgressLabels = ['EN CURSO', 'IN PROGRESS'];
+  const h = t.home;
 
   return (
     <Layout>
-      {/* HERO */}
-      <HeroSection />
-
-      {/* TICKER */}
-      <Ticker />
-
-      {/* RESEARCH */}
-      <section style={{ backgroundColor: 'var(--bg)', borderTop: '1px solid var(--line)' }}>
-        <div style={proseSection}>
-          <AnimatedEntry>
-            <SectionHeader label={t.research.sectionLabel} />
-          </AnimatedEntry>
-
-          {/* Featured report */}
-          <AnimatedEntry delay={0.08}>
-            <article style={{ paddingTop: '32px', paddingBottom: '32px', borderTop: '1px solid var(--line)' }}>
-              <p
-                className="font-mono uppercase"
-                style={{
-                  fontSize: '11px',
-                  letterSpacing: '0.08em',
-                  color: 'var(--accent)',
-                  marginBottom: '8px',
-                }}
-              >
-                {t.research.featured.code}
-              </p>
-              <h3
-                className="font-editorial text-ink"
-                style={{ fontSize: '22px', fontWeight: 400, marginBottom: '8px', lineHeight: 1.25 }}
-              >
-                {t.research.featured.title}
-              </h3>
-              <p
-                className="font-editorial"
-                style={{
-                  fontSize: '16px',
-                  lineHeight: 1.6,
-                  color: 'var(--ink-secondary)',
-                  marginBottom: '16px',
-                }}
-              >
-                {t.research.featured.subtitle}
-              </p>
-              <p
-                className="font-editorial"
-                style={{
-                  fontSize: '16px',
-                  lineHeight: 1.6,
-                  color: 'var(--ink-secondary)',
-                  marginBottom: '16px',
-                }}
-              >
-                {t.research.featured.desc}
-              </p>
-
-              {/* Status badge */}
-              <p
-                className="font-mono uppercase"
-                style={{
-                  fontSize: '10px',
-                  letterSpacing: '0.06em',
-                  color: 'var(--accent)',
-                  marginBottom: '16px',
-                }}
-              >
-                <span style={{ color: 'var(--accent)', marginRight: '6px' }}>●</span>
-                {t.research.featured.status}
-              </p>
-
-              {/* Chapters */}
-              <ul style={{ marginBottom: '20px', listStyle: 'none', padding: 0 }}>
-                {t.research.featured.chapters.map((ch) => (
-                  <li
-                    key={ch.n}
-                    className="font-mono"
-                    style={{
-                      fontSize: '11px',
-                      letterSpacing: '0.04em',
-                      color: 'var(--muted)',
-                      paddingTop: '6px',
-                      paddingBottom: '6px',
-                      display: 'flex',
-                      gap: '12px',
-                    }}
-                  >
-                    <span>{ch.n}</span>
-                    <span style={{ flex: 1, color: 'var(--ink-secondary)', textTransform: 'none' }}>
-                      {ch.title}
-                    </span>
-                    <span
-                      style={{
-                        textTransform: 'uppercase',
-                        color: inProgressLabels.includes(ch.status) ? 'var(--accent)' : 'var(--muted-2)',
-                      }}
-                    >
-                      {ch.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                to="/research"
-                className="font-mono uppercase"
-                style={{
-                  fontSize: '11px',
-                  letterSpacing: '0.08em',
-                  color: 'var(--muted)',
-                  transition: 'color 150ms ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
-              >
-                {t.research.featured.cta}
-              </Link>
-            </article>
-          </AnimatedEntry>
-
-          {/* Next report */}
-          <AnimatedEntry delay={0.16}>
-            <article style={{ paddingTop: '32px', paddingBottom: '32px', borderTop: '1px solid var(--line)' }}>
-              <p
-                className="font-mono uppercase"
-                style={{
-                  fontSize: '11px',
-                  letterSpacing: '0.08em',
-                  color: 'var(--accent)',
-                  marginBottom: '8px',
-                }}
-              >
-                {t.research.next.label}
-              </p>
-              <h3
-                className="font-editorial text-ink"
-                style={{ fontSize: '22px', fontWeight: 400, marginBottom: '8px', lineHeight: 1.25 }}
-              >
-                {t.research.next.title}
-              </h3>
-              <p
-                className="font-editorial"
-                style={{
-                  fontSize: '16px',
-                  lineHeight: 1.6,
-                  color: 'var(--ink-secondary)',
-                  marginBottom: '16px',
-                }}
-              >
-                {t.research.next.subtitle}
-              </p>
-              <Link
-                to="/research"
-                className="font-mono uppercase"
-                style={{
-                  fontSize: '11px',
-                  letterSpacing: '0.08em',
-                  color: 'var(--muted)',
-                  transition: 'color 150ms ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
-              >
-                {t.research.next.cta}
-              </Link>
-            </article>
-          </AnimatedEntry>
-        </div>
+      {/* 1. CABECERA DE PORTADA */}
+      <section style={{ ...container, paddingTop: '72px' }}>
+        <p
+          className="font-mono uppercase"
+          style={{ ...monoLabel, color: 'var(--muted)' }}
+        >
+          {h.kicker}
+        </p>
+        <div
+          style={{
+            marginTop: '48px',
+            borderTop: '1px solid var(--line)',
+          }}
+        />
       </section>
 
-      {/* LÍNEAS DE TRABAJO */}
-      <section style={{ backgroundColor: 'var(--bg)', borderTop: '1px solid var(--line)' }}>
-        <div style={proseSection}>
-          <AnimatedEntry>
-            <SectionHeader label={t.work.sectionLabel} />
-          </AnimatedEntry>
-          {t.work.items.map((item, i) => (
-            <AnimatedEntry key={item.idx} delay={i * 0.08}>
-              <div
-                style={{
-                  paddingTop: '32px',
-                  paddingBottom: '32px',
-                  borderTop: '1px solid var(--line)',
-                }}
-              >
-                <p
-                  className="font-mono uppercase"
-                  style={{
-                    fontSize: '11px',
-                    letterSpacing: '0.08em',
-                    color: 'var(--accent)',
-                    marginBottom: '8px',
-                  }}
-                >
-                  {item.idx} — {item.tag}
-                </p>
-                <h3
-                  className="font-editorial text-ink"
-                  style={{ fontSize: '22px', fontWeight: 400, marginBottom: '8px', lineHeight: 1.25 }}
-                >
-                  {item.name}
-                </h3>
-                <p
-                  className="font-editorial"
-                  style={{
-                    fontSize: '16px',
-                    lineHeight: 1.6,
-                    color: 'var(--ink-secondary)',
-                  }}
-                >
-                  {item.desc}
-                </p>
-              </div>
-            </AnimatedEntry>
-          ))}
-        </div>
+      {/* 2. TRABAJOS EN CURSO */}
+      <section style={{ ...container, paddingTop: '48px' }}>
+        <p
+          className="font-mono uppercase"
+          style={{ ...monoLabel, color: 'var(--muted)', marginBottom: '40px' }}
+        >
+          {h.worksLabel}
+        </p>
+
+        {/* PIEZA PRINCIPAL */}
+        <motion.article
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.4, ease: 'easeOut' as const }}
+          style={{ paddingTop: '48px', paddingBottom: '48px' }}
+        >
+          <p
+            className="font-mono uppercase"
+            style={{ ...monoLabel, color: 'var(--accent)', marginBottom: '12px' }}
+          >
+            {h.featured.code}
+          </p>
+          <h2
+            className="font-editorial text-ink"
+            style={{ fontSize: '36px', fontWeight: 400, lineHeight: 1.2, marginBottom: '16px' }}
+          >
+            {h.featured.title}
+          </h2>
+          <p
+            className="font-editorial"
+            style={{
+              fontSize: '18px',
+              lineHeight: 1.65,
+              color: 'var(--ink-secondary)',
+              maxWidth: '560px',
+              marginBottom: '20px',
+            }}
+          >
+            {h.featured.subtitle}
+          </p>
+          <p
+            className="font-editorial"
+            style={{
+              fontSize: '16px',
+              lineHeight: 1.7,
+              color: 'var(--ink-secondary)',
+              maxWidth: '640px',
+              marginBottom: '24px',
+            }}
+          >
+            {h.featured.lede}
+          </p>
+          <p
+            className="font-mono uppercase"
+            style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+          >
+            {h.statusBadge}
+          </p>
+          <Link
+            to="/research"
+            className="font-mono uppercase inline-block"
+            style={{
+              ...monoLabel,
+              color: 'var(--muted)',
+              marginTop: '16px',
+              transition: 'color 150ms ease',
+            }}
+            onMouseEnter={(e) => readLinkHover(e, 'var(--ink)')}
+            onMouseLeave={(e) => readLinkHover(e, 'var(--muted)')}
+          >
+            {h.readCta}
+          </Link>
+        </motion.article>
+
+        <div style={{ borderTop: '1px solid var(--line)' }} />
+
+        {/* PIEZA SECUNDARIA */}
+        <motion.article
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.4, ease: 'easeOut' as const, delay: 0.1 }}
+          style={{ paddingTop: '40px', paddingBottom: '40px' }}
+        >
+          <p
+            className="font-mono uppercase"
+            style={{ ...monoLabel, color: 'var(--accent)', marginBottom: '12px' }}
+          >
+            {h.secondary.code}
+          </p>
+          <h3
+            className="font-editorial text-ink"
+            style={{ fontSize: '24px', fontWeight: 400, lineHeight: 1.25, marginBottom: '12px' }}
+          >
+            {h.secondary.title}
+          </h3>
+          <p
+            className="font-editorial"
+            style={{
+              fontSize: '16px',
+              lineHeight: 1.6,
+              color: 'var(--ink-secondary)',
+              marginBottom: '16px',
+            }}
+          >
+            {h.secondary.subtitle}
+          </p>
+          <p
+            className="font-mono uppercase"
+            style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+          >
+            {h.statusBadge}
+          </p>
+        </motion.article>
       </section>
 
-      {/* SOBRE SESMI / MANIFIESTO */}
-      <section style={{ backgroundColor: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
-        <div style={proseSection}>
-          <AnimatedEntry>
-            <SectionHeader label={t.manifesto.label.replace(/^\/\/\s*/, '')} />
-          </AnimatedEntry>
+      {/* 3. SEPARADOR */}
+      <div style={{ borderTop: '1px solid var(--line)' }} />
 
-          <AnimatedEntry delay={0.08}>
-            <h2
-              className="font-editorial text-ink"
-              style={{
-                fontSize: 'clamp(24px, 3vw, 36px)',
-                fontWeight: 400,
-                lineHeight: 1.2,
-                marginBottom: '24px',
-              }}
-            >
-              {t.manifesto.title}
-            </h2>
-          </AnimatedEntry>
-
-          <AnimatedEntry delay={0.16}>
-            <p
-              className="font-editorial"
-              style={{
-                fontSize: '18px',
-                lineHeight: 1.7,
-                color: 'var(--ink-secondary)',
-                marginBottom: '32px',
-              }}
-            >
-              {t.manifesto.text}
-            </p>
-          </AnimatedEntry>
-
-          <AnimatedEntry delay={0.24}>
-            <blockquote
-              className="font-editorial italic text-ink"
-              style={{
-                borderLeft: '2.5px solid var(--accent)',
-                paddingLeft: '24px',
-                fontSize: '20px',
-                lineHeight: 1.5,
-                marginBottom: '32px',
-              }}
-            >
-              {t.manifesto.principle}
-            </blockquote>
-          </AnimatedEntry>
-
-          <AnimatedEntry delay={0.32}>
-            <Link
-              to="/nosotros"
-              className="font-mono uppercase text-ink"
-              style={{
-                fontSize: '11px',
-                letterSpacing: '0.08em',
-                transition: 'color 150ms ease',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--muted)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-            >
-              {t.manifesto.cta}
-            </Link>
-          </AnimatedEntry>
-        </div>
+      {/* 4. SOBRE SESMI */}
+      <section
+        style={{
+          ...container,
+          paddingTop: '64px',
+          paddingBottom: '64px',
+          backgroundColor: 'var(--bg)',
+        }}
+      >
+        <p
+          className="font-editorial"
+          style={{
+            fontSize: '18px',
+            lineHeight: 1.75,
+            color: 'var(--ink-secondary)',
+            marginBottom: '32px',
+          }}
+        >
+          {h.about.text}
+        </p>
+        <Link
+          to="/nosotros"
+          className="font-mono uppercase inline-block"
+          style={{ ...monoLabel, color: 'var(--muted)', transition: 'color 150ms ease' }}
+          onMouseEnter={(e) => readLinkHover(e, 'var(--ink)')}
+          onMouseLeave={(e) => readLinkHover(e, 'var(--muted)')}
+        >
+          {h.about.cta}
+        </Link>
       </section>
 
-      {/* WAITLIST */}
-      <WaitlistForm />
+      {/* 5. NEWSLETTER */}
+      <section
+        style={{
+          backgroundColor: 'var(--bg-2)',
+          borderTop: '1px solid var(--line)',
+          paddingTop: '64px',
+          paddingBottom: '64px',
+        }}
+      >
+        <div style={container}>
+          <p
+            className="font-editorial"
+            style={{
+              fontSize: '16px',
+              lineHeight: 1.6,
+              color: 'var(--ink-secondary)',
+              marginBottom: '24px',
+            }}
+          >
+            {h.newsletter.text}
+          </p>
+          <NewsletterForm />
+        </div>
+      </section>
     </Layout>
+  );
+};
+
+import { useState } from 'react';
+
+const NewsletterForm = () => {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 600));
+    setSubmitted(true);
+    setLoading(false);
+  };
+
+  if (submitted) {
+    return (
+      <p
+        className="font-mono uppercase"
+        style={{ fontSize: '11px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+      >
+        {t.waitlist.success}
+      </p>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col sm:flex-row sm:items-end"
+      style={{ gap: '16px' }}
+    >
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder={t.waitlist.placeholder}
+        required
+        className="font-editorial flex-1 text-ink"
+        style={{
+          background: 'transparent',
+          border: 'none',
+          borderBottom: '1px solid var(--line)',
+          borderRadius: 0,
+          fontSize: '16px',
+          padding: '8px 0',
+          outline: 'none',
+        }}
+        onFocus={(e) => (e.currentTarget.style.borderBottomColor = 'var(--ink)')}
+        onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'var(--line)')}
+      />
+      <button
+        type="submit"
+        disabled={loading}
+        className="font-mono uppercase text-offwhite"
+        style={{
+          fontSize: '11px',
+          letterSpacing: '0.08em',
+          backgroundColor: 'var(--ink)',
+          padding: '10px 20px',
+          transition: 'background-color 150ms ease',
+          opacity: loading ? 0.5 : 1,
+        }}
+        onMouseEnter={(e) => {
+          if (!loading) e.currentTarget.style.backgroundColor = 'var(--ink-secondary)';
+        }}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--ink)')}
+      >
+        {loading ? '...' : t.waitlist.cta}
+      </button>
+    </form>
   );
 };
 
