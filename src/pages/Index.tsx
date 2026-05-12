@@ -7,8 +7,18 @@ import AnimatedEntry from '../components/AnimatedEntry';
 import WaitlistForm from '../components/WaitlistForm';
 import { useLanguage } from '../contexts/LanguageContext';
 
+const proseSection: React.CSSProperties = {
+  maxWidth: 'var(--max-prose)',
+  margin: '0 auto',
+  paddingLeft: 'clamp(24px, 4vw, 48px)',
+  paddingRight: 'clamp(24px, 4vw, 48px)',
+  paddingTop: '80px',
+  paddingBottom: '80px',
+};
+
 const Index = () => {
   const { t } = useLanguage();
+  const inProgressLabels = ['EN CURSO', 'IN PROGRESS'];
 
   return (
     <Layout>
@@ -18,119 +28,279 @@ const Index = () => {
       {/* TICKER */}
       <Ticker />
 
-      {/* RESEARCH — primary section */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <SectionHeader label={t.research.sectionLabel} />
+      {/* RESEARCH */}
+      <section style={{ backgroundColor: 'var(--bg)', borderTop: '1px solid var(--line)' }}>
+        <div style={proseSection}>
+          <AnimatedEntry>
+            <SectionHeader label={t.research.sectionLabel} />
+          </AnimatedEntry>
 
-        {/* Featured report - dark */}
-        <AnimatedEntry>
-          <div className="bg-ink text-sesmi-white grid grid-cols-1 lg:grid-cols-2">
-            <div className="p-8 md:p-12 lg:border-r border-sesmi-white/10">
-              <div className="flex gap-3 mb-6 flex-wrap">
-                <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-[#6FCF97] flex items-center gap-1.5">
-                  <span className="logo-dot inline-block w-[6px] h-[6px] rounded-full bg-[#6FCF97]" />
-                  {t.research.featured.status}
-                </span>
-                <span className="font-mono text-[0.55rem] uppercase tracking-[0.15em] text-sesmi-white/50 border border-sesmi-white/20 px-2 py-0.5">
-                  {t.research.featured.code}
-                </span>
-              </div>
-              <h3 className="font-display text-3xl md:text-4xl font-bold mb-3">
+          {/* Featured report */}
+          <AnimatedEntry delay={0.08}>
+            <article style={{ paddingTop: '32px', paddingBottom: '32px', borderTop: '1px solid var(--line)' }}>
+              <p
+                className="font-mono uppercase"
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '0.08em',
+                  color: 'var(--accent)',
+                  marginBottom: '8px',
+                }}
+              >
+                {t.research.featured.code}
+              </p>
+              <h3
+                className="font-editorial text-ink"
+                style={{ fontSize: '22px', fontWeight: 400, marginBottom: '8px', lineHeight: 1.25 }}
+              >
                 {t.research.featured.title}
               </h3>
-              <p className="font-display italic text-sesmi-white/50 text-lg mb-4">
+              <p
+                className="font-editorial"
+                style={{
+                  fontSize: '16px',
+                  lineHeight: 1.6,
+                  color: 'var(--ink-secondary)',
+                  marginBottom: '16px',
+                }}
+              >
                 {t.research.featured.subtitle}
               </p>
-              <p className="text-sesmi-white/60 text-sm leading-relaxed mb-6">
+              <p
+                className="font-editorial"
+                style={{
+                  fontSize: '16px',
+                  lineHeight: 1.6,
+                  color: 'var(--ink-secondary)',
+                  marginBottom: '16px',
+                }}
+              >
                 {t.research.featured.desc}
               </p>
-              <p className="font-mono text-[0.5rem] uppercase tracking-[0.12em] text-sesmi-white/40 mb-8">
-                {t.research.featured.methodology}
+
+              {/* Status badge */}
+              <p
+                className="font-mono uppercase"
+                style={{
+                  fontSize: '10px',
+                  letterSpacing: '0.06em',
+                  color: 'var(--accent)',
+                  marginBottom: '16px',
+                }}
+              >
+                <span style={{ color: 'var(--accent)', marginRight: '6px' }}>●</span>
+                {t.research.featured.status}
               </p>
-              <button className="border border-sesmi-white/40 text-sesmi-white font-mono text-[0.6rem] uppercase tracking-[0.12em] px-5 py-2.5 hover:bg-sesmi-white/10 transition-colors interactive">
-                {t.research.featured.cta}
-              </button>
-            </div>
 
-            <div className="p-8 md:p-12">
-              <p className="label-style text-sesmi-white/40 mb-6">{t.research.featured.chaptersLabel}</p>
-              <div className="space-y-4">
+              {/* Chapters */}
+              <ul style={{ marginBottom: '20px', listStyle: 'none', padding: 0 }}>
                 {t.research.featured.chapters.map((ch) => (
-                  <div key={ch.n} className="flex items-center justify-between border-b border-sesmi-white/10 pb-3">
-                    <div className="flex items-center gap-4">
-                      <span className="font-mono text-sm text-sesmi-white/30">{ch.n}</span>
-                      <span className="text-sm text-sesmi-white/80">{ch.title}</span>
-                    </div>
-                    <span className={`font-mono text-[0.5rem] uppercase tracking-[0.12em] ${
-                      ['EN CURSO', 'IN PROGRESS'].includes(ch.status) ? 'text-warm' : 'text-sesmi-white/30'
-                    }`}>
-                      [{ch.status}]
+                  <li
+                    key={ch.n}
+                    className="font-mono"
+                    style={{
+                      fontSize: '11px',
+                      letterSpacing: '0.04em',
+                      color: 'var(--muted)',
+                      paddingTop: '6px',
+                      paddingBottom: '6px',
+                      display: 'flex',
+                      gap: '12px',
+                    }}
+                  >
+                    <span>{ch.n}</span>
+                    <span style={{ flex: 1, color: 'var(--ink-secondary)', textTransform: 'none' }}>
+                      {ch.title}
                     </span>
-                  </div>
+                    <span
+                      style={{
+                        textTransform: 'uppercase',
+                        color: inProgressLabels.includes(ch.status) ? 'var(--accent)' : 'var(--muted-2)',
+                      }}
+                    >
+                      {ch.status}
+                    </span>
+                  </li>
                 ))}
-              </div>
-            </div>
-          </div>
-        </AnimatedEntry>
+              </ul>
 
-        {/* Next report preview */}
-        <AnimatedEntry delay={0.15}>
-          <div className="bg-bg2 p-8 mt-4 card-hover-line">
-            <span className="label-style text-muted2 block mb-3">{t.research.next.label}</span>
-            <h4 className="font-display text-xl font-bold text-ink mb-2">
-              {t.research.next.title}
-            </h4>
-            <p className="font-display italic text-sesmi-muted text-sm mb-4">
-              {t.research.next.subtitle}
-            </p>
-            <Link to="/research" className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-warm hover:text-ink transition-colors interactive">
-              {t.research.next.cta}
-            </Link>
-          </div>
-        </AnimatedEntry>
+              <Link
+                to="/research"
+                className="font-mono uppercase"
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '0.08em',
+                  color: 'var(--muted)',
+                  transition: 'color 150ms ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
+              >
+                {t.research.featured.cta}
+              </Link>
+            </article>
+          </AnimatedEntry>
+
+          {/* Next report */}
+          <AnimatedEntry delay={0.16}>
+            <article style={{ paddingTop: '32px', paddingBottom: '32px', borderTop: '1px solid var(--line)' }}>
+              <p
+                className="font-mono uppercase"
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '0.08em',
+                  color: 'var(--accent)',
+                  marginBottom: '8px',
+                }}
+              >
+                {t.research.next.label}
+              </p>
+              <h3
+                className="font-editorial text-ink"
+                style={{ fontSize: '22px', fontWeight: 400, marginBottom: '8px', lineHeight: 1.25 }}
+              >
+                {t.research.next.title}
+              </h3>
+              <p
+                className="font-editorial"
+                style={{
+                  fontSize: '16px',
+                  lineHeight: 1.6,
+                  color: 'var(--ink-secondary)',
+                  marginBottom: '16px',
+                }}
+              >
+                {t.research.next.subtitle}
+              </p>
+              <Link
+                to="/research"
+                className="font-mono uppercase"
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '0.08em',
+                  color: 'var(--muted)',
+                  transition: 'color 150ms ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted)')}
+              >
+                {t.research.next.cta}
+              </Link>
+            </article>
+          </AnimatedEntry>
+        </div>
       </section>
 
-      {/* LÍNEAS DE TRABAJO — Research first */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <SectionHeader label={t.work.sectionLabel} />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-sesmi-line">
+      {/* LÍNEAS DE TRABAJO */}
+      <section style={{ backgroundColor: 'var(--bg)', borderTop: '1px solid var(--line)' }}>
+        <div style={proseSection}>
+          <AnimatedEntry>
+            <SectionHeader label={t.work.sectionLabel} />
+          </AnimatedEntry>
           {t.work.items.map((item, i) => (
-            <AnimatedEntry key={item.idx} delay={i * 0.1} className="p-8 card-hover-line">
-              <p className="font-mono text-sm text-warm mb-2">{item.idx} — {item.tag}</p>
-              <h3 className="font-sans text-2xl font-medium text-ink mb-4">{item.name}</h3>
-              <p className="text-sm text-sesmi-muted leading-relaxed mb-8">{item.desc}</p>
-              <p className="font-mono text-[0.5rem] uppercase tracking-[0.15em] text-muted2">{item.footer}</p>
+            <AnimatedEntry key={item.idx} delay={i * 0.08}>
+              <div
+                style={{
+                  paddingTop: '32px',
+                  paddingBottom: '32px',
+                  borderTop: '1px solid var(--line)',
+                }}
+              >
+                <p
+                  className="font-mono uppercase"
+                  style={{
+                    fontSize: '11px',
+                    letterSpacing: '0.08em',
+                    color: 'var(--accent)',
+                    marginBottom: '8px',
+                  }}
+                >
+                  {item.idx} — {item.tag}
+                </p>
+                <h3
+                  className="font-editorial text-ink"
+                  style={{ fontSize: '22px', fontWeight: 400, marginBottom: '8px', lineHeight: 1.25 }}
+                >
+                  {item.name}
+                </h3>
+                <p
+                  className="font-editorial"
+                  style={{
+                    fontSize: '16px',
+                    lineHeight: 1.6,
+                    color: 'var(--ink-secondary)',
+                  }}
+                >
+                  {item.desc}
+                </p>
+              </div>
             </AnimatedEntry>
           ))}
         </div>
       </section>
 
-      {/* MANIFIESTO */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-0">
-          {/* Sidebar */}
-          <AnimatedEntry className="bg-bg2 border-r border-sesmi-line p-8">
-            <p className="label-style text-warm mb-6">{t.manifesto.label}</p>
-            <div className="border-l-[4px] border-warm pl-5 py-4 mt-6">
-              <p className="font-display italic text-ink text-xl leading-relaxed">
-                {t.manifesto.principle}
-              </p>
-              <p className="font-mono text-[0.5rem] uppercase tracking-[0.15em] text-muted2 mt-3">
-                {t.manifesto.principleAttr}
-              </p>
-            </div>
+      {/* SOBRE SESMI / MANIFIESTO */}
+      <section style={{ backgroundColor: 'var(--bg-2)', borderTop: '1px solid var(--line)' }}>
+        <div style={proseSection}>
+          <AnimatedEntry>
+            <SectionHeader label={t.manifesto.label.replace(/^\/\/\s*/, '')} />
           </AnimatedEntry>
 
-          {/* Main */}
-          <AnimatedEntry delay={0.1} className="p-8 lg:p-12">
-            <h2 className="font-sans text-2xl md:text-3xl font-light text-ink leading-snug mb-6">
+          <AnimatedEntry delay={0.08}>
+            <h2
+              className="font-editorial text-ink"
+              style={{
+                fontSize: 'clamp(24px, 3vw, 36px)',
+                fontWeight: 400,
+                lineHeight: 1.2,
+                marginBottom: '24px',
+              }}
+            >
               {t.manifesto.title}
             </h2>
-            <p className="text-sm text-sesmi-muted leading-relaxed mb-6">
+          </AnimatedEntry>
+
+          <AnimatedEntry delay={0.16}>
+            <p
+              className="font-editorial"
+              style={{
+                fontSize: '18px',
+                lineHeight: 1.7,
+                color: 'var(--ink-secondary)',
+                marginBottom: '32px',
+              }}
+            >
               {t.manifesto.text}
             </p>
-            <Link to="/nosotros" className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-warm hover:text-ink transition-colors interactive">
+          </AnimatedEntry>
+
+          <AnimatedEntry delay={0.24}>
+            <blockquote
+              className="font-editorial italic text-ink"
+              style={{
+                borderLeft: '2.5px solid var(--accent)',
+                paddingLeft: '24px',
+                fontSize: '20px',
+                lineHeight: 1.5,
+                marginBottom: '32px',
+              }}
+            >
+              {t.manifesto.principle}
+            </blockquote>
+          </AnimatedEntry>
+
+          <AnimatedEntry delay={0.32}>
+            <Link
+              to="/nosotros"
+              className="font-mono uppercase text-ink"
+              style={{
+                fontSize: '11px',
+                letterSpacing: '0.08em',
+                transition: 'color 150ms ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--muted)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+            >
               {t.manifesto.cta}
             </Link>
           </AnimatedEntry>

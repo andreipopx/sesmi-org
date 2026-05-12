@@ -12,42 +12,115 @@ const WaitlistForm = () => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 600));
     setSubmitted(true);
     setLoading(false);
   };
 
   return (
-    <section className="bg-bg3 py-20 px-6">
-      <div className="max-w-[600px] mx-auto text-center">
+    <section
+      style={{
+        backgroundColor: 'var(--bg)',
+        borderTop: '1px solid var(--line)',
+        paddingTop: '80px',
+        paddingBottom: '80px',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 'var(--max-prose)',
+          margin: '0 auto',
+          paddingLeft: 'clamp(24px, 4vw, 48px)',
+          paddingRight: 'clamp(24px, 4vw, 48px)',
+        }}
+      >
         <AnimatedEntry>
-          <p className="label-style text-warm mb-6">{t.waitlist.label}</p>
+          <p
+            className="font-mono uppercase text-muted"
+            style={{ fontSize: '11px', letterSpacing: '0.08em', marginBottom: '24px' }}
+          >
+            {t.waitlist.label}
+          </p>
         </AnimatedEntry>
-        <AnimatedEntry delay={0.1}>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-ink mb-4">
+
+        <AnimatedEntry delay={0.08}>
+          <h2
+            className="font-editorial text-ink"
+            style={{ fontSize: '28px', fontWeight: 400, marginBottom: '16px', lineHeight: 1.2 }}
+          >
             {t.waitlist.title}
           </h2>
         </AnimatedEntry>
-        <AnimatedEntry delay={0.2}>
-          <p className="text-sesmi-muted text-sm mb-8">{t.waitlist.desc}</p>
+
+        <AnimatedEntry delay={0.16}>
+          <p
+            className="font-editorial"
+            style={{
+              fontSize: '16px',
+              lineHeight: 1.65,
+              color: 'var(--ink-secondary)',
+              marginBottom: '32px',
+            }}
+          >
+            {t.waitlist.desc}
+          </p>
         </AnimatedEntry>
-        <AnimatedEntry delay={0.3}>
+
+        <AnimatedEntry delay={0.24}>
           {submitted ? (
-            <p className="font-mono text-sm text-warm">{t.waitlist.success}</p>
+            <p
+              className="font-mono uppercase"
+              style={{ fontSize: '11px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+            >
+              {t.waitlist.success}
+            </p>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col sm:flex-row sm:items-end"
+              style={{ gap: '16px' }}
+            >
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t.waitlist.placeholder}
                 required
-                className="flex-1 px-4 py-3 bg-bg border border-sesmi-line font-sans text-sm text-ink placeholder:text-muted2"
+                className="font-editorial flex-1 text-ink"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid var(--line)',
+                  borderRadius: 0,
+                  fontSize: '16px',
+                  padding: '8px 0',
+                  outline: 'none',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderBottomColor = 'var(--ink)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderBottomColor = 'var(--line)';
+                }}
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-ink text-sesmi-white font-mono text-[0.7rem] uppercase tracking-[0.12em] px-6 py-3 hover:bg-ink2 transition-colors interactive disabled:opacity-50"
+                className="font-mono uppercase text-offwhite"
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '0.08em',
+                  backgroundColor: 'var(--ink)',
+                  padding: '10px 20px',
+                  transition: 'background-color 150ms ease',
+                  opacity: loading ? 0.5 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) e.currentTarget.style.backgroundColor = 'var(--ink-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--ink)';
+                }}
               >
                 {loading ? '...' : t.waitlist.cta}
               </button>
