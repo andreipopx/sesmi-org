@@ -2,14 +2,13 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
 type NavItem =
-  | { type: 'internal'; to: string; key: 'research' | 'services' | 'about' }
+  | { type: 'internal'; to: string; key: 'research' | 'services' }
   | { type: 'external'; href: string; key: 'academy' };
 
 const navItems: NavItem[] = [
   { type: 'internal', to: '/research', key: 'research' },
   { type: 'external', href: 'https://academia.sesmi.org', key: 'academy' },
   { type: 'internal', to: '/services', key: 'services' },
-  { type: 'internal', to: '/nosotros', key: 'about' },
 ];
 
 const labelStyle: React.CSSProperties = {
@@ -21,14 +20,14 @@ const labelStyle: React.CSSProperties = {
 };
 
 const orgLineStyle: React.CSSProperties = {
-  fontSize: '9px',
+  fontSize: '10px',
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
   color: 'var(--muted)',
 };
 
 const linkStyle: React.CSSProperties = {
-  fontSize: '11px',
+  fontSize: '13px',
   letterSpacing: '0.10em',
   textTransform: 'uppercase',
   color: 'var(--ink)',
@@ -36,7 +35,7 @@ const linkStyle: React.CSSProperties = {
 };
 
 const contactStyle: React.CSSProperties = {
-  fontSize: '11px',
+  fontSize: '13px',
   color: 'var(--ink)',
   transition: 'opacity 150ms ease',
 };
@@ -98,7 +97,7 @@ const Footer = () => {
         <div>
           <span
             className="wm lowercase"
-            style={{ fontSize: '16px', color: 'var(--ink)', display: 'block' }}
+            style={{ fontSize: '20px', color: 'var(--ink)', display: 'block' }}
           >
             sesmi
           </span>
