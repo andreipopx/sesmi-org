@@ -317,8 +317,7 @@ const Services = () => {
                 marginBottom: 32,
               }}
             >
-              Cuéntanos qué necesitas. Sin formularios, sin calls de discovery, sin decirte que
-              "nos ponemos en contacto en breve". Respondemos en menos de 48 horas.
+              Cuéntanos qué necesitas.
             </p>
             <a
               href="mailto:hola@sesmi.org"
