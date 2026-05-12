@@ -157,8 +157,8 @@ const Navbar = () => {
         }}
       >
         {/* Wordmark */}
-        <Link to="/" className="wm lowercase text-ink" style={{ fontSize: '20px' }}>
-          sesmi
+        <Link to="/" aria-label="sesmi" className="flex items-center">
+          <img src="/logo-sesmi.svg" alt="sesmi" style={{ height: '32px', width: 'auto', display: 'block' }} />
         </Link>
 
         {/* Center links */}
