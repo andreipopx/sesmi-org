@@ -1,12 +1,9 @@
 import { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import CustomCursor from './CustomCursor';
 
 const Layout = ({ children }: { children: ReactNode }) => (
   <>
-    <div className="grain-overlay" />
-    <CustomCursor />
     <Navbar />
     <main className="pt-[60px]">
       {children}
