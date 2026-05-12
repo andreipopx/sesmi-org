@@ -3,13 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { Globe } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-type NavItem =
-  | { type: 'internal'; to: string; key: 'research' | 'services' }
-  | { type: 'external'; href: string; key: 'academy' };
+type NavItem = { type: 'internal'; to: string; key: 'research' | 'services' | 'academy' };
 
 const navItems: NavItem[] = [
   { type: 'internal', to: '/research', key: 'research' },
-  { type: 'external', href: 'https://academia.sesmi.org', key: 'academy' },
+  { type: 'internal', to: '/academia', key: 'academy' },
   { type: 'internal', to: '/services', key: 'services' },
 ];
 
