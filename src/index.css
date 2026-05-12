@@ -25,19 +25,24 @@
     --ring: 27 55% 50%;
     --radius: 0px;
 
-    /* Sesmi custom tokens */
-    --sesmi-bg: #F7F3EE;
-    --sesmi-bg2: #F0EBE3;
-    --sesmi-bg3: #E8E1D6;
-    --sesmi-ink: #1C1814;
-    --sesmi-ink2: #2E2720;
-    --sesmi-warm: #C8793A;
-    --sesmi-warm2: #D4884A;
-    --sesmi-sand: #D4C4A8;
-    --sesmi-muted: #8A7F74;
-    --sesmi-muted2: #B5AA9E;
-    --sesmi-white: #FAF8F5;
-    --sesmi-line: rgba(28,24,20,0.1);
+    /* Sesmi design system tokens */
+    --bg: #F7F3EE;
+    --bg-2: #F0EBE3;
+    --bg-3: #E8E1D6;
+    --ink: #1C1814;
+    --ink-secondary: #2E2720;
+    --accent: #7A1F10;
+    --muted: #8A7F74;
+    --muted-2: #B5AA9E;
+    --offwhite: #FAF8F5;
+    --line: rgba(28, 24, 20, 0.1);
+
+    --font-grotezk: 'Apfel Grotezk Mittel', serif;
+    --font-editorial: 'Junicode', Georgia, serif;
+    --font-mono: 'Liberation Mono', monospace;
+
+    --max-prose: 680px;
+    --nav-height: 60px;
   }
 }
 
@@ -46,40 +51,36 @@
     @apply border-border;
   }
   body {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 300;
-    background-color: var(--sesmi-bg);
-    color: var(--sesmi-ink);
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-editorial);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     line-height: 1.85;
-    cursor: none;
-  }
-  @media (pointer: coarse) {
-    body {
-      cursor: auto;
-    }
   }
   h1, h2, h3, h4 {
     line-height: 1.15;
   }
 }
 
-/* Grain texture overlay */
-.grain-overlay {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
+/* Restore system cursor — remove custom cursor */
+*, *::before, *::after {
+  cursor: inherit;
+}
+html {
+  cursor: auto;
+}
+
+/* Eliminar cualquier grain/noise overlay */
+.grain, .noise, [class*="grain"], [class*="noise"] {
+  display: none !important;
 }
 
 /* Grid background for hero */
 .grid-bg {
   background-image:
-    linear-gradient(var(--sesmi-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--sesmi-line) 1px, transparent 1px);
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 80px 80px;
 }
 
@@ -107,7 +108,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--sesmi-warm);
+  background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.35s ease;
@@ -116,7 +117,7 @@
   transform: scaleX(1);
 }
 
-/* Custom cursor pulse */
+/* Custom cursor pulse (kept for logo dot if used) */
 @keyframes cursor-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
@@ -131,24 +132,24 @@
   top: 0;
   left: 0;
   height: 3px;
-  background: var(--sesmi-warm);
+  background: var(--accent);
   z-index: 100;
   transition: width 0.1s linear;
 }
 
 /* Section header ASCII lines */
 .section-header-line {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.58rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--sesmi-muted);
+  color: var(--muted);
   text-align: center;
 }
 
 /* Label style */
 .label-style {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.58rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -159,15 +160,14 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--sesmi-bg);
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--sesmi-sand);
-  border-radius: 3px;
+  background: var(--muted-2);
 }
 
 /* Focus visible for input */
 input:focus-visible, textarea:focus-visible {
   outline: none;
-  border-color: var(--sesmi-warm) !important;
+  border-color: var(--accent) !important;
 }
