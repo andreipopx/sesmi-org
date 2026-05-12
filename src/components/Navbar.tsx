@@ -164,7 +164,7 @@ const Navbar = () => {
         {/* Center links */}
         <div
           className="hidden md:flex items-center absolute left-1/2 -translate-x-1/2"
-          style={{ gap: '32px' }}
+          style={{ gap: '48px' }}
         >
           {navItems.map((item) => renderItem(item))}
         </div>
