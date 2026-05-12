@@ -91,7 +91,7 @@ const Services = () => {
             margin: '0 auto',
           }}
         >
-          <div style={{ ...labelStyle, marginBottom: 16 }}>Servicios · sesmi</div>
+          
           <h1
             style={{
               fontFamily: 'var(--font-editorial)',
