@@ -22,8 +22,8 @@ const WaitlistForm = () => {
       style={{
         backgroundColor: 'var(--bg)',
         borderTop: '1px solid var(--line)',
-        paddingTop: '80px',
-        paddingBottom: '80px',
+        paddingTop: '56px',
+        paddingBottom: '56px',
       }}
     >
       <div
@@ -36,8 +36,8 @@ const WaitlistForm = () => {
       >
         <AnimatedEntry>
           <p
-            className="font-mono uppercase text-muted"
-            style={{ fontSize: '11px', letterSpacing: '0.08em', marginBottom: '24px' }}
+            className="font-haas uppercase text-muted"
+            style={{ fontSize: '9px', letterSpacing: '0.10em', marginBottom: '24px' }}
           >
             {t.waitlist.label}
           </p>
@@ -69,8 +69,8 @@ const WaitlistForm = () => {
         <AnimatedEntry delay={0.24}>
           {submitted ? (
             <p
-              className="font-mono uppercase"
-              style={{ fontSize: '11px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+              className="font-haas uppercase"
+              style={{ fontSize: '9px', letterSpacing: '0.10em', color: 'var(--accent)' }}
             >
               {t.waitlist.success}
             </p>
@@ -106,7 +106,7 @@ const WaitlistForm = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="font-mono uppercase text-offwhite"
+                className="font-haas uppercase text-offwhite"
                 style={{
                   fontSize: '11px',
                   letterSpacing: '0.08em',

@@ -10,9 +10,23 @@ const container: React.CSSProperties = {
   paddingRight: 'clamp(24px, 4vw, 48px)',
 };
 
-const monoLabel: React.CSSProperties = {
-  fontSize: '11px',
-  letterSpacing: '0.08em',
+// Tokens tipográficos funcionales (Alte Haas)
+const labelStyle: React.CSSProperties = {
+  fontSize: '8px',
+  letterSpacing: '0.18em',
+};
+const navOrButton: React.CSSProperties = {
+  fontSize: '9px',
+  letterSpacing: '0.10em',
+};
+const badgeStyle: React.CSSProperties = {
+  fontSize: '7px',
+  letterSpacing: '0.12em',
+};
+// ID de informe (Liberation Mono)
+const idStyle: React.CSSProperties = {
+  fontSize: '9px',
+  letterSpacing: '0.04em',
 };
 
 const readLinkHover = (e: React.MouseEvent<HTMLAnchorElement>, color: string) => {
@@ -26,26 +40,21 @@ const Index = () => {
   return (
     <Layout>
       {/* 1. CABECERA DE PORTADA */}
-      <section style={{ ...container, paddingTop: '72px' }}>
+      <section style={{ ...container, paddingTop: '64px' }}>
         <p
-          className="font-mono uppercase"
-          style={{ ...monoLabel, color: 'var(--muted)' }}
+          className="font-haas uppercase"
+          style={{ ...labelStyle, color: 'var(--muted)' }}
         >
           {h.kicker}
         </p>
-        <div
-          style={{
-            marginTop: '48px',
-            borderTop: '1px solid var(--line)',
-          }}
-        />
+        <div style={{ marginTop: '32px', borderTop: '1px solid var(--line)' }} />
       </section>
 
       {/* 2. TRABAJOS EN CURSO */}
-      <section style={{ ...container, paddingTop: '48px' }}>
+      <section style={{ ...container, paddingTop: '32px' }}>
         <p
-          className="font-mono uppercase"
-          style={{ ...monoLabel, color: 'var(--muted)', marginBottom: '40px' }}
+          className="font-haas uppercase"
+          style={{ ...labelStyle, color: 'var(--muted)', marginBottom: '24px' }}
         >
           {h.worksLabel}
         </p>
@@ -56,25 +65,26 @@ const Index = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.4, ease: 'easeOut' as const }}
-          style={{ paddingTop: '48px', paddingBottom: '48px' }}
+          style={{ paddingTop: '32px', paddingBottom: '32px' }}
         >
           <p
             className="font-mono uppercase"
-            style={{ ...monoLabel, color: 'var(--accent)', marginBottom: '12px' }}
+            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '12px' }}
           >
             {h.featured.code}
           </p>
           <h2
             className="font-editorial text-ink"
-            style={{ fontSize: '36px', fontWeight: 400, lineHeight: 1.2, marginBottom: '16px' }}
+            style={{ fontSize: '32px', fontWeight: 700, lineHeight: 1.2, marginBottom: '16px' }}
           >
             {h.featured.title}
           </h2>
           <p
-            className="font-editorial"
+            className="font-editorial italic"
             style={{
-              fontSize: '18px',
-              lineHeight: 1.65,
+              fontSize: '19px',
+              fontWeight: 400,
+              lineHeight: 1.6,
               color: 'var(--ink-secondary)',
               maxWidth: '560px',
               marginBottom: '20px',
@@ -85,26 +95,26 @@ const Index = () => {
           <p
             className="font-editorial"
             style={{
-              fontSize: '16px',
-              lineHeight: 1.7,
+              fontSize: '17px',
+              lineHeight: 1.85,
               color: 'var(--ink-secondary)',
               maxWidth: '640px',
-              marginBottom: '24px',
+              marginBottom: '20px',
             }}
           >
             {h.featured.lede}
           </p>
           <p
-            className="font-mono uppercase"
-            style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+            className="font-haas uppercase"
+            style={{ ...badgeStyle, color: 'var(--accent)' }}
           >
             {h.statusBadge}
           </p>
           <Link
             to="/research"
-            className="font-mono uppercase inline-block"
+            className="font-haas uppercase inline-block"
             style={{
-              ...monoLabel,
+              ...navOrButton,
               color: 'var(--muted)',
               marginTop: '16px',
               transition: 'color 150ms ease',
@@ -124,25 +134,25 @@ const Index = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.4, ease: 'easeOut' as const, delay: 0.1 }}
-          style={{ paddingTop: '40px', paddingBottom: '40px' }}
+          style={{ paddingTop: '32px', paddingBottom: '32px' }}
         >
           <p
             className="font-mono uppercase"
-            style={{ ...monoLabel, color: 'var(--accent)', marginBottom: '12px' }}
+            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '12px' }}
           >
             {h.secondary.code}
           </p>
           <h3
             className="font-editorial text-ink"
-            style={{ fontSize: '24px', fontWeight: 400, lineHeight: 1.25, marginBottom: '12px' }}
+            style={{ fontSize: '22px', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px' }}
           >
             {h.secondary.title}
           </h3>
           <p
             className="font-editorial"
             style={{
-              fontSize: '16px',
-              lineHeight: 1.6,
+              fontSize: '17px',
+              lineHeight: 1.85,
               color: 'var(--ink-secondary)',
               marginBottom: '16px',
             }}
@@ -150,8 +160,8 @@ const Index = () => {
             {h.secondary.subtitle}
           </p>
           <p
-            className="font-mono uppercase"
-            style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+            className="font-haas uppercase"
+            style={{ ...badgeStyle, color: 'var(--accent)' }}
           >
             {h.statusBadge}
           </p>
@@ -165,26 +175,26 @@ const Index = () => {
       <section
         style={{
           ...container,
-          paddingTop: '64px',
-          paddingBottom: '64px',
+          paddingTop: '56px',
+          paddingBottom: '56px',
           backgroundColor: 'var(--bg)',
         }}
       >
         <p
           className="font-editorial"
           style={{
-            fontSize: '18px',
-            lineHeight: 1.75,
+            fontSize: '17px',
+            lineHeight: 1.85,
             color: 'var(--ink-secondary)',
-            marginBottom: '32px',
+            marginBottom: '20px',
           }}
         >
           {h.about.text}
         </p>
         <Link
           to="/nosotros"
-          className="font-mono uppercase inline-block"
-          style={{ ...monoLabel, color: 'var(--muted)', transition: 'color 150ms ease' }}
+          className="font-haas uppercase inline-block"
+          style={{ ...navOrButton, color: 'var(--muted)', transition: 'color 150ms ease' }}
           onMouseEnter={(e) => readLinkHover(e, 'var(--ink)')}
           onMouseLeave={(e) => readLinkHover(e, 'var(--muted)')}
         >
@@ -197,18 +207,18 @@ const Index = () => {
         style={{
           backgroundColor: 'var(--bg-2)',
           borderTop: '1px solid var(--line)',
-          paddingTop: '64px',
-          paddingBottom: '64px',
+          paddingTop: '56px',
+          paddingBottom: '56px',
         }}
       >
         <div style={container}>
           <p
             className="font-editorial"
             style={{
-              fontSize: '16px',
-              lineHeight: 1.6,
+              fontSize: '17px',
+              lineHeight: 1.85,
               color: 'var(--ink-secondary)',
-              marginBottom: '24px',
+              marginBottom: '20px',
             }}
           >
             {h.newsletter.text}
@@ -240,8 +250,8 @@ const NewsletterForm = () => {
   if (submitted) {
     return (
       <p
-        className="font-mono uppercase"
-        style={{ fontSize: '11px', letterSpacing: '0.08em', color: 'var(--accent)' }}
+        className="font-haas uppercase"
+        style={{ fontSize: '9px', letterSpacing: '0.10em', color: 'var(--accent)' }}
       >
         {t.waitlist.success}
       </p>
@@ -266,7 +276,7 @@ const NewsletterForm = () => {
           border: 'none',
           borderBottom: '1px solid var(--line)',
           borderRadius: 0,
-          fontSize: '16px',
+          fontSize: '17px',
           padding: '8px 0',
           outline: 'none',
         }}
@@ -276,10 +286,10 @@ const NewsletterForm = () => {
       <button
         type="submit"
         disabled={loading}
-        className="font-mono uppercase text-offwhite"
+        className="font-haas uppercase text-offwhite"
         style={{
-          fontSize: '11px',
-          letterSpacing: '0.08em',
+          fontSize: '9px',
+          letterSpacing: '0.10em',
           backgroundColor: 'var(--ink)',
           padding: '10px 20px',
           transition: 'background-color 150ms ease',

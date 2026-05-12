@@ -39,7 +39,8 @@
 
     --font-grotezk: 'Apfel Grotezk Mittel', serif;
     --font-editorial: 'Junicode', Georgia, serif;
-    --font-mono: 'Liberation Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-haas: 'Alte Haas Grotesk', sans-serif;
+    --font-mono: 'Liberation Mono', monospace;
 
     --max-prose: 680px;
     --nav-height: 60px;
@@ -54,13 +55,18 @@
     background-color: var(--bg);
     color: var(--ink);
     font-family: var(--font-editorial);
+    font-size: 17px;
+    line-height: 1.85;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    line-height: 1.85;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
   }
   h1, h2, h3, h4 {
     line-height: 1.15;
   }
+  /* Énfasis editorial: italic, no bold en cuerpo */
+  p em, li em { font-style: italic; font-weight: inherit; }
 }
 
 /* System cursor */
@@ -134,21 +140,21 @@ html {
   transition: width 0.1s linear;
 }
 
-/* Section header ASCII lines */
+/* Section header ASCII lines (functional → haas) */
 .section-header-line {
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-family: var(--font-haas);
+  font-size: 8px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
   text-align: center;
 }
 
-/* Label style */
+/* Label style (functional → haas) */
 .label-style {
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-family: var(--font-haas);
+  font-size: 8px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 

@@ -14,11 +14,11 @@ const Footer = () => {
 
   return (
     <footer className="bg-bg2 border-t border-sesmi-line">
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
+      <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-12">
         <div>
           <div className="flex items-center gap-2 mb-4">
             <span className="logo-dot inline-block w-[7px] h-[7px] rounded-full bg-warm" />
-            <span className="font-mono text-sm tracking-[0.18em] lowercase font-medium text-ink">sesmi</span>
+            <span className="font-haas text-sm tracking-[0.18em] lowercase font-medium text-ink">sesmi</span>
           </div>
           <p className="text-sm text-sesmi-muted leading-relaxed">{t.footer.org}</p>
           <p className="text-sm text-sesmi-muted mt-1">{t.footer.location}</p>
@@ -43,7 +43,7 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-sesmi-line px-6 py-4">
-        <p className="text-center font-mono text-[0.55rem] tracking-[0.12em] uppercase text-muted2">
+        <p className="text-center font-haas text-[0.55rem] tracking-[0.12em] uppercase text-muted2">
           {t.footer.copyright}
         </p>
       </div>
