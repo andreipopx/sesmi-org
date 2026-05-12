@@ -83,7 +83,7 @@ const Footer = () => {
   return (
     <footer style={{ borderTop: '1px solid var(--line)', backgroundColor: 'var(--bg)' }}>
       <div
-        className="mx-auto grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_auto] items-center"
+        className="mx-auto flex flex-col md:flex-row md:items-center md:justify-between"
         style={{
           maxWidth: '1280px',
           paddingLeft: 'clamp(24px, 4vw, 48px)',
