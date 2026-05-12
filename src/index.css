@@ -63,10 +63,7 @@
   }
 }
 
-/* Restore system cursor — remove custom cursor */
-*, *::before, *::after {
-  cursor: inherit;
-}
+/* System cursor */
 html {
   cursor: auto;
 }
@@ -117,7 +114,7 @@ html {
   transform: scaleX(1);
 }
 
-/* Custom cursor pulse (kept for logo dot if used) */
+/* Logo dot pulse */
 @keyframes cursor-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
