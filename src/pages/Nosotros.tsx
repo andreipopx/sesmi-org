@@ -71,7 +71,7 @@ const Nosotros = () => {
             margin: '0 auto',
           }}
         >
-          <div style={{ ...labelStyle, marginBottom: 16 }}>Nosotros · sesmi</div>
+          
           <h1
             style={{
               fontFamily: 'var(--font-editorial)',
