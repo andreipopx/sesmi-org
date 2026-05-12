@@ -33,7 +33,7 @@ const Research = () => {
   const copy = isEn
     ? {
         label: 'Research',
-        title: 'Independent economic analysis.',
+        title: 'Research.',
         desc: 'We publish our work openly. No paywalls. Economic knowledge is a public good.',
         filters: { all: 'All', inProgress: 'In progress', published: 'Published' },
         showChapters: 'Show chapters ↓',
