@@ -47,33 +47,45 @@ const SideWordmark = () => {
   if (!wide) return null;
 
   return (
-    <Link
-      to="/"
-      aria-label="sesmi"
-      className="side-wordmark wm"
+    <div
       style={{
         position: 'fixed',
         right: 0,
-        top: '50%',
-        transform: 'translateY(-50%) rotate(180deg)',
+        top: 0,
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
         zIndex: 40,
-        background: 'var(--ink)',
-        color: 'var(--offwhite)',
-        padding: '4px 1px',
-        fontSize: '16px',
-        letterSpacing: '0.04em',
-        writingMode: 'vertical-rl',
-        textOrientation: 'mixed',
-        border: 'none',
-        borderRadius: 0,
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? 'auto' : 'none',
-        transition: 'opacity 300ms ease, background-color 150ms ease',
-        textDecoration: 'none',
+        pointerEvents: 'none',
       }}
     >
-      sesmi
-    </Link>
+      <Link
+        to="/"
+        aria-label="sesmi"
+        className="side-wordmark wm"
+        style={{
+          background: 'var(--ink)',
+          color: 'var(--offwhite)',
+          padding: '4px 1px',
+          fontSize: '16px',
+          letterSpacing: '0.04em',
+          writingMode: 'vertical-rl',
+          textOrientation: 'mixed',
+          transform: 'rotate(180deg) translateZ(0)',
+          backfaceVisibility: 'hidden',
+          WebkitFontSmoothing: 'antialiased',
+          textRendering: 'geometricPrecision',
+          border: 'none',
+          borderRadius: 0,
+          opacity: visible ? 1 : 0,
+          pointerEvents: visible ? 'auto' : 'none',
+          transition: 'opacity 300ms ease, background-color 150ms ease',
+          textDecoration: 'none',
+        }}
+      >
+        sesmi
+      </Link>
+    </div>
   );
 };
 
