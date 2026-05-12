@@ -140,21 +140,21 @@ html {
   transition: width 0.1s linear;
 }
 
-/* Section header ASCII lines */
+/* Section header ASCII lines (functional → haas) */
 .section-header-line {
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-family: var(--font-haas);
+  font-size: 8px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
   text-align: center;
 }
 
-/* Label style */
+/* Label style (functional → haas) */
 .label-style {
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-family: var(--font-haas);
+  font-size: 8px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
