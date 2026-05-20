@@ -152,3 +152,13 @@ GitHub repo: `scalinn/sesmi-org`, branch: `main`
 - Organization full name: *Sociedad Económica de San Miguel*
 - Location: Talavera de la Reina, Toledo, Spain
 - Contact: hola@sesmi.org
+
+---
+
+## Keeping This File Updated
+After completing any task that changes the structure of this project,
+append a brief note or update the relevant section before finishing.
+This includes: new components, removed files, changed routes, new integrations,
+new env vars, config changes, or infra additions.
+Commit the updated CLAUDE.md together with your code changes in the same commit.
+Do NOT update this file for pure content changes (copy, translations, colors).
