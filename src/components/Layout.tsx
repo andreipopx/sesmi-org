@@ -50,7 +50,7 @@ const SideWordmark = () => {
     <div
       style={{
         position: 'fixed',
-        right: 0,
+        right: 8,
         top: 0,
         height: '100vh',
         display: 'flex',

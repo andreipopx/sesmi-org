@@ -1,14 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
-type NavItem =
-  | { type: 'internal'; to: string; key: 'research' | 'services' }
-  | { type: 'external'; href: string; key: 'academy' };
+type NavItem = { type: 'internal'; to: string; key: 'research' | 'services' | 'academy' | 'about' };
 
 const navItems: NavItem[] = [
   { type: 'internal', to: '/research', key: 'research' },
-  { type: 'external', href: 'https://academia.sesmi.org', key: 'academy' },
+  { type: 'internal', to: '/academia', key: 'academy' },
   { type: 'internal', to: '/services', key: 'services' },
+  { type: 'internal', to: '/nosotros', key: 'about' },
 ];
 
 const labelStyle: React.CSSProperties = {
@@ -45,35 +44,14 @@ const Footer = () => {
 
   const renderNavItem = (item: NavItem) => {
     const label = (t.nav as Record<string, string>)[item.key].toUpperCase();
-    const onEnter = (e: React.MouseEvent<HTMLElement>) =>
-      ((e.currentTarget as HTMLElement).style.opacity = '0.6');
-    const onLeave = (e: React.MouseEvent<HTMLElement>) =>
-      ((e.currentTarget as HTMLElement).style.opacity = '1');
-
-    if (item.type === 'external') {
-      return (
-        <a
-          key={item.key}
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-haas"
-          style={linkStyle}
-          onMouseEnter={onEnter}
-          onMouseLeave={onLeave}
-        >
-          {label}
-        </a>
-      );
-    }
     return (
       <Link
         key={item.key}
         to={item.to}
         className="font-haas"
         style={linkStyle}
-        onMouseEnter={onEnter}
-        onMouseLeave={onLeave}
+        onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = '0.6')}
+        onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = '1')}
       >
         {label}
       </Link>
@@ -133,25 +111,16 @@ const Footer = () => {
               <span className="font-haas" style={contactStyle}>
                 sesmi.org
               </span>
-              <Link
-                to="/nosotros"
-                className="font-haas"
-                style={linkStyle}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-              >
-                {t.nav.about.toUpperCase()}
-              </Link>
             </div>
           </div>
         </div>
 
         {/* Col 4: logo */}
-        <div className="flex md:justify-end">
+        <div className="flex md:justify-end items-center">
           <img
             src="/logo-sesmi.svg"
             alt="sesmi"
-            style={{ height: '96px', width: 'auto', display: 'block' }}
+            style={{ height: '40px', width: 'auto', display: 'block' }}
           />
         </div>
       </div>

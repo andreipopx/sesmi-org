@@ -30,7 +30,7 @@ const Index = () => {
   return (
     <Layout>
       {/* 1. CABECERA */}
-      <section style={{ ...container, paddingTop: '64px', paddingBottom: '48px' }}>
+      <section style={{ ...container, paddingTop: '40px', paddingBottom: '16px' }}>
         <div style={{ textAlign: 'center' }}>
           <span
             className="wm lowercase home-wm"
@@ -44,7 +44,6 @@ const Index = () => {
             sesmi
           </span>
         </div>
-        <div style={{ marginTop: '40px', borderTop: '1px solid var(--line)' }} />
       </section>
 
       <style>{`
@@ -55,10 +54,10 @@ const Index = () => {
       `}</style>
 
       {/* 2. TRABAJOS EN CURSO */}
-      <section style={{ ...container, paddingTop: '48px', paddingBottom: '48px' }}>
+      <section style={{ ...container, paddingTop: '28px', paddingBottom: '48px' }}>
         <p
           className="font-haas uppercase"
-          style={{ ...labelStyle, color: 'var(--muted)', marginBottom: '10px' }}
+          style={{ ...labelStyle, color: 'var(--muted)', marginBottom: '8px' }}
         >
           {h.worksLabel}
         </p>
@@ -69,11 +68,11 @@ const Index = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.4, ease: 'easeOut' as const }}
-          style={{ paddingTop: '28px', paddingBottom: '28px' }}
+          style={{ paddingTop: '0px', paddingBottom: '28px' }}
         >
           <p
             className="font-mono uppercase"
-            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '10px' }}
+            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '8px' }}
           >
             {h.featured.code}
           </p>
@@ -135,11 +134,11 @@ const Index = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.4, ease: 'easeOut' as const, delay: 0.1 }}
-          style={{ paddingTop: '28px', paddingBottom: '28px' }}
+          style={{ paddingTop: '16px', paddingBottom: '28px' }}
         >
           <p
             className="font-mono uppercase"
-            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '10px' }}
+            style={{ ...idStyle, color: 'var(--accent)', marginBottom: '8px' }}
           >
             {h.secondary.code}
           </p>
