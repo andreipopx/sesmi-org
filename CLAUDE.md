@@ -106,28 +106,36 @@ Independent economic research for mid-sized Spanish cities. Editorial, rigorous,
 |-------------|--------|-------|
 | Waitlist form | Mock only | `WaitlistForm.tsx` fakes submission with `setTimeout` — no backend/email service connected |
 | Contact form | Mock only | `Nosotros.tsx` form — no backend call, no email service |
-| Umami analytics | Not connected | Planned; Umami instance runs at `analytics.scalinn.com` |
+| Umami analytics | Not connected | Planned; no script tag in `index.html` yet |
 | No other integrations | — | No GTM, no GA, no Hotjar, no Mailchimp, no Resend |
 
 ---
 
 ## Deploy Flow
 
+The site is statically built and served by nginx behind a Cloudflare Tunnel — there
+is no Coolify, no webhook and no auto-build. Pushing to `main` does **not** deploy;
+a redeploy is an explicit step on the host.
+
 ```bash
-# 1. Edit code
-# 2. Commit and push:
+# 1. Edit, commit, push
 git add <files>
 git commit -m "feat/fix: description"
 git push origin main
-# Coolify webhook auto-triggers build (Nixpacks → npm run build → dist/)
 
-# 3. Manual redeploy via API if needed:
-curl -X POST "https://coolify.scalinn.com/api/v1/applications/b4wgg8wkko0wwgccsgsk8gc4/restart" \
-  -H "Authorization: Bearer <COOLIFY_API_TOKEN>"
+# 2. Redeploy on the host (pulls main, rebuilds dist/)
+./deploy.sh   # lives in the private infra repo, see below
 ```
 
-Coolify app UUID: `b4wgg8wkko0wwgccsgsk8gc4`
-GitHub repo: `scalinn/sesmi-org`, branch: `main`
+The build runs `npm install && npm run build` inside a `node:20-alpine` container and
+nginx serves `dist/` from a bind-mount, so a redeploy needs no container restart.
+
+> `npm ci` does **not** work in this repo: `package-lock.json` is out of sync with
+> `package.json` (missing `stackback`). Regenerate the lockfile if you want `npm ci` back.
+
+GitHub repo: `andreipopx/sesmi-org`, branch `main`.
+Hosting, DNS and tunnel runbook live in the private infra repo (`pop-servicios`,
+`sesmi-web/CLOUDFLARE-SETUP.md`) — deliberately not documented here.
 
 ---
 
