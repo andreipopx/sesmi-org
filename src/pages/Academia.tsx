@@ -163,48 +163,24 @@ const Academia = () => {
                 marginBottom: 32,
               }}
             >
-              Academia está en construcción. Puedes ver lo que ya hay disponible en el subdominio.
+              Academia está en construcción. Cuando haya material disponible, se anunciará aquí.
             </p>
-            <a
-              href="https://academia.sesmi.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="academia-cta"
-              style={{
-                display: 'inline-block',
-                background: 'var(--ink)',
-                color: 'var(--offwhite)',
-                fontFamily: 'var(--font-haas)',
-                fontSize: 10,
-                letterSpacing: '0.10em',
-                textTransform: 'uppercase',
-                padding: '12px 24px',
-                borderRadius: 0,
-                textDecoration: 'none',
-                transition: 'background-color 150ms ease',
-              }}
-            >
-              Entrar en Academia →
-            </a>
             <div
               style={{
                 fontFamily: 'var(--font-haas)',
-                fontSize: 9,
+                fontSize: 8,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
                 color: 'var(--muted)',
-                marginTop: 12,
               }}
             >
-              Se abrirá en una nueva pestaña.
+              Próximamente
             </div>
           </div>
         </section>
 
         <div style={{ height: 96 }} />
       </div>
-
-      <style>{`
-        .academia-cta:hover { background: var(--ink-secondary) !important; }
-      `}</style>
     </Layout>
   );
 };
