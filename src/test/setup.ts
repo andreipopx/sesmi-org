@@ -13,3 +13,14 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// jsdom no trae IntersectionObserver (lo usan el hero, las figuras y las ilustraciones)
+class IO {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() { return []; }
+}
+Object.defineProperty(window, "IntersectionObserver", { writable: true, value: IO });
+Object.defineProperty(window, "scrollTo", { writable: true, value: () => {} });
+Element.prototype.scrollIntoView = function () {};
