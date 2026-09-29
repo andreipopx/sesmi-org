@@ -17,7 +17,7 @@ function Trio() {
 /**
  * Portada: patrón «s e s m i» con el wordmark grande. Una lupa cuadrada que sigue al cursor
  * invierte la tinta y descubre «debemos saber.» sobre un patrón de figuras. En pantallas táctiles
- * la lupa se abre al tocar durante 2,2 s. Mientras el wordmark grande está a la vista, la barra
+ * no hay lupa: tocar la portada la voltea entera a esa cara oculta y otro toque la devuelve. Mientras el wordmark grande está a la vista, la barra
  * superior oculta el suyo (clase html.hero-wm-visible).
  */
 export function Hero() {
@@ -43,7 +43,7 @@ export function Hero() {
     return () => { window.removeEventListener("resize", onResize); clearTimeout(rt); };
   }, []);
 
-  // Lupa: sigue al ratón; en táctil, se abre 2,2 s donde se toca
+  // Lupa: sigue al ratón; en táctil, tocar voltea la portada entera
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
@@ -64,15 +64,15 @@ export function Hero() {
         hero.removeEventListener("pointerleave", leave);
       };
     }
-    let tt: number | undefined;
+    // Táctil: tocar la portada la voltea entera (sesmi ⇄ «debemos saber.»); otro toque la devuelve
+    const root = document.documentElement;
     const down = (e: PointerEvent) => {
       setPos(e);
-      hero.classList.add("on");
-      clearTimeout(tt);
-      tt = window.setTimeout(() => hero.classList.remove("on"), 2200);
+      const flipped = hero.classList.toggle("flip");
+      root.classList.toggle("hero-flip", flipped);
     };
     hero.addEventListener("pointerdown", down);
-    return () => { hero.removeEventListener("pointerdown", down); clearTimeout(tt); };
+    return () => { hero.removeEventListener("pointerdown", down); root.classList.remove("hero-flip"); };
   }, []);
 
   // Wordmark de la barra: oculto mientras el grande del hero está a la vista

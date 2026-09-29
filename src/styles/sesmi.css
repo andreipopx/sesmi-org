@@ -76,9 +76,13 @@ main:focus{outline:none}
 .hbox .ht{font-size:calc(var(--wmw)*.2);white-space:nowrap}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .trio{margin-top:48px;gap:44px}.trio [data-fig]{width:68px}
-@media (max-width:860px){.hero{--wmw:min(78vw,420px)} .trio{gap:26px;margin-top:34px} .trio [data-fig]{width:48px}}
+@media (max-width:860px){.hero{--wmw:min(78vw,420px)} .hbox .ht{font-size:calc(var(--wmw)*.155)} .trio{gap:26px;margin-top:34px} .trio [data-fig]{width:48px}}
 .top .brand{transition:opacity .35s ease}
-html.hero-wm-visible .top .brand{opacity:0;pointer-events:none}
+html.hero-wm-visible:not(.hero-flip) .top .brand{opacity:0;pointer-events:none}
+/* táctil: la cara oculta se despliega entera desde donde se toca, a saltos */
+.hero.flip .inv{clip-path:inset(0 0 0 0)}
+@media not ((hover:hover) and (pointer:fine)){.inv{transition:clip-path .42s steps(6,end)}}
+@media (prefers-reduced-motion:reduce){.inv{transition:none}}
 @media (prefers-reduced-motion:reduce){.top .brand{transition:none}}
 /* ── tarjetas a medias ── */
 .cards{display:grid;grid-template-columns:1fr 1fr;border-bottom:var(--ln)}
