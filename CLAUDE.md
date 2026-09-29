@@ -1,5 +1,5 @@
 # CLAUDE.md — sesmi.org
-> Agent reference for the sesmi.org frontend repo. Last updated: 2026-05-20.
+> Agent reference for the sesmi.org frontend repo. Last updated: 2026-09-29.
 
 ---
 
@@ -9,15 +9,15 @@
 |-------|------|
 | Framework | React 18 + Vite 5 (SWC plugin) |
 | Language | TypeScript 5 |
-| Styling | Tailwind CSS 3 + custom CSS design tokens (`src/index.css`) |
-| Components | shadcn/ui (Radix UI primitives) — in `src/components/ui/`, do not edit manually |
-| Routing | React Router v6 |
-| State / data | TanStack React Query v5 |
-| Animation | Framer Motion 12 |
-| Forms | React Hook Form + Zod |
-| i18n | Custom context (`src/contexts/LanguageContext.tsx` + `src/i18n/translations.ts`) |
+| Styling | Plain CSS: tokens + `@font-face` in `src/index.css`, the grid in `src/styles/sesmi.css` (ported from the approved "Rejilla" prototype). Tailwind 3 stays configured **without preflight** (no `@tailwind base`) only for shadcn |
+| Components | shadcn/ui (Radix UI primitives) — in `src/components/ui/`, do not edit manually; the site pages do not use them |
+| Routing | React Router v6 (`src/AppRoutes.tsx`) |
+| Animation | Hand-rolled: SVG frame swaps via `setInterval` (no Framer Motion in the site) |
+| i18n | None — the site is Spanish only (the old `LanguageContext` / `translations.ts` were removed) |
 | Build | `npm run build` → `dist/` |
-| Tests | Vitest + Playwright |
+| Tests | Vitest (`src/test/routes.test.tsx`: routes, redirects, 404, waitlist mock) + Playwright |
+
+> `@tanstack/react-query`, `framer-motion`, `react-hook-form`/`zod` are still in `package.json` but unused by the site.
 
 ---
 
@@ -25,30 +25,46 @@
 
 ### Routes
 
-| Path | Component | Notes |
-|------|-----------|-------|
-| `/` | `src/pages/Index.tsx` | Hero, featured research (SESMI-001), about blurb, waitlist |
-| `/research` | `src/pages/Research.tsx` | Research index — SESMI-001 featured, SESMI-002 upcoming |
-| `/research/:id` | `src/pages/ResearchArticle.tsx` | Individual article via slug |
-| `/services` | `src/pages/Services.tsx` | Consulting services (5 offerings) |
-| `/servicios` | `src/pages/Services.tsx` | ES alias for /services |
-| `/learning` | `src/pages/Learning.tsx` | Free learning materials (scaffolded) |
-| `/academia` | `src/pages/Academia.tsx` | Academic section (scaffolded) |
-| `/nosotros` | `src/pages/Nosotros.tsx` | Team + contact form |
-| `*` | `src/pages/NotFound.tsx` | 404 |
+Layout route `SiteLayout` wraps every page. Anchors are real hashes (`/investigacion#sesmi-001`);
+on navigation the layout scrolls to the anchor (or to the top) and sets `document.title` and the
+route favicon.
 
-### Custom Components
+| Path | Component | Title · favicon | Anchors |
+|------|-----------|-----------------|---------|
+| `/` | `src/pages/Index.tsx` | `sesmi · Sociedad Económica de San Miguel` · `/favicon.svg` | `#aviso-inicio` |
+| `/investigacion` | `src/pages/Investigacion.tsx` | `Investigación · sesmi` · `/favicon-buho.svg` | `#sesmi-001`, `#sesmi-002`, `#metodo`, `#aviso` |
+| `/servicios` | `src/pages/Servicios.tsx` | `Servicios · sesmi` · `/favicon-caballo.svg` | `#hablamos` |
+| `/divulgacion` | `src/pages/Divulgacion.tsx` | `Divulgación · sesmi` · `/favicon-paloma.svg` | — |
+| `/nosotros` | `src/pages/Nosotros.tsx` | `Nosotros · sesmi` · `/favicon.svg` | `#contacto` |
+| `*` | `src/pages/NotFound.tsx` | `Página no encontrada · sesmi` | — |
+
+Redirects (`<Navigate replace>`): `/research` → `/investigacion`, `/research/:id` → `/investigacion#sesmi-001`,
+`/services` → `/servicios`, `/learning` and `/academia` → `/divulgacion`.
+Titles/favicons live in the `META` map in `SiteLayout.tsx` — add new routes there too.
+
+### Custom Components (`src/components/`)
 
 | File | Purpose |
 |------|---------|
-| `src/components/Layout.tsx` | Shell: Navbar + slot + Footer |
-| `src/components/Navbar.tsx` | Top nav, language toggle (ES/EN) |
-| `src/components/Footer.tsx` | Minimal footer |
-| `src/components/AnimatedEntry.tsx` | Scroll-triggered fade-in (Framer Motion) |
-| `src/components/SectionHeader.tsx` | Consistent section header style |
-| `src/components/WaitlistForm.tsx` | Email notification signup (currently mock — no backend) |
-| `src/components/NavLink.tsx` | Styled nav link with active state |
-| `src/lib/wm.tsx` | `wm()` — wraps every "sesmi" occurrence in `.wm` span for Apfel font |
+| `SiteLayout.tsx` | Shell: `.frame` grid, sticky top bar (wordmark, org name, nav, «Contacto» cell), 4-cell mobile nav, `<Outlet/>`, footer. Also route meta (title, favicon) and scroll-to-top/anchor |
+| `Sprite.tsx` | `<Sprite/>` hidden SVG symbols (`#arr` arrow, `#f-buho/#f-caballo/#f-paloma`) + `<Arrow/>` |
+| `Fig.tsx` | Brand figure (`name` buho/caballo/paloma, `variant` menor <64px / mayor ≥64px, `anim`, `label`). Decorative (aria-hidden) unless `label` |
+| `Wordmark.tsx` | `<Wordmark dot="red|ink"/>` vector wordmark (i-dot = red square); `<Sesmi/>` for «sesmi» inside running text |
+| `Hero.tsx` | Home hero: «s e s m i» letter pattern + big wordmark; square magnifier inverts to «debemos saber.» over a figure pattern (mouse follows; touch opens 2.2 s); red square cursor; toggles `html.hero-wm-visible` so the top-bar wordmark hides while the hero wordmark is visible |
+| `Illustration.tsx` | Line illustrations `rings` (SESMI-001, 750 M€) and `stall` (SESMI-002); animate every 180 ms only while on screen |
+| `MethodDiagram.tsx` | «Cómo trabajamos» cell diagram (datos → análisis → paper + divulgativa) with the red marker running the flow |
+| `PillarHeader.tsx` | Page header of each pillar: back cell, signature (figure · wordmark · section), h1, lema, intro, big figure (`fig="all"` = three) |
+| `RowLink.tsx` | Numbered grid row that is one link (internal `<Link>` or `mailto:`) |
+| `WaitlistRow.tsx` | Waitlist form row — **mock** (preventDefault, «Apuntado. Te avisamos cuando salga.») |
+
+Brand data: `src/brand/brand.json` (figure paths in a 100×100 box, animation frames, wordmark) and
+`src/brand/index.ts` (typed access + `SEQ` animation sequences). SVG exports in `public/brand/`.
+
+### Figures and animation
+
+- Three figures = three pillars: **búho** Investigación («Debemos saber»), **caballo** Servicios («Fuerza aplicada»), **paloma** Divulgación («Socorre enseñando»).
+- At rest a figure is the clean vector. `anim` figures play a few-fps hand-drawn loop (búho 5 fps blink + sway, caballo 7 fps gallop g1–g5, paloma 7 fps flap f1–f6) on mouse hover over the figure **or its nearest `[data-anim-host]` ancestor**, on focus, or ~2.2 s on touch; they finish the cycle and stop on leave. `anim="loop"` loops while on screen.
+- Everything animated (figures, illustrations, method marker, hero magnifier transition) respects `prefers-reduced-motion`. Intervals are cleared on unmount.
 
 ---
 
@@ -58,45 +74,45 @@
 
 ### Design Tokens (`src/index.css`)
 
+Three colours only — paper, ink, red — plus mixes of them.
+
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--bg` | `#F7F3EE` | Page background — warm off-white, never pure white |
-| `--bg-2` | `#F0EBE3` | Secondary surfaces |
-| `--bg-3` | `#E8E1D6` | Tertiary surfaces |
-| `--ink` | `#1C1814` | Primary text (near-black, warm) |
-| `--ink-secondary` | `#2E2720` | Secondary text |
-| `--accent` | `#7A1F10` | Dark red — links, highlights, progress bar, badges |
-| `--muted` | `#8A7F74` | Muted text |
-| `--muted-2` | `#B5AA9E` | Lighter muted |
-| `--offwhite` | `#FAF8F5` | Button text on dark bg |
-| `--line` | `rgba(28,24,20,0.1)` | Dividers and borders |
-| `--radius` | `0px` | Sharp corners everywhere — no rounded cards, no pill buttons |
-| `--max-prose` | `680px` | Content column max-width |
+| `--paper` | `#F7F3EE` | Page background — warm paper, never pure white |
+| `--paper-2` / `--paper-3` | `#EFE9E1` / `#E6DED3` | Secondary surfaces (cards, figure panels) |
+| `--ink` | `#1C1814` | Text and all grid lines (1px) |
+| `--ink-2` / `--ink-3` | ink 70% / 48% on paper | Secondary / muted text |
+| `--red` | `#7A1F10` | Accent: i-dot square, lemas, status squares, focus ring, markers |
+| `--rule` | ink 14% | Soft inner dividers |
+| `--radius` | `0px` | Sharp corners everywhere |
+
+Grid variables live in `src/styles/sesmi.css` (`--c1` first column, `--c4` arrow column, `--pad`); breakpoints 1100px (tablet) and 860px (mobile).
 
 ### Typography
 
 | CSS Var | Font | Usage |
 |---------|------|-------|
-| `--font-editorial` | Junicode (serif) | Body text (18px / 1.85), article headings |
-| `--font-grotezk` | Apfel Grotezk Mittel | Display / hero headers, wordmark |
-| `--font-haas` | Alte Haas Grotesk | Labels (8–11px uppercase, tracked), nav, UI elements |
-| `--font-mono` | Liberation Mono | Research IDs (`SESMI-001`), codes |
+| `--display` / `--label` | Apfel Grotezk Mittel (`'Apfel'`, 500) | Headlines, nav, labels (11px uppercase tracked), numbers, wordmark text |
+| `--display-strong` | Apfel Grotezk Fett (`'Apfel Fett'`, 700) | Hero «debemos saber.» |
+| `--text` | Instrument Sans (variable 400–700, roman + italic) | All body text — 17px / 1.58 |
 
-All fonts are self-hosted in `public/fonts/`.
+All fonts are self-hosted woff2 in `public/fonts/` (OFL, licences alongside), `font-display: swap`,
+Apfel Mittel and Instrument Sans preloaded in `index.html`. Junicode, Alte Haas Grotesk and
+Liberation Mono are gone.
 
 ### Tone and Voice
 
-Independent economic research for mid-sized Spanish cities. Editorial, rigorous, and direct — written for any intelligent reader, not just economists. Founding principle: *"debemos saber."* The site is primarily in Spanish; EN is scaffolded but incomplete.
+Independent economic research for mid-sized Spanish cities. Editorial, rigorous, and direct — written for any intelligent reader, not just economists. Founding principle: *"debemos saber."* The site is Spanish only.
 
 ### Design Rules
 
-- Sharp corners (`border-radius: 0px`) everywhere
-- Warm paper background (`#F7F3EE`) — never white, never blue
-- Dense typographic hierarchy: ink / ink-secondary / muted / accent
-- Functional labels: uppercase, Alte Haas Grotesk, 8–9px, tracked
-- Research IDs always in monospace: `SESMI-001`, `S-01`
+- Sharp corners everywhere; 1px ink grid lines, full-bleed frame
+- Warm paper background — never white, never blue; three colours only
+- Labels: uppercase Apfel Mittel 11px, tracked; research IDs `SESMI-001` with tabular numbers
+- Figures are decorative (`aria-hidden`) unless given a `label`; one `h1` per page; visible focus (2px red outline)
 - No glassmorphism, blobs, canvas animations, or parallax
-- `wm()` utility must wrap all "sesmi" text in components to render in Apfel Grotezk
+- «sesmi» in running text: `<Sesmi/>` (a `.wm` span in Apfel); as a logo: `<Wordmark/>` (never type it as text)
+- Favicon per route: red square (`/favicon.svg`), with the pillar figure in paper on its pillar pages
 
 ---
 
@@ -104,8 +120,8 @@ Independent economic research for mid-sized Spanish cities. Editorial, rigorous,
 
 | Integration | Status | Notes |
 |-------------|--------|-------|
-| Waitlist form | Mock only | `WaitlistForm.tsx` fakes submission with `setTimeout` — no backend/email service connected |
-| Contact form | Mock only | `Nosotros.tsx` form — no backend call, no email service |
+| Waitlist rows | Mock only | `WaitlistRow.tsx` validates and confirms client-side — no backend/email service connected |
+| Contact | `mailto:hola@sesmi.org` | No contact form |
 | Umami analytics | Not connected | Planned; no script tag in `index.html` yet |
 | No other integrations | — | No GTM, no GA, no Hotjar, no Mailchimp, no Resend |
 
@@ -143,20 +159,19 @@ Hosting, DNS and tunnel runbook live in the private infra repo (`pop-servicios`,
 
 | Item | Status |
 |------|--------|
-| Logo definitivo | Not yet in repo |
-| `/investigacion/sesmi-001` page | Full article content pending |
-| Favicon | TODO |
-| i18n EN | Currently ES only — EN translations scaffolded but incomplete |
-| Nosotros team section | Placeholder "Tu nombre aquí" — real team bios needed |
-| Waitlist + contact forms | Need real backend (Resend / n8n webhook) |
+| SESMI-001 full article | Content pending (currently a card + chapter strip on `/investigacion`) |
+| Waitlist rows | Need real backend (Resend / n8n webhook) |
+| Divulgación resources | Section under construction |
 | Umami analytics | Script tag not yet added |
+| Social image | `og:image` still points to the old Lovable preview |
+| Web manifest | `public/icon-192.png` / `icon-512.png` exist but no manifest yet |
 
 ---
 
 ## Brand Rules
 
-- **sesmi is always lowercase** — never "Sesmi", never "SESMI" in prose
-- In components, use `wm(text)` or `<span className="wm">sesmi</span>` so it always renders in Apfel Grotezk Mittel
+- **sesmi is always lowercase** — never "Sesmi", never "SESMI" in prose (only in IDs like `SESMI-001`)
+- In components, write it as `<Sesmi/>` in text or `<Wordmark/>` as the logo, so it always renders in Apfel Grotezk
 - Organization full name: *Sociedad Económica de San Miguel*
 - Location: Talavera de la Reina, Toledo, Spain
 - Contact: hola@sesmi.org

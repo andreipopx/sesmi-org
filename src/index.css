@@ -1,183 +1,71 @@
-@tailwind base;
+/*
+ * sesmi · tokens, fuentes y base.
+ * Tailwind sigue configurado (lo usan los componentes shadcn de src/components/ui), pero SIN
+ * preflight (@tailwind base): la retícula de src/styles/sesmi.css cuenta con los estilos por
+ * defecto del navegador (subrayado de enlaces, márgenes de listas…).
+ */
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 30 25% 95%;
-    --foreground: 24 18% 10%;
-    --card: 30 20% 92%;
-    --card-foreground: 24 18% 10%;
-    --popover: 30 25% 95%;
-    --popover-foreground: 24 18% 10%;
-    --primary: 27 55% 50%;
-    --primary-foreground: 30 25% 97%;
-    --secondary: 30 18% 90%;
-    --secondary-foreground: 24 18% 10%;
-    --muted-foreground: 28 8% 50%;
-    --accent-foreground: 24 18% 10%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 24 18% 10% / 0.1;
-    --input: 24 18% 10% / 0.1;
-    --ring: 27 55% 50%;
-    --radius: 0px;
-
-    /* Sesmi design system tokens */
-    --bg: #F7F3EE;
-    --bg-2: #F0EBE3;
-    --bg-3: #E8E1D6;
-    --ink: #1C1814;
-    --ink-secondary: #2E2720;
-    --accent: #7A1F10;
-    --muted: #8A7F74;
-    --muted-2: #B5AA9E;
-    --offwhite: #FAF8F5;
-    --line: rgba(28, 24, 20, 0.1);
-
-    --font-grotezk: 'Apfel Grotezk Mittel', serif;
-    --font-editorial: 'Junicode', Georgia, serif;
-    --font-haas: 'Alte Haas Grotesk', sans-serif;
-    --font-mono: 'Liberation Mono', monospace;
-
-    --max-prose: 680px;
-    --nav-height: 60px;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    background-color: var(--bg);
-    color: var(--ink);
-    font-family: var(--font-editorial);
-    font-size: 18px;
-    line-height: 1.85;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    font-feature-settings: "kern" 1, "liga" 1;
-  }
-  h1, h2, h3, h4 {
-    line-height: 1.15;
-  }
-  /* Énfasis editorial: italic, no bold en cuerpo */
-  p em, li em { font-style: italic; font-weight: inherit; }
-}
-
-/* Wordmark — siempre Apfel Grotezk Mittel, hereda tamaño */
-.wm {
-  font-family: 'Apfel Grotezk Mittel', serif;
+/* ── fuentes (autoalojadas en public/fonts, OFL) ── */
+@font-face {
+  font-family: "Apfel";
+  src: url("/fonts/ApfelGrotezk-Mittel.woff2") format("woff2");
+  font-weight: 500;
   font-style: normal;
-  font-size: inherit;
-  line-height: inherit;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Apfel Fett";
+  src: url("/fonts/ApfelGrotezk-Fett.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-Variable.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-Italic-Variable.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: italic;
+  font-display: swap;
 }
 
-/* System cursor */
-html {
-  cursor: auto;
+/* ── tokens: tres colores (papel, tinta, rojo) y sus mezclas ── */
+:root {
+  --paper: #F7F3EE;
+  --paper-2: #EFE9E1;
+  --paper-3: #E6DED3;
+  --ink: #1C1814;
+  --ink-2: color-mix(in srgb, var(--ink) 70%, var(--paper));
+  --ink-3: color-mix(in srgb, var(--ink) 48%, var(--paper));
+  --red: #7A1F10;
+  --rule: color-mix(in srgb, var(--ink) 14%, transparent);
+
+  /* Apfel Grotezk Mittel: titulares, etiquetas, nav y wordmark; Fett: el titular del hero */
+  --display: "Apfel", "Helvetica Neue", Arial, sans-serif;
+  --display-strong: "Apfel Fett", "Apfel", "Helvetica Neue", Arial, sans-serif;
+  --label: "Apfel", "Helvetica Neue", Arial, sans-serif;
+  /* Instrument Sans: todo el texto */
+  --text: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-size: 17px;
+  --text-lh: 1.58;
+  --text-it: italic;
+
+  --radius: 0px;
+  color-scheme: light;
 }
 
-/* Eliminar cualquier grain/noise overlay */
-.grain, .noise, [class*="grain"], [class*="noise"] {
-  display: none !important;
-}
-
-/* Grid background for hero */
-.grid-bg {
-  background-image:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 80px 80px;
-}
-
-/* Ticker animation */
-@keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.ticker-track {
-  animation: ticker-scroll 40s linear infinite;
-}
-.ticker-track:hover {
-  animation-play-state: paused;
-}
-
-/* Card hover line effect */
-.card-hover-line {
-  position: relative;
-  overflow: hidden;
-}
-.card-hover-line::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.35s ease;
-}
-.card-hover-line:hover::before {
-  transform: scaleX(1);
-}
-
-/* Logo dot pulse */
-@keyframes cursor-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-.logo-dot {
-  animation: cursor-pulse 2.8s ease-in-out infinite;
-}
-
-/* Reading progress bar */
-.reading-progress {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  height: 2px;
-  background: var(--accent);
-  z-index: 100;
-  border-radius: 0;
-  transition: width 0.1s linear;
-}
-
-/* Section header ASCII lines (functional → haas) */
-.section-header-line {
-  font-family: var(--font-haas);
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-align: center;
-}
-
-/* Label style (functional → haas) */
-.label-style {
-  font-family: var(--font-haas);
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--muted-2);
-}
-
-/* Focus visible for input */
-input:focus-visible, textarea:focus-visible {
-  outline: none;
-  border-color: var(--accent) !important;
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: var(--text-size);
+  line-height: var(--text-lh);
 }
