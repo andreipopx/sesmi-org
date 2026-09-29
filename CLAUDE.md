@@ -50,7 +50,7 @@ Titles/favicons live in the `META` map in `SiteLayout.tsx` — add new routes th
 | `Sprite.tsx` | `<Sprite/>` hidden SVG symbols (`#arr` arrow, `#f-buho/#f-caballo/#f-paloma`) + `<Arrow/>` |
 | `Fig.tsx` | Brand figure (`name` buho/caballo/paloma, `variant` menor <64px / mayor ≥64px, `anim`, `label`). Decorative (aria-hidden) unless `label` |
 | `Wordmark.tsx` | `<Wordmark dot="red|ink"/>` vector wordmark (i-dot = red square); `<Sesmi/>` for «sesmi» inside running text |
-| `Hero.tsx` | Home hero: «s e s m i» letter pattern + big wordmark; square magnifier inverts to «debemos saber.» over a figure pattern (mouse follows; touch opens 2.2 s); red square cursor; toggles `html.hero-wm-visible` so the top-bar wordmark hides while the hero wordmark is visible |
+| `Hero.tsx` | Home hero: «s e s m i» letter pattern + big wordmark; square magnifier inverts to «debemos saber.» over a figure pattern (mouse follows); on touch there is no magnifier: a tap flips the whole hero to that hidden face (stepped reveal from the tap point) and another tap flips it back; red square cursor; toggles `html.hero-wm-visible` so the top-bar wordmark hides while the hero wordmark is visible (not while flipped, `html.hero-flip`) |
 | `Illustration.tsx` | Line illustrations `rings` (SESMI-001, 750 M€) and `stall` (SESMI-002); animate every 180 ms only while on screen |
 | `MethodDiagram.tsx` | «Cómo trabajamos» cell diagram (datos → análisis → paper + divulgativa) with the red marker running the flow |
 | `PillarHeader.tsx` | Page header of each pillar: back cell, signature (figure · wordmark · section), h1, lema, intro, big figure (`fig="all"` = three) |
