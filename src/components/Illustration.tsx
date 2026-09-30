@@ -1,14 +1,15 @@
+import { ticker } from "@/lib/ticker";
 import { useEffect, useRef, type ReactElement } from "react";
 
 /**
  * Ilustraciones de línea de las publicaciones:
  *  - rings: SESMI-001 (750 M€ que se dispersan en anillos)
  *  - stall: SESMI-002 (una curva que intenta arrancar y se cala)
- * Se animan a ~180 ms por paso solo mientras están en pantalla (también con reduced-motion: decisión de marca).
+ * Se animan a 5 pasos por segundo solo mientras están en pantalla (también con reduced-motion: decisión de marca).
  */
 export type IllustrationKind = "rings" | "stall";
 
-const TICK = 180;
+const FPS = 5; // divide a 60: pasos de duración exacta
 const W = 640, H = 320;
 
 // ── rings
@@ -46,7 +47,7 @@ export function Illustration({ kind }: { kind: IllustrationKind }) {
   useEffect(() => {
     const host = hostRef.current, svg = svgRef.current;
     if (!host || !svg) return;
-    let f = 0, timer: number | null = null;
+    let f = 0;
     // anillos ordenados del menor al mayor
     const rg = [...svg.querySelectorAll<SVGRectElement>(".rg")].sort((a, b) => +a.dataset.i! - +b.dataset.i!);
     const mk = svg.querySelector<SVGRectElement>(".mk");
@@ -67,14 +68,10 @@ export function Illustration({ kind }: { kind: IllustrationKind }) {
         mk.setAttribute("opacity", "1");
       }
     };
-    const io = new IntersectionObserver((es) =>
-      es.forEach((e) => {
-        if (e.isIntersecting && timer === null) timer = window.setInterval(tick, TICK);
-        else if (!e.isIntersecting && timer !== null) { clearInterval(timer); timer = null; }
-      }),
-    );
+    const tk = ticker(FPS, tick);
+    const io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? tk.start() : tk.stop())));
     io.observe(host);
-    return () => { io.disconnect(); if (timer !== null) clearInterval(timer); };
+    return () => { io.disconnect(); tk.stop(); };
   }, [kind]);
 
   let body: ReactElement;

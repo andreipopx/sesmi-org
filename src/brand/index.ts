@@ -27,7 +27,8 @@ interface Sequence {
   frames: (variant: FigVariant) => Frames;
 }
 
-// A pocos fps, estilo dibujo animado a mano (mismo ritmo que el kit del prototipo).
+// A pocos fps, estilo dibujo animado a mano. Los fps dividen a 60 (5, 6…) para que cada fotograma
+// dure los mismos refrescos de pantalla (ver src/lib/ticker.ts).
 export const SEQ: Record<FigName, Sequence> = {
   buho: {
     fps: 5,
@@ -36,18 +37,18 @@ export const SEQ: Record<FigName, Sequence> = {
     origin: [50, 85],
   },
   caballo: {
-    // Las 5 posturas de galope del dibujo original con una intermedia entre cada par (10 fotogramas).
-    // Empieza en el galope volador (= dibujo quieto) y la última intermedia vuelve a él: empalma al parar.
-    fps: 12,
+    // Las 5 posturas de galope originales + una intermedia al volver al galope volador (= dibujo quieto),
+    // para que el bucle y la parada empalmen. 6 fps: divide a 60, todos los pasos duran lo mismo.
+    fps: 6,
     frames: () => FRAMES.caballo.run,
-    steps: [["g1", 0, -0.5], ["g2", 0.25, -0.25], ["g3", 0.5, 0], ["g4", 0, -0.75], ["g5", -0.5, -1.5], ["g6", -1, -1], ["g7", -1.5, -0.5], ["g8", -0.25, -0.25], ["g9", 1, 0], ["g10", 0.5, -0.25]],
+    steps: [["g1", 0, -0.5], ["g2", 0.5, 0], ["g3", -0.5, -1.5], ["g4", -1.5, -0.5], ["g5", 1, 0], ["g6", 0.5, -0.25]],
     origin: [50, 50],
   },
   paloma: {
-    // Aleteo simétrico: el ala baja y vuelve a subir por los mismos pasos, así el ciclo empalma
-    fps: 10,
+    // Aleteo simétrico de 6 fotogramas (el ala baja y sube por los mismos pasos); 6 fps.
+    fps: 6,
     frames: () => FRAMES.paloma.flap,
-    steps: [["f1", 0, 1], ["f2", 0, 0.5], ["f3", 0, -0.5], ["f4", 0, -1.5], ["f5", 0, -2], ["f6", 0, -1.5], ["f7", 0, -0.5], ["f8", 0, 0.5]],
+    steps: [["f1", 0, 1], ["f2", 0, -0.5], ["f3", 0, -1.5], ["f4", 0, -2], ["f5", 0, -1.5], ["f6", 0, -0.5]],
     origin: [50, 50],
   },
 };

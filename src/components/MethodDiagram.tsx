@@ -1,3 +1,4 @@
+import { ticker } from "@/lib/ticker";
 import { useEffect, useRef } from "react";
 
 type Pt = [number, number];
@@ -28,6 +29,8 @@ const place = (el: HTMLElement, [x, y]: Pt) => {
   el.style.opacity = "1";
 };
 
+const FPS = 5; // divide a 60: pasos de duración exacta
+
 /** «Cómo trabajamos»: del dato abierto a dos publicaciones, con un marcador rojo que recorre el flujo. */
 export function MethodDiagram() {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,7 +41,7 @@ export function MethodDiagram() {
     const m1 = meth.querySelector<HTMLElement>(".cn1 .mk")!;
     const m2 = [...meth.querySelectorAll<HTMLElement>(".cn2 .mk")];
     const narrow = window.matchMedia("(max-width:860px)");
-    let f = 0, timer: number | null = null;
+    let f = 0;
     const tick = () => {
       f++;
       const g = f % 26, v = narrow.matches;
@@ -51,14 +54,10 @@ export function MethodDiagram() {
         } else m.style.opacity = "0";
       });
     };
-    const io = new IntersectionObserver((es) =>
-      es.forEach((e) => {
-        if (e.isIntersecting && timer === null) timer = window.setInterval(tick, 180);
-        else if (!e.isIntersecting && timer !== null) { clearInterval(timer); timer = null; }
-      }),
-    );
+    const tk = ticker(FPS, tick);
+    const io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? tk.start() : tk.stop())));
     io.observe(meth);
-    return () => { io.disconnect(); if (timer !== null) clearInterval(timer); };
+    return () => { io.disconnect(); tk.stop(); };
   }, []);
 
   return (
