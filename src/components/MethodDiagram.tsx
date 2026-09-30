@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { prefersReducedMotion } from "@/brand";
 
 type Pt = [number, number];
 
@@ -35,7 +34,7 @@ export function MethodDiagram() {
 
   useEffect(() => {
     const meth = ref.current;
-    if (!meth || prefersReducedMotion()) return;
+    if (!meth) return;
     const m1 = meth.querySelector<HTMLElement>(".cn1 .mk")!;
     const m2 = [...meth.querySelectorAll<HTMLElement>(".cn2 .mk")];
     const narrow = window.matchMedia("(max-width:860px)");

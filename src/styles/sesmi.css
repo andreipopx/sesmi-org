@@ -82,8 +82,6 @@ html.hero-wm-visible:not(.hero-flip) .top .brand{opacity:0;pointer-events:none}
 /* táctil: la cara oculta se despliega entera desde donde se toca, a saltos */
 .hero.flip .inv{clip-path:inset(0 0 0 0)}
 @media not ((hover:hover) and (pointer:fine)){.inv{transition:clip-path .42s steps(6,end)}}
-@media (prefers-reduced-motion:reduce){.inv{transition:none}}
-@media (prefers-reduced-motion:reduce){.top .brand{transition:none}}
 /* ── tarjetas a medias ── */
 .cards{display:grid;grid-template-columns:1fr 1fr;border-bottom:var(--ln)}
 .card{--cbg:var(--paper-2);position:relative;display:flex;flex-direction:column;min-height:400px;padding:36px 40px 32px;text-decoration:none;overflow:hidden;background:var(--cbg);transition:background .25s,color .25s}
@@ -432,7 +430,4 @@ a.row:focus-visible{outline:2px solid var(--paper);outline-offset:-7px}
   .foot .b .f [data-wm]{width:44px}
   .foot .b .ln{flex-direction:column;padding:28px var(--pad) 32px 18px}
 }
-@media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  *,*::before,*::after{transition:none!important;animation:none!important}
-}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

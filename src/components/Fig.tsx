@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { FIGS, SEQ, prefersReducedMotion, type FigName, type FigVariant } from "@/brand";
+import { FIGS, SEQ, type FigName, type FigVariant } from "@/brand";
 
 interface FigProps {
   name: FigName;
@@ -37,7 +37,6 @@ export function Fig({ name, variant = "menor", anim = false, label, className }:
       g.setAttribute("transform", `translate(0 ${y}) rotate(${r} ${Q.origin[0]} ${Q.origin[1]})`);
     };
     const play = (ms?: number) => {
-      if (prefersReducedMotion()) return;
       stopAt = ms ? Date.now() + ms : 0;
       if (timer === null) { i = 0; step(); timer = window.setInterval(step, 1000 / Q.fps); }
     };

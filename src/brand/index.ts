@@ -36,20 +36,20 @@ export const SEQ: Record<FigName, Sequence> = {
     origin: [50, 85],
   },
   caballo: {
-    fps: 7,
+    // Galope transverso (Muybridge), 8 posturas; empieza y acaba en la más parecida al dibujo quieto
+    fps: 10,
     frames: () => FRAMES.caballo.run,
-    steps: [["g1", 0, -0.5], ["g2", 0.5, 0], ["g3", -0.5, -1.5], ["g4", -1.5, -0.5], ["g5", 1, 0]],
+    steps: [["g8", 0, 0], ["g1", 0, 0], ["g2", 0, 0], ["g3", 0, 0], ["g4", 0, 0], ["g5", 0, 0], ["g6", 0, 0], ["g7", 0, 0]],
     origin: [50, 50],
   },
   paloma: {
-    fps: 7,
+    // Aleteo simétrico: el ala baja y vuelve a subir por los mismos pasos, así el ciclo empalma
+    fps: 10,
     frames: () => FRAMES.paloma.flap,
-    steps: [["f1", -0.5, 1], ["f2", 0, 0.5], ["f3", 0.5, -0.5], ["f4", 0.5, -1.5], ["f5", 0, -2], ["f6", -0.5, -0.5]],
+    steps: [["f1", 0, 1], ["f2", 0, 0.5], ["f3", 0, -0.5], ["f4", 0, -1.5], ["f5", 0, -2], ["f6", 0, -1.5], ["f7", 0, -0.5], ["f8", 0, 0.5]],
     origin: [50, 50],
   },
 };
 
 export const FIG_NAMES: FigName[] = ["buho", "caballo", "paloma"];
 
-export const prefersReducedMotion = () =>
-  typeof window !== "undefined" && !!window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
