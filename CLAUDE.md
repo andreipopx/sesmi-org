@@ -1,5 +1,5 @@
 # CLAUDE.md — sesmi.org
-> Agent reference for the sesmi.org frontend repo. Last updated: 2026-09-29.
+> Agent reference for the sesmi.org frontend repo. Last updated: 2026-09-30.
 
 ---
 
@@ -56,6 +56,15 @@ Titles/favicons live in the `META` map in `SiteLayout.tsx` — add new routes th
 | `PillarHeader.tsx` | Page header of each pillar: back cell, signature (figure · wordmark · section), h1, lema, intro, big figure (`fig="all"` = three) |
 | `RowLink.tsx` | Numbered grid row that is one link (internal `<Link>` or `mailto:`) |
 | `WaitlistRow.tsx` | Waitlist form row — **mock** (preventDefault, «Apuntado. Te avisamos cuando salga.») |
+
+### Promo video (`promo/reel/`)
+
+Vertical reel/story (1080×1920, 30 fps, ~40 s, with sound) built from the site's own brand assets —
+not part of the Vite build. `reel.html` draws every scene as a pure function of time (fonts from
+`public/fonts/`, figures and wordmark from `src/brand/brand.json`, scene times in `timeline.json`);
+`render.mjs` screenshots it frame by frame with Playwright/Chromium and pipes to ffmpeg, also dumping the
+page's sound events; `audio.py` (numpy) synthesises the soundtrack synced to those events.
+`./promo/reel/build.sh` regenerates `promo/reel/sesmi-reel.mp4` (intermediate files go to the ignored `out/`).
 
 Brand data: `src/brand/brand.json` (figure paths in a 100×100 box, animation frames, wordmark) and
 `src/brand/index.ts` (typed access + `SEQ` animation sequences). SVG exports in `public/brand/`.

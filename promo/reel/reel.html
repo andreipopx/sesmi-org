@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · reel</title>
+<!--
+  Reel vertical de sesmi (1080×1920). Lo pinta render.mjs fotograma a fotograma: inyecta
+  window.BRAND (src/brand/brand.json) y window.TL (timeline.json) y llama a renderAt(t).
+  Todo es función del tiempo t (sin transiciones CSS), así cada fotograma es determinista.
+-->
+<style>
+@font-face{font-family:"Apfel";src:url("../../public/fonts/ApfelGrotezk-Mittel.woff2") format("woff2");font-weight:500}
+@font-face{font-family:"Apfel Fett";src:url("../../public/fonts/ApfelGrotezk-Fett.woff2") format("woff2");font-weight:700}
+@font-face{font-family:"Instrument Sans";src:url("../../public/fonts/InstrumentSans-Variable.woff2") format("woff2");font-weight:400 700;font-style:normal}
+@font-face{font-family:"Instrument Sans";src:url("../../public/fonts/InstrumentSans-Italic-Variable.woff2") format("woff2");font-weight:400 700;font-style:italic}
+:root{
+  --paper:#F7F3EE;--paper-2:#EFE9E1;--paper-3:#E6DED3;--ink:#1C1814;--red:#7A1F10;
+  --ink-2:color-mix(in srgb,var(--ink) 70%,var(--paper));--ink-3:color-mix(in srgb,var(--ink) 48%,var(--paper));
+  --sub:color-mix(in srgb,var(--ink) 64%,var(--paper));--rule:color-mix(in srgb,var(--ink) 14%,transparent);
+  --display:"Apfel",sans-serif;--strong:"Apfel Fett",sans-serif;--text:"Instrument Sans",sans-serif;
+  --ln:1px solid var(--ink);--pad:36px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper)}
+#stage{position:relative;width:540px;height:960px;overflow:hidden;background:var(--paper);color:var(--ink);
+  font:400 18px/1.5 var(--text);-webkit-font-smoothing:antialiased}
+.sc{position:absolute;inset:0;display:none}
+.abs{position:absolute}
+.lbl{font:500 11px/1.3 var(--display);letter-spacing:.08em;text-transform:uppercase}
+.sq{display:inline-block;width:8px;height:8px;background:var(--red);flex:none}
+.sq.o{background:none;box-shadow:inset 0 0 0 1px currentColor}
+.wm{font-family:var(--display);font-weight:500}
+.wmk{display:block}.wmk svg{display:block;width:100%;height:auto;overflow:visible}
+.fig svg{display:block;width:100%;height:100%}
+.w{visibility:hidden}
+.red{color:var(--red)}
+
+/* marco persistente: barra superior e inferior como la retícula de la web */
+#chrome{position:absolute;inset:0;display:none;pointer-events:none;z-index:5}
+#chrome .top{position:absolute;left:0;right:0;top:0;height:64px;border-bottom:var(--ln);display:flex;align-items:stretch;background:var(--paper)}
+#chrome .top .b{width:120px;border-right:var(--ln);display:flex;align-items:center;justify-content:center}
+#chrome .top .b .wmk{width:78px}
+#chrome .top .n{flex:1;display:flex;align-items:center;padding:0 20px;color:var(--ink-2)}
+#chrome .bot{position:absolute;left:0;right:0;bottom:0;height:64px;border-top:var(--ln);display:flex;align-items:stretch;background:var(--paper)}
+#chrome .bot .u{width:120px;border-right:var(--ln);display:flex;align-items:center;justify-content:center;font:500 14px/1 var(--display)}
+#chrome .bot .pg{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0 20px}
+#chrome .bot .pg i{width:9px;height:9px;box-shadow:inset 0 0 0 1px var(--ink)}
+#chrome .bot .pg i.on{background:var(--red);box-shadow:none}
+#chrome .bot .pg i.done{background:var(--ink)}
+
+/* intro y cierre: patrón «s e s m i» */
+.pat{position:absolute;inset:0;display:grid;grid-template-columns:repeat(9,60px);grid-auto-rows:60px}
+.pat span{display:flex;align-items:center;justify-content:center;font:700 30px/1 var(--strong);color:color-mix(in srgb,var(--ink) 6.5%,transparent);visibility:hidden}
+
+/* textos grandes */
+.big{font:500 50px/1.0 var(--display);letter-spacing:-.035em}
+.mid{font:500 30px/1.08 var(--display);letter-spacing:-.02em}
+.body{font:400 19px/1.5 var(--text);color:var(--sub)}
+.lema{font:italic 400 24px/1.2 var(--text);color:var(--red)}
+
+/* cita */
+.qt{font:500 46px/.99 var(--display);letter-spacing:-.042em}
+.qt .gq{color:var(--red)}
+.ul.hot{color:var(--red)}
+
+/* cara oculta */
+#flipL{position:absolute;inset:0;background:var(--ink);color:var(--paper);z-index:6}
+#flipL .pat2{position:absolute;inset:0;display:grid;grid-template-columns:repeat(9,60px);grid-auto-rows:60px}
+#flipL .pat2 span{display:flex;align-items:center;justify-content:center;color:color-mix(in srgb,var(--paper) 15%,transparent)}
+#flipL .pat2 .fig{width:40px;height:40px}
+.ht{font:700 112px/.9 var(--strong);letter-spacing:-.045em}
+.ht .dot{display:inline-block;width:.17em;height:.17em;background:var(--paper);margin-left:.04em}
+.ht.onpaper .dot{background:var(--red)}
+
+/* patas */
+.panel{position:absolute;left:0;right:0;border-top:var(--ln);border-bottom:var(--ln);background:var(--paper-2)}
+.idx{position:absolute;left:0;right:0;display:grid;grid-template-columns:repeat(3,1fr);border-top:var(--ln)}
+.idx div{height:100%;display:flex;align-items:center;justify-content:center;gap:12px}
+.idx div+div{border-left:var(--ln)}
+.idx div.on{background:var(--ink);color:var(--paper)}
+.idx .fig{width:58px;height:58px}
+
+/* publicaciones */
+.meta{display:flex;align-items:center;gap:14px}
+.meta .st{display:flex;align-items:center;gap:9px;color:var(--ink-3)}
+.ill svg{display:block;width:100%;height:100%}
+.ill .tg{font:500 13px var(--display);letter-spacing:.06em;fill:var(--red)}
+.num{font:500 92px/.9 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.chap{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.chap>div{padding:0 10px 0 0;visibility:hidden}
+.chap .h{display:flex;align-items:center;justify-content:space-between;font:500 14px/1 var(--display);color:var(--ink-3);margin-bottom:10px}
+.chap .bar{height:3px;background:var(--rule)}
+.chap .on .bar{background:var(--red)}
+
+/* principios */
+.prow{position:absolute;left:0;right:0;height:112px;display:grid;grid-template-columns:120px 1fr;border-top:var(--ln);visibility:hidden}
+.prow .k{border-right:var(--ln);display:flex;align-items:center;justify-content:center;font:500 22px/1 var(--display);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.prow .c{padding:22px 22px 0}
+.prow h3{margin:0;font:500 30px/1.05 var(--display);letter-spacing:-.02em}
+.prow p{margin:8px 0 0;font:400 17px/1.35 var(--text);color:var(--sub)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="chrome">
+    <div class="top"><div class="b"><span class="wmk" data-wm="red"></span></div><div class="n lbl">Sociedad Económica de San Miguel</div></div>
+    <div class="bot"><div class="u">sesmi.org</div><div class="pg" id="pg"></div></div>
+  </div>
+
+  <!-- 1 · intro -->
+  <section class="sc" id="intro">
+    <div class="pat" id="pat1"></div>
+    <div class="abs" style="left:70px;top:360px;width:400px"><span class="wmk" id="wmIntro"></span></div>
+    <div class="abs lbl" style="left:0;right:0;top:512px;text-align:center;font-size:13px" data-at="2.0" data-ev="stamp2">Sociedad Económica de San Miguel</div>
+    <div class="abs body" style="left:0;right:0;top:538px;text-align:center;font-size:18px" data-at="2.5">Talavera de la Reina · Toledo</div>
+    <div class="abs" style="left:0;right:0;top:630px;display:flex;justify-content:center;gap:34px" id="trioIntro"></div>
+  </section>
+
+  <!-- 2 · el vacío -->
+  <section class="sc" id="vacio">
+    <div class="abs lbl" style="left:var(--pad);top:132px;color:var(--ink-3)" data-at="4.0">Por qué existimos</div>
+    <div class="abs big" style="left:var(--pad);right:var(--pad);top:170px" id="vacioT"></div>
+    <div class="abs body" style="left:var(--pad);right:60px;top:420px;font-size:21px;color:var(--ink-2)" id="vacioB"></div>
+    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:560px;display:flex;gap:14px;align-items:baseline" id="vacioC"></div>
+  </section>
+
+  <!-- 3 · cita del manifiesto -->
+  <section class="sc" id="quote">
+    <div class="abs lbl" style="left:var(--pad);top:132px;color:var(--ink-3)" data-at="9.0">Manifiesto</div>
+    <div class="abs qt" style="left:calc(var(--pad) + 20px);right:28px;top:200px" id="quoteT"></div>
+    <div class="abs" style="left:var(--pad);right:var(--pad);top:560px;border-top:var(--ln)" data-at="11.4"></div>
+    <div class="abs body" style="left:var(--pad);right:var(--pad);top:576px;color:var(--ink-3)" data-at="11.4">Del manifiesto de <span class="wm">sesmi</span></div>
+    <div class="abs body" style="left:var(--pad);right:40px;top:622px;font-size:20px;color:var(--ink-2)" id="quoteB"></div>
+  </section>
+
+  <!-- 4 · la cara oculta: «debemos saber.» -->
+  <section class="sc" id="flip">
+    <div id="flipL">
+      <div class="pat2" id="pat2"></div>
+      <div class="abs lbl" style="left:0;right:0;top:250px;text-align:center;color:color-mix(in srgb,var(--paper) 60%,var(--ink));font-size:13px" data-at="13.5">Principio fundacional</div>
+      <div class="abs ht" style="left:0;right:0;top:300px;text-align:center" id="flipT"><div data-at="13.45">debemos</div><div data-at="13.7">saber<span class="dot"></span></div></div>
+      <div class="abs" style="left:56px;right:56px;top:560px;text-align:center;font:400 21px/1.45 var(--text);color:color-mix(in srgb,var(--paper) 74%,var(--ink))" id="flipB"></div>
+    </div>
+  </section>
+
+  <!-- 5 · las tres patas (una sección por figura, misma plantilla) -->
+  <template id="pillarTpl">
+    <section class="sc">
+      <div class="abs lbl" style="left:var(--pad);top:88px;color:var(--ink-3)">Las tres patas</div>
+      <div class="abs lbl" style="right:var(--pad);top:88px;color:var(--ink-3)" data-k="n"></div>
+      <div class="panel" style="top:120px;height:330px"><div class="abs fig" data-k="fig" style="left:125px;top:20px;width:290px;height:290px"></div></div>
+      <div class="abs big" style="left:var(--pad);top:478px;font-size:60px" data-k="h"></div>
+      <div class="abs lema" style="left:var(--pad);top:546px" data-k="lm"></div>
+      <div class="abs body" style="left:var(--pad);right:48px;top:590px;font-size:20px" data-k="tx"></div>
+      <div class="idx" style="top:790px;height:106px" data-k="idx"></div>
+    </section>
+  </template>
+
+  <!-- 6 · SESMI-001 -->
+  <section class="sc" id="m001">
+    <div class="abs meta" style="left:var(--pad);top:96px"><span class="lbl" style="font-size:13px">SESMI-001</span><span class="st lbl"><i class="sq"></i>En elaboración</span></div>
+    <div class="abs big" style="left:var(--pad);right:var(--pad);top:128px;font-size:52px" id="m1T"></div>
+    <div class="abs body" style="left:var(--pad);right:56px;top:246px" id="m1S"></div>
+    <div class="panel" style="top:330px;height:300px;overflow:hidden">
+      <div class="abs ill" style="inset:0" id="rings"></div>
+      <div class="abs lbl" style="left:24px;top:24px;color:var(--ink-3)" data-at="25.3">Inversión de Meta en Talavera</div>
+      <div class="abs num" style="left:22px;top:48px" id="m1N" data-at="25.3"></div>
+    </div>
+    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:650px;font-size:29px" id="m1Q"></div>
+    <div class="abs lbl" style="left:var(--pad);top:772px;color:var(--ink-3)" data-at="27.3">Capítulos</div>
+    <div class="abs chap" style="left:var(--pad);right:26px;top:800px" id="chap"></div>
+  </section>
+
+  <!-- 7 · SESMI-002 -->
+  <section class="sc" id="m002">
+    <div class="abs meta" style="left:var(--pad);top:96px"><span class="lbl" style="font-size:13px">SESMI-002</span><span class="st lbl"><i class="sq o"></i>Próximamente</span></div>
+    <div class="abs big" style="left:var(--pad);right:var(--pad);top:128px;font-size:52px" id="m2T"></div>
+    <div class="abs body" style="left:var(--pad);right:56px;top:246px" id="m2S"></div>
+    <div class="panel" style="top:320px;height:300px;background:var(--paper);overflow:hidden"><div class="abs ill" style="inset:0" id="stall"></div></div>
+    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:650px;font-size:29px;display:flex;gap:14px;align-items:baseline" id="m2Q"></div>
+  </section>
+
+  <!-- 8 · principios -->
+  <section class="sc" id="princ">
+    <div class="abs lbl" style="left:var(--pad);top:96px;color:var(--ink-3)" data-at="31.5">Cómo trabajamos</div>
+    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:124px" id="prT"></div>
+    <div id="prRows"></div>
+  </section>
+
+  <!-- 9 · cierre -->
+  <section class="sc" id="end">
+    <div class="pat" id="pat3"></div>
+    <div class="abs" style="left:80px;top:300px;width:380px"><span class="wmk" id="wmEnd"></span></div>
+    <div class="abs ht onpaper" style="left:0;right:0;top:450px;text-align:center;font-size:52px" data-at="35.6" data-ev="stamp">debemos saber<span class="dot"></span></div>
+    <div class="abs" style="left:0;right:0;top:560px;display:flex;justify-content:center;gap:34px" id="trioEnd"></div>
+    <div class="abs" style="left:0;right:0;top:690px;text-align:center;font:500 30px/1 var(--display)" data-at="36.6" data-ev="pluckHi">sesmi.org</div>
+    <div class="abs lbl" style="left:0;right:0;top:734px;text-align:center;color:var(--ink-3);font-size:12px" data-at="36.9">Talavera de la Reina · Toledo</div>
+  </section>
+</div>
+
+<script>
+(() => {
+const B = window.BRAND, TL = window.TL;
+const NS = "http://www.w3.org/2000/svg";
+const EV = [];
+const ev = (t, k, v) => EV.push({ t: Math.round(t * 1000) / 1000, k, v });
+const $ = (id) => document.getElementById(id);
+const scene = Object.fromEntries(TL.scenes.map(([n, a, b]) => [n, { a, b }]));
+
+// ── wordmark
+const [sqx, sqy, sqw, sqh] = B.wordmark.sq.map(Number);
+function wordmark(host, { clip = false, dot = "red" } = {}) {
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", B.wordmark.vb);
+  const id = "c" + Math.random().toString(36).slice(2);
+  svg.innerHTML =
+    (clip ? `<defs><clipPath id="${id}"><rect x="22" y="-702" height="714" width="0"/></clipPath></defs>` : "") +
+    `<path fill="currentColor" d="${B.wordmark.d}" ${clip ? `clip-path="url(#${id})"` : ""}/>` +
+    `<rect fill="${dot === "red" ? "#7A1F10" : "currentColor"}" x="${sqx}" y="${sqy}" width="${sqw}" height="${sqh}"/>`;
+  host.appendChild(svg);
+  return { clip: svg.querySelector("clipPath rect"), dot: svg.querySelector(":scope > rect") };
+}
+document.querySelectorAll("[data-wm]").forEach((el) => wordmark(el));
+
+// ── figuras (copia de SEQ en src/brand/index.ts)
+const SEQ = {
+  buho: { fps: 5, origin: [50, 85], frames: (v) => B.frames.buho[v],
+    steps: [["s1", 0, 0], ["s2", .5, 0], ["blink1", .8, 0], ["blink2", .8, 0], ["s3", .5, 0], ["s4", 0, 0], ["s1", -.5, 0], ["s2", -.8, 0], ["s3", -.5, 0], ["s4", 0, 0]] },
+  caballo: { fps: 6, origin: [50, 50], frames: () => B.frames.caballo.run,
+    steps: [["g1", 0, -.5], ["g2", .5, 0], ["g3", -.5, -1.5], ["g4", -1.5, -.5], ["g5", 1, 0], ["g6", .5, -.25]] },
+  paloma: { fps: 6, origin: [50, 50], frames: () => B.frames.paloma.flap,
+    steps: [["f1", 0, 1], ["f2", 0, -.5], ["f3", 0, -1.5], ["f4", 0, -2], ["f5", 0, -1.5], ["f6", 0, -.5]] },
+};
+const NAMES = ["buho", "caballo", "paloma"];
+function fig(host, name, variant = "mayor") {
+  const wrap = document.createElement("span");
+  wrap.className = "fig";
+  wrap.style.cssText = "display:block;width:100%;height:100%";
+  wrap.innerHTML = `<svg viewBox="0 0 100 100"><g><path fill="currentColor"/></g></svg>`;
+  host.appendChild(wrap);
+  const g = wrap.querySelector("g"), p = wrap.querySelector("path");
+  const Q = SEQ[name], F = Q.frames(variant), rest = B.figs[name][variant];
+  // t0: inicio del bucle (null = quieta)
+  return (t, t0) => {
+    if (t0 == null || t < t0) { p.setAttribute("d", rest); g.removeAttribute("transform"); return; }
+    const i = Math.floor((t - t0) * Q.fps + 1e-6) % Q.steps.length;
+    const [f, r, y] = Q.steps[i];
+    p.setAttribute("d", F[f]);
+    g.setAttribute("transform", `translate(0 ${y}) rotate(${r} ${Q.origin[0]} ${Q.origin[1]})`);
+  };
+}
+function trio(host) {
+  return NAMES.map((n) => { const d = document.createElement("div"); d.style.cssText = "width:58px;height:58px"; host.appendChild(d); return fig(d, n); });
+}
+// sonidos propios de cada figura en su bucle (casco, parpadeo, ala)
+function figEvents(name, t0, t1) {
+  const Q = SEQ[name];
+  for (let k = 0, t = t0; t < t1 - 1e-6; k++, t = t0 + k / Q.fps) {
+    const f = Q.steps[k % Q.steps.length][0];
+    if (name === "caballo" && ["g1", "g2", "g4"].includes(f)) ev(t, "hoof", f === "g4" ? 1 : 0);
+    if (name === "buho" && f === "blink1") ev(t, "blink");
+    if (name === "paloma" && f === "f2") ev(t, "wing");
+  }
+}
+
+// ── texto palabra a palabra: «*x*» en rojo, «_x_» subrayado rojo
+function words(host, text, t0, rate, kind = "tick") {
+  const toks = text.split(" ");
+  toks.forEach((w, i) => {
+    const s = document.createElement("span");
+    s.className = "w";
+    const at = t0 + i / rate;
+    s.dataset.at = at;
+    let html = w.replace(/\*(.+?)\*/g, '<span class="red">$1</span>').replace(/«/g, '<span class="gq">«</span>').replace(/»/g, '<span class="gq">»</span>');
+    html = html.replace(/\{sesmi\}/g, '<span class="wm">sesmi</span>');
+    if (w.startsWith("_")) { html = html.replace(/_/g, ""); s.classList.add("ul"); s.innerHTML = html; }
+    else s.innerHTML = html;
+    host.appendChild(s);
+    host.appendChild(document.createTextNode(" "));
+    if (kind) ev(at, kind, i);
+  });
+  return t0 + toks.length / rate;
+}
+const lines = (host, specs) => specs.forEach(([txt, t0, rate]) => { const d = document.createElement("div"); host.appendChild(d); words(d, txt, t0, rate); });
+
+// ── marco
+const pg = $("pg");
+const PROG = ["vacio", "quote", "flip", "buho", "caballo", "paloma", "m001", "m002", "princ"];
+PROG.forEach(() => pg.appendChild(document.createElement("i")));
+
+// ── 1 · intro
+const pat1 = $("pat1"), cells1 = [];
+for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) {
+  const s = document.createElement("span"); s.textContent = "sesmi"[(c + r * 2) % 5]; pat1.appendChild(s); cells1.push([s, r, c]);
+}
+const wmI = wordmark($("wmIntro"), { clip: true });
+const LETTER_END = [447, 949, 1397, 2181, 2382];
+const LT0 = .9, LDT = .15;
+LETTER_END.forEach((_, i) => ev(LT0 + i * LDT, "letter", i));
+ev(1.8, "stamp");
+const trI = trio($("trioIntro"));
+ev(2.9, "pluck", 0);
+// patrón que se llena en diagonal (10 pasos/s)
+for (let d = 0; d <= 23; d += 3) ev(d * .04, "pat", d);
+
+// ── 2 · el vacío
+lines($("vacioT"), [
+  ["Las grandes firmas", 4.0, 10],
+  ["no vienen a *Talavera.*", 4.55, 10],
+  ["Ni a *Ponferrada.*", 5.35, 10],
+  ["Ni a *Linares.*", 5.85, 10],
+]);
+words($("vacioB"), "Y cuando vienen, no entienden el contexto porque no son de aquí.", 6.6, 14);
+(() => { const h = $("vacioC"); const sq = document.createElement("i"); sq.className = "sq"; sq.style.cssText = "width:14px;height:14px"; sq.dataset.at = 7.9; h.appendChild(sq); ev(7.9, "stamp"); const d = document.createElement("div"); h.appendChild(d); words(d, "{sesmi} nace para llenar ese vacío.", 7.95, 10); })();
+
+// ── 3 · cita
+words($("quoteT"), "«Las ciudades que nadie analiza merecen _el _mismo _rigor que Madrid o Barcelona.»", 9.1, 7);
+const ULT = 10.95; [0, 1, 2].forEach((i) => ev(ULT + i * .15, "hot", i));
+words($("quoteB"), "Rigor económico para Talavera, Ponferrada, Linares… y todas las ciudades medias.", 11.8, 16);
+
+// ── 4 · cara oculta
+const pat2 = $("pat2"), figs2 = [];
+for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) {
+  const s = document.createElement("span"); const d = document.createElement("div"); d.className = "fig"; s.appendChild(d); pat2.appendChild(s);
+  figs2.push([fig(d, NAMES[(c + r) % 3], "menor"), NAMES[(c + r) % 3]]);
+}
+ev(13, "flip");
+words($("flipB"), "Investigación económica independiente para las ciudades medias españolas.", 14.3, 12);
+
+// ── 5 · patas
+const PILLARS = [
+  ["buho", "Investigación", "Debemos saber", "Análisis económico independiente sobre territorios y mercados locales. En abierto, sin paywalls."],
+  ["caballo", "Servicios", "Fuerza aplicada", "Valoraciones, análisis de impacto y diagnósticos para empresas y organismos públicos."],
+  ["paloma", "Divulgación", "Socorre enseñando", "Datos, herramientas y materiales para estudiantes y profesores de economía."],
+];
+const pillarFx = {};
+PILLARS.forEach(([name, h, lm, tx], pi) => {
+  const { a, b } = scene[name];
+  const sec = $("pillarTpl").content.firstElementChild.cloneNode(true);
+  sec.id = name;
+  $("stage").appendChild(sec);
+  const q = (k) => sec.querySelector(`[data-k="${k}"]`);
+  q("n").textContent = `0${pi + 1} / 03`;
+  const big = fig(q("fig"), name, "mayor");
+  const hEl = q("h"); hEl.textContent = h; hEl.dataset.at = a + .05;
+  const lmEl = q("lm"); lmEl.textContent = lm; lmEl.dataset.at = a + .45;
+  words(q("tx"), tx, a + .85, 13);
+  const small = NAMES.map((n, i) => {
+    const d = document.createElement("div"); if (i === pi) d.className = "on";
+    const f = document.createElement("div"); f.className = "fig"; d.appendChild(f); q("idx").appendChild(d); return fig(f, n, "menor");
+  });
+  ev(a, "pluck", pi + 1); ev(a + .45, "lema", pi);
+  figEvents(name, a + .25, b);
+  pillarFx[name] = (t) => { big(t, a + .25); small.forEach((s, i) => s(t, i === pi ? a + .25 : null)); };
+});
+
+// ── 6 · SESMI-001
+words($("m1T"), "¡Bienvenido, Mr. Meta!", 24.55, 10);
+words($("m1S"), "Un análisis económico independiente del Meta Data Center en Talavera de la Reina.", 24.95, 16);
+const W = 640, H = 320, CX = 470, CY = 236;
+(() => {
+  let s = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMaxYMax slice">`;
+  for (let k = 0; k < 10; k++) { const i = 10 - k, d = 18 * Math.pow(1.36, i), o = +(0.5 - i * 0.034).toFixed(3);
+    s += `<rect class="rg" data-i="${i}" data-o="${o}" x="${(CX - d / 2).toFixed(1)}" y="${(CY - d / 2).toFixed(1)}" width="${d.toFixed(1)}" height="${d.toFixed(1)}" fill="none" stroke="currentColor" stroke-opacity="${o}" vector-effect="non-scaling-stroke"/>`; }
+  s += `<line x1="0" y1="${CY}" x2="${W}" y2="${CY}" stroke="currentColor" stroke-opacity=".18" stroke-dasharray="2 5" vector-effect="non-scaling-stroke"/>`;
+  s += `<line x1="${CX}" y1="0" x2="${CX}" y2="${H}" stroke="currentColor" stroke-opacity=".18" stroke-dasharray="2 5" vector-effect="non-scaling-stroke"/>`;
+  s += `<rect x="${CX - 8}" y="${CY - 8}" width="16" height="16" fill="#7A1F10"/></svg>`;
+  $("rings").innerHTML = s;
+})();
+const rings = [...$("rings").querySelectorAll(".rg")].sort((a, b) => a.dataset.i - b.dataset.i);
+const N0 = 25.3, N1 = 26.3; // cuenta 0 → 750 a 10 pasos/s
+for (let k = 0; k <= 10; k++) ev(N0 + k / 10, "count", k);
+ev(N1 + .02, "stamp");
+for (let k = 0; k < 20; k++) if (k % 14 === 1) ev(24.5 + k / 5, "ring");
+(() => { const h = $("m1Q"); words(h, "¿Cuánto de ese dinero se queda realmente en la ciudad?", 26.55, 12); })();
+const CHAP = [["01", 1], ["02", 1], ["03", 0], ["04", 0], ["05", 0]];
+CHAP.forEach(([k, on], i) => {
+  const d = document.createElement("div"); d.className = on ? "on" : "";
+  d.innerHTML = `<div class="h">${k}<i class="sq ${on ? "" : "o"}"></i></div><div class="bar"></div>`;
+  d.dataset.at = 27.4 + i * .1; $("chap").appendChild(d); ev(27.4 + i * .1, "chap", i);
+});
+
+// ── 7 · SESMI-002
+words($("m2T"), "Talavera, la ciudad que no arranca", 28.55, 10);
+words($("m2S"), "Diagnóstico económico independiente de una ciudad media española.", 29.0, 16);
+const BASE = 262, TRIES = [[70, 46, 22], [170, 70, 26], [270, 58, 24], [372, 86, 28], [478, 64, 24], [572, 40, 20]];
+const STALL = [];
+for (let x = 0; x <= W; x += 4) {
+  let y = BASE;
+  TRIES.forEach(([c, a, w]) => { const u = (x - c) / w; y -= x < c ? a * Math.exp((-u * u) / 3.2) : a * Math.exp(-Math.pow(u * 2.6, 2)); });
+  y += Math.sin(x * .21) * 1.4; STALL.push([x, BASE - (BASE - y) * 1.8]);
+}
+(() => {
+  let s = `<svg viewBox="0 40 ${W} 250" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="sc"><rect id="stClip" x="0" y="0" height="${H}" width="0"/></clipPath></defs>`;
+  for (let y = 70; y <= BASE; y += 24) s += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="currentColor" stroke-opacity="${y === BASE ? .5 : .13}" vector-effect="non-scaling-stroke"/>`;
+  s += `<path clip-path="url(#sc)" d="${STALL.map(([x, y], k) => (k ? "L" : "M") + x + " " + y.toFixed(1)).join("")}" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+  TRIES.forEach(([c, a]) => { s += `<line clip-path="url(#sc)" x1="${c}" y1="${BASE - a * 1.8 - 16}" x2="${c}" y2="${BASE - a * 1.8 - 6}" stroke="currentColor" stroke-opacity=".45" vector-effect="non-scaling-stroke"/>`; });
+  s += `<rect id="stMk" width="14" height="14" fill="#7A1F10"/></svg>`;
+  $("stall").innerHTML = s;
+})();
+const ST0 = 29.1, ST1 = 31.0, STF = 10; // dibujo a 10 pasos/s
+const stallX = (t) => Math.min(1, Math.max(0, Math.floor((t - ST0) * STF + 1e-6) / ((ST1 - ST0) * STF))) * W;
+TRIES.forEach(([c, a], i) => { const k = Math.ceil((c / W) * (ST1 - ST0) * STF); ev(ST0 + k / STF - .12, "rev", a); });
+(() => { const h = $("m2Q"); const sq = document.createElement("i"); sq.className = "sq o"; sq.style.cssText = "width:14px;height:14px;color:var(--ink)"; sq.dataset.at = 31.0; h.appendChild(sq); const d = document.createElement("div"); h.appendChild(d); words(d, "Próximamente.", 31.0, 10); })();
+
+// ── 8 · principios
+words($("prT"), "Economía rigurosa que entiende la gente.", 31.6, 12);
+const PR = [["01", "Independencia", "Análisis honesto, aunque incomode."], ["02", "Datos abiertos", "Fuentes públicas. Sin paywalls."], ["03", "Dos profundidades", "Paper académico y versión divulgativa."], ["04", "Conocer el territorio", "Desde Talavera de la Reina."]];
+PR.forEach(([k, h, p], i) => {
+  const d = document.createElement("div"); d.className = "prow"; d.style.top = 250 + i * 112 + "px";
+  if (i === PR.length - 1) d.style.borderBottom = "var(--ln)";
+  const at = 32.4 + i * .5; d.dataset.at = at;
+  d.innerHTML = `<div class="k">${k}</div><div class="c"><h3>${h}</h3><p>${p}</p></div>`;
+  $("prRows").appendChild(d); ev(at, "row", i);
+});
+
+// ── 9 · cierre
+const pat3 = $("pat3"), cells3 = [];
+for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) { const s = document.createElement("span"); s.textContent = "sesmi"[(c + r * 2) % 5]; pat3.appendChild(s); cells3.push([s, r, c]); }
+const wmE = wordmark($("wmEnd"), { clip: true });
+LETTER_END.forEach((_, i) => ev(35.05 + i * .08, "letter", i + 2));
+const trE = trio($("trioEnd"));
+ev(35, "end");
+
+// data-at → sonidos declarados en el HTML
+document.querySelectorAll("[data-ev]").forEach((el) => ev(+el.dataset.at, el.dataset.ev));
+EV.sort((a, b) => a.t - b.t);
+window.EVENTS = EV;
+
+// ── pintar
+const atEls = [...document.querySelectorAll("[data-at]")];
+const q10 = (t) => Math.floor(t * 10 + 1e-6) / 10;
+
+window.renderAt = (t) => {
+  let cur = TL.scenes.find(([, a, b]) => t >= a && t < b) || TL.scenes[TL.scenes.length - 1];
+  const name = cur[0];
+  TL.scenes.forEach(([n]) => { $(n).style.display = n === name ? "block" : "none"; });
+  atEls.forEach((el) => (el.style.visibility = t >= +el.dataset.at ? "visible" : "hidden"));
+
+  // marco
+  const showChrome = !["intro", "end"].includes(name);
+  $("chrome").style.display = showChrome ? "block" : "none";
+  const pi = PROG.indexOf(name);
+  [...pg.children].forEach((el, i) => (el.className = i < pi ? "done" : i === pi ? "on" : ""));
+
+  if (name === "intro") {
+    const tq = q10(t);
+    cells1.forEach(([s, r, c]) => (s.style.visibility = tq >= (r + c) * .04 ? "visible" : "hidden"));
+    const n = t < LT0 ? 0 : Math.min(5, Math.floor((t - LT0) / LDT + 1e-6) + 1);
+    wmI.clip.setAttribute("width", n ? LETTER_END[n - 1] - 22 + 4 : 0);
+    wmI.dot.style.visibility = t >= 1.8 ? "visible" : "hidden";
+    trI.forEach((f, i) => { $("trioIntro").children[i].style.visibility = t >= 2.9 + i * .1 ? "visible" : "hidden"; f(t, 2.9); });
+  }
+  if (name === "quote") {
+    // «el mismo rigor» pasa a rojo palabra a palabra
+    [...$("quoteT").querySelectorAll(".ul")].forEach((w, i) => w.classList.toggle("hot", t >= ULT + i * .15));
+  }
+  if (name === "flip") {
+    // cuadrado que crece a saltos desde el centro (6 pasos en .42 s, como en la web)
+    const k = Math.min(6, Math.floor((t - 13) / .07 + 1e-6) + 1), r = (k / 6) * 560;
+    $("flipL").style.clipPath = `inset(${480 - r}px ${270 - r}px ${480 - r}px ${270 - r}px)`;
+    figs2.forEach(([f]) => f(t, 13.4));
+  }
+  if (pillarFx[name]) pillarFx[name](t);
+  if (name === "m001") {
+    const f = Math.floor((t - 24.5) * 5 + 1e-6), k = f % 14;
+    rings.forEach((r, i) => r.setAttribute("stroke-opacity", i === k - 1 ? ".85" : i === k - 2 ? (+r.dataset.o + .18).toFixed(2) : r.dataset.o));
+    const c = Math.max(0, Math.min(10, Math.floor((t - N0) * 10 + 1e-6)));
+    $("m1N").innerHTML = `${Math.round((c / 10) * 750)}<span style="font-size:.5em;letter-spacing:0"> M€</span>`;
+    $("m1N").style.color = c === 10 ? "var(--red)" : "var(--ink)";
+  }
+  if (name === "m002") {
+    const x = stallX(t);
+    $("stClip").setAttribute("width", x);
+    const mk = $("stMk"), pt = STALL[Math.min(STALL.length - 1, Math.round(x / 4))];
+    mk.setAttribute("x", pt[0] - 7); mk.setAttribute("y", pt[1] - 7);
+    mk.setAttribute("opacity", t >= ST0 && t < ST1 + .4 ? 1 : 0);
+  }
+  if (name === "end") {
+    cells3.forEach(([s]) => (s.style.visibility = "visible"));
+    const n = Math.min(5, Math.floor((t - 35.05) / .08 + 1e-6) + 1);
+    wmE.clip.setAttribute("width", n > 0 ? LETTER_END[n - 1] - 22 + 4 : 0);
+    wmE.dot.style.visibility = t >= 35.6 ? "visible" : "hidden";
+    trE.forEach((f, i) => { $("trioEnd").children[i].style.visibility = t >= 36.1 + i * .1 ? "visible" : "hidden"; f(t, 36.1); });
+  }
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>
