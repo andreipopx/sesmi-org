@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <title>sesmi · reel</title>
 <!--
-  Reel vertical de sesmi (1080×1920). Lo pinta render.mjs fotograma a fotograma: inyecta
-  window.BRAND (src/brand/brand.json) y window.TL (timeline.json) y llama a renderAt(t).
-  Todo es función del tiempo t (sin transiciones CSS), así cada fotograma es determinista.
+  Reel vertical de sesmi (1080×1920), en clave de concepto: el cuadrado rojo (el punto de la i)
+  vive en una ciudad media, se va, aprende cómo se hace y vuelve. Lo pinta render.mjs fotograma a
+  fotograma: inyecta window.BRAND (src/brand/brand.json) y window.TL (timeline.json) y llama a
+  renderAt(t). Todo es función de t (sin transiciones CSS), así cada fotograma es determinista.
 -->
 <style>
 @font-face{font-family:"Apfel";src:url("../../public/fonts/ApfelGrotezk-Mittel.woff2") format("woff2");font-weight:500}
@@ -16,211 +17,78 @@
 :root{
   --paper:#F7F3EE;--paper-2:#EFE9E1;--paper-3:#E6DED3;--ink:#1C1814;--red:#7A1F10;
   --ink-2:color-mix(in srgb,var(--ink) 70%,var(--paper));--ink-3:color-mix(in srgb,var(--ink) 48%,var(--paper));
-  --sub:color-mix(in srgb,var(--ink) 64%,var(--paper));--rule:color-mix(in srgb,var(--ink) 14%,transparent);
   --display:"Apfel",sans-serif;--strong:"Apfel Fett",sans-serif;--text:"Instrument Sans",sans-serif;
-  --ln:1px solid var(--ink);--pad:36px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--paper)}
 #stage{position:relative;width:540px;height:960px;overflow:hidden;background:var(--paper);color:var(--ink);
   font:400 18px/1.5 var(--text);-webkit-font-smoothing:antialiased}
-.sc{position:absolute;inset:0;display:none}
 .abs{position:absolute}
 .lbl{font:500 11px/1.3 var(--display);letter-spacing:.08em;text-transform:uppercase}
-.sq{display:inline-block;width:8px;height:8px;background:var(--red);flex:none}
-.sq.o{background:none;box-shadow:inset 0 0 0 1px currentColor}
-.wm{font-family:var(--display);font-weight:500}
 .wmk{display:block}.wmk svg{display:block;width:100%;height:auto;overflow:visible}
 .fig svg{display:block;width:100%;height:100%}
-.w{visibility:hidden}
-.red{color:var(--red)}
 
-/* marco persistente: barra superior e inferior como la retícula de la web */
-#chrome{position:absolute;inset:0;display:none;pointer-events:none;z-index:5}
-#chrome .top{position:absolute;left:0;right:0;top:0;height:64px;border-bottom:var(--ln);display:flex;align-items:stretch;background:var(--paper)}
-#chrome .top .b{width:120px;border-right:var(--ln);display:flex;align-items:center;justify-content:center}
-#chrome .top .b .wmk{width:78px}
-#chrome .top .n{flex:1;display:flex;align-items:center;padding:0 20px;color:var(--ink-2)}
-#chrome .bot{position:absolute;left:0;right:0;bottom:0;height:64px;border-top:var(--ln);display:flex;align-items:stretch;background:var(--paper)}
-#chrome .bot .u{width:120px;border-right:var(--ln);display:flex;align-items:center;justify-content:center;font:500 14px/1 var(--display)}
-#chrome .bot .pg{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0 20px}
-#chrome .bot .pg i{width:9px;height:9px;box-shadow:inset 0 0 0 1px var(--ink)}
-#chrome .bot .pg i.on{background:var(--red);box-shadow:none}
-#chrome .bot .pg i.done{background:var(--ink)}
+#world{position:absolute;left:0;top:0;width:1700px;height:960px;will-change:transform}
+#world svg{position:absolute;inset:0;width:1700px;height:960px;overflow:visible}
+.tl{position:absolute;left:44px;right:44px;top:586px;text-align:center;text-wrap:balance;font:500 35px/1.1 var(--display);letter-spacing:-.022em;opacity:0}
+.tl .w{display:inline-block}
+.tl .red{color:var(--red)}
+.flb{position:absolute;left:0;right:0;top:546px;display:flex;justify-content:center;align-items:center;gap:10px;color:var(--ink-3);opacity:0}
+.flb i{width:8px;height:8px;background:var(--red)}
+.fh{position:absolute;left:150px;top:250px;width:240px;height:240px;opacity:0}
+#sq{position:absolute;width:14px;height:14px;background:var(--red)}
 
-/* intro y cierre: patrón «s e s m i» */
-.pat{position:absolute;inset:0;display:grid;grid-template-columns:repeat(9,60px);grid-auto-rows:60px}
-.pat span{display:flex;align-items:center;justify-content:center;font:700 30px/1 var(--strong);color:color-mix(in srgb,var(--ink) 6.5%,transparent);visibility:hidden}
-
-/* textos grandes */
-.big{font:500 50px/1.0 var(--display);letter-spacing:-.035em}
-.mid{font:500 30px/1.08 var(--display);letter-spacing:-.02em}
-.body{font:400 19px/1.5 var(--text);color:var(--sub)}
-.lema{font:italic 400 24px/1.2 var(--text);color:var(--red)}
-
-/* cita */
-.qt{font:500 46px/.99 var(--display);letter-spacing:-.042em}
-.qt .gq{color:var(--red)}
-.ul.hot{color:var(--red)}
-
-/* cara oculta */
-#flipL{position:absolute;inset:0;background:var(--ink);color:var(--paper);z-index:6}
-#flipL .pat2{position:absolute;inset:0;display:grid;grid-template-columns:repeat(9,60px);grid-auto-rows:60px}
-#flipL .pat2 span{display:flex;align-items:center;justify-content:center;color:color-mix(in srgb,var(--paper) 15%,transparent)}
-#flipL .pat2 .fig{width:40px;height:40px}
-.ht{font:700 112px/.9 var(--strong);letter-spacing:-.045em}
+#endL{position:absolute;inset:0;background:var(--paper);display:none}
+#ink{position:absolute;inset:0;background:var(--ink);color:var(--paper);display:none}
+#ink .pat{position:absolute;inset:0;display:grid;grid-template-columns:repeat(9,60px);grid-auto-rows:60px}
+#ink .pat span{display:flex;align-items:center;justify-content:center;color:color-mix(in srgb,var(--paper) 11%,transparent)}
+#ink .pat .fig{width:38px;height:38px}
+.ht{font:700 112px/.9 var(--strong);letter-spacing:-.045em;text-align:center}
 .ht .dot{display:inline-block;width:.17em;height:.17em;background:var(--paper);margin-left:.04em}
-.ht.onpaper .dot{background:var(--red)}
 
-/* patas */
-.panel{position:absolute;left:0;right:0;border-top:var(--ln);border-bottom:var(--ln);background:var(--paper-2)}
-.idx{position:absolute;left:0;right:0;display:grid;grid-template-columns:repeat(3,1fr);border-top:var(--ln)}
-.idx div{height:100%;display:flex;align-items:center;justify-content:center;gap:12px}
-.idx div+div{border-left:var(--ln)}
-.idx div.on{background:var(--ink);color:var(--paper)}
-.idx .fig{width:58px;height:58px}
-
-/* publicaciones */
-.meta{display:flex;align-items:center;gap:14px}
-.meta .st{display:flex;align-items:center;gap:9px;color:var(--ink-3)}
-.ill svg{display:block;width:100%;height:100%}
-.ill .tg{font:500 13px var(--display);letter-spacing:.06em;fill:var(--red)}
-.num{font:500 92px/.9 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.chap{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
-.chap>div{padding:0 10px 0 0;visibility:hidden}
-.chap .h{display:flex;align-items:center;justify-content:space-between;font:500 14px/1 var(--display);color:var(--ink-3);margin-bottom:10px}
-.chap .bar{height:3px;background:var(--rule)}
-.chap .on .bar{background:var(--red)}
-
-/* principios */
-.prow{position:absolute;left:0;right:0;height:112px;display:grid;grid-template-columns:120px 1fr;border-top:var(--ln);visibility:hidden}
-.prow .k{border-right:var(--ln);display:flex;align-items:center;justify-content:center;font:500 22px/1 var(--display);color:var(--ink-3);font-variant-numeric:tabular-nums}
-.prow .c{padding:22px 22px 0}
-.prow h3{margin:0;font:500 30px/1.05 var(--display);letter-spacing:-.02em}
-.prow p{margin:8px 0 0;font:400 17px/1.35 var(--text);color:var(--sub)}
+#grain{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.09}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 50% 45%,transparent 55%,rgba(28,24,20,.07))}
 </style>
 </head>
 <body>
 <div id="stage">
-  <div id="chrome">
-    <div class="top"><div class="b"><span class="wmk" data-wm="red"></span></div><div class="n lbl">Sociedad Económica de San Miguel</div></div>
-    <div class="bot"><div class="u">sesmi.org</div><div class="pg" id="pg"></div></div>
+  <div id="world"><svg id="wsvg" viewBox="0 0 1700 960"></svg></div>
+  <div id="figs"></div>
+  <div id="texts"></div>
+  <div id="sq"></div>
+
+  <div id="endL">
+    <div class="abs" style="left:90px;top:380px;width:360px"><span class="wmk" id="wmEnd"></span></div>
+    <div class="abs lbl" style="left:0;right:0;top:528px;text-align:center;color:var(--ink-2);font-size:12px;opacity:0" id="e1">Sociedad Económica de San Miguel</div>
+    <div class="abs" style="left:0;right:0;top:600px;text-align:center;font:500 27px/1 var(--display);opacity:0" id="e2">sesmi.org</div>
+    <div class="abs lbl" style="left:0;right:0;top:642px;text-align:center;color:var(--ink-3);opacity:0" id="e3">Talavera de la Reina</div>
   </div>
 
-  <!-- 1 · intro -->
-  <section class="sc" id="intro">
-    <div class="pat" id="pat1"></div>
-    <div class="abs" style="left:70px;top:360px;width:400px"><span class="wmk" id="wmIntro"></span></div>
-    <div class="abs lbl" style="left:0;right:0;top:512px;text-align:center;font-size:13px" data-at="2.0" data-ev="stamp2">Sociedad Económica de San Miguel</div>
-    <div class="abs body" style="left:0;right:0;top:538px;text-align:center;font-size:18px" data-at="2.5">Talavera de la Reina · Toledo</div>
-    <div class="abs" style="left:0;right:0;top:630px;display:flex;justify-content:center;gap:34px" id="trioIntro"></div>
-  </section>
+  <div id="ink">
+    <div class="pat" id="pat"></div>
+    <div class="abs lbl" style="left:0;right:0;top:268px;text-align:center;color:color-mix(in srgb,var(--paper) 55%,var(--ink));font-size:12px" id="k0">Principio fundacional</div>
+    <div class="abs ht" style="left:0;right:0;top:310px"><div id="k1">debemos</div><div id="k2">saber<span class="dot"></span></div></div>
+    <div class="abs" style="left:60px;right:60px;top:570px;text-align:center;font:400 20px/1.45 var(--text);color:color-mix(in srgb,var(--paper) 74%,var(--ink))" id="k3">Investigación económica independiente, en&nbsp;abierto, para las ciudades medias.</div>
+  </div>
 
-  <!-- 2 · el vacío -->
-  <section class="sc" id="vacio">
-    <div class="abs lbl" style="left:var(--pad);top:132px;color:var(--ink-3)" data-at="4.0">Por qué existimos</div>
-    <div class="abs big" style="left:var(--pad);right:var(--pad);top:170px" id="vacioT"></div>
-    <div class="abs body" style="left:var(--pad);right:60px;top:420px;font-size:21px;color:var(--ink-2)" id="vacioB"></div>
-    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:560px;display:flex;gap:14px;align-items:baseline" id="vacioC"></div>
-  </section>
-
-  <!-- 3 · cita del manifiesto -->
-  <section class="sc" id="quote">
-    <div class="abs lbl" style="left:var(--pad);top:132px;color:var(--ink-3)" data-at="9.0">Manifiesto</div>
-    <div class="abs qt" style="left:calc(var(--pad) + 20px);right:28px;top:200px" id="quoteT"></div>
-    <div class="abs" style="left:var(--pad);right:var(--pad);top:560px;border-top:var(--ln)" data-at="11.4"></div>
-    <div class="abs body" style="left:var(--pad);right:var(--pad);top:576px;color:var(--ink-3)" data-at="11.4">Del manifiesto de <span class="wm">sesmi</span></div>
-    <div class="abs body" style="left:var(--pad);right:40px;top:622px;font-size:20px;color:var(--ink-2)" id="quoteB"></div>
-  </section>
-
-  <!-- 4 · la cara oculta: «debemos saber.» -->
-  <section class="sc" id="flip">
-    <div id="flipL">
-      <div class="pat2" id="pat2"></div>
-      <div class="abs lbl" style="left:0;right:0;top:250px;text-align:center;color:color-mix(in srgb,var(--paper) 60%,var(--ink));font-size:13px" data-at="13.5">Principio fundacional</div>
-      <div class="abs ht" style="left:0;right:0;top:300px;text-align:center" id="flipT"><div data-at="13.45">debemos</div><div data-at="13.7">saber<span class="dot"></span></div></div>
-      <div class="abs" style="left:56px;right:56px;top:560px;text-align:center;font:400 21px/1.45 var(--text);color:color-mix(in srgb,var(--paper) 74%,var(--ink))" id="flipB"></div>
-    </div>
-  </section>
-
-  <!-- 5 · las tres patas (una sección por figura, misma plantilla) -->
-  <template id="pillarTpl">
-    <section class="sc">
-      <div class="abs lbl" style="left:var(--pad);top:88px;color:var(--ink-3)">Las tres patas</div>
-      <div class="abs lbl" style="right:var(--pad);top:88px;color:var(--ink-3)" data-k="n"></div>
-      <div class="panel" style="top:120px;height:330px"><div class="abs fig" data-k="fig" style="left:125px;top:20px;width:290px;height:290px"></div></div>
-      <div class="abs big" style="left:var(--pad);top:478px;font-size:60px" data-k="h"></div>
-      <div class="abs lema" style="left:var(--pad);top:546px" data-k="lm"></div>
-      <div class="abs body" style="left:var(--pad);right:48px;top:590px;font-size:20px" data-k="tx"></div>
-      <div class="idx" style="top:790px;height:106px" data-k="idx"></div>
-    </section>
-  </template>
-
-  <!-- 6 · SESMI-001 -->
-  <section class="sc" id="m001">
-    <div class="abs meta" style="left:var(--pad);top:96px"><span class="lbl" style="font-size:13px">SESMI-001</span><span class="st lbl"><i class="sq"></i>En elaboración</span></div>
-    <div class="abs big" style="left:var(--pad);right:var(--pad);top:128px;font-size:52px" id="m1T"></div>
-    <div class="abs body" style="left:var(--pad);right:56px;top:246px" id="m1S"></div>
-    <div class="panel" style="top:330px;height:300px;overflow:hidden">
-      <div class="abs ill" style="inset:0" id="rings"></div>
-      <div class="abs lbl" style="left:24px;top:24px;color:var(--ink-3)" data-at="25.3">Inversión de Meta en Talavera</div>
-      <div class="abs num" style="left:22px;top:48px" id="m1N" data-at="25.3"></div>
-    </div>
-    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:650px;font-size:29px" id="m1Q"></div>
-    <div class="abs lbl" style="left:var(--pad);top:772px;color:var(--ink-3)" data-at="27.3">Capítulos</div>
-    <div class="abs chap" style="left:var(--pad);right:26px;top:800px" id="chap"></div>
-  </section>
-
-  <!-- 7 · SESMI-002 -->
-  <section class="sc" id="m002">
-    <div class="abs meta" style="left:var(--pad);top:96px"><span class="lbl" style="font-size:13px">SESMI-002</span><span class="st lbl"><i class="sq o"></i>Próximamente</span></div>
-    <div class="abs big" style="left:var(--pad);right:var(--pad);top:128px;font-size:52px" id="m2T"></div>
-    <div class="abs body" style="left:var(--pad);right:56px;top:246px" id="m2S"></div>
-    <div class="panel" style="top:320px;height:300px;background:var(--paper);overflow:hidden"><div class="abs ill" style="inset:0" id="stall"></div></div>
-    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:650px;font-size:29px;display:flex;gap:14px;align-items:baseline" id="m2Q"></div>
-  </section>
-
-  <!-- 8 · principios -->
-  <section class="sc" id="princ">
-    <div class="abs lbl" style="left:var(--pad);top:96px;color:var(--ink-3)" data-at="31.5">Cómo trabajamos</div>
-    <div class="abs mid" style="left:var(--pad);right:var(--pad);top:124px" id="prT"></div>
-    <div id="prRows"></div>
-  </section>
-
-  <!-- 9 · cierre -->
-  <section class="sc" id="end">
-    <div class="pat" id="pat3"></div>
-    <div class="abs" style="left:80px;top:300px;width:380px"><span class="wmk" id="wmEnd"></span></div>
-    <div class="abs ht onpaper" style="left:0;right:0;top:450px;text-align:center;font-size:52px" data-at="35.6" data-ev="stamp">debemos saber<span class="dot"></span></div>
-    <div class="abs" style="left:0;right:0;top:560px;display:flex;justify-content:center;gap:34px" id="trioEnd"></div>
-    <div class="abs" style="left:0;right:0;top:690px;text-align:center;font:500 30px/1 var(--display)" data-at="36.6" data-ev="pluckHi">sesmi.org</div>
-    <div class="abs lbl" style="left:0;right:0;top:734px;text-align:center;color:var(--ink-3);font-size:12px" data-at="36.9">Talavera de la Reina · Toledo</div>
-  </section>
+  <svg id="grain" viewBox="0 0 540 960" preserveAspectRatio="none">
+    <filter id="gf"><feTurbulence id="turb" type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1"/><feColorMatrix type="saturate" values="0"/></filter>
+    <rect width="540" height="960" filter="url(#gf)"/>
+  </svg>
+  <div id="vig"></div>
 </div>
 
 <script>
 (() => {
-const B = window.BRAND, TL = window.TL;
+const B = window.BRAND;
 const NS = "http://www.w3.org/2000/svg";
+const $ = (id) => document.getElementById(id);
 const EV = [];
 const ev = (t, k, v) => EV.push({ t: Math.round(t * 1000) / 1000, k, v });
-const $ = (id) => document.getElementById(id);
-const scene = Object.fromEntries(TL.scenes.map(([n, a, b]) => [n, { a, b }]));
-
-// ── wordmark
-const [sqx, sqy, sqw, sqh] = B.wordmark.sq.map(Number);
-function wordmark(host, { clip = false, dot = "red" } = {}) {
-  const svg = document.createElementNS(NS, "svg");
-  svg.setAttribute("viewBox", B.wordmark.vb);
-  const id = "c" + Math.random().toString(36).slice(2);
-  svg.innerHTML =
-    (clip ? `<defs><clipPath id="${id}"><rect x="22" y="-702" height="714" width="0"/></clipPath></defs>` : "") +
-    `<path fill="currentColor" d="${B.wordmark.d}" ${clip ? `clip-path="url(#${id})"` : ""}/>` +
-    `<rect fill="${dot === "red" ? "#7A1F10" : "currentColor"}" x="${sqx}" y="${sqy}" width="${sqw}" height="${sqh}"/>`;
-  host.appendChild(svg);
-  return { clip: svg.querySelector("clipPath rect"), dot: svg.querySelector(":scope > rect") };
-}
-document.querySelectorAll("[data-wm]").forEach((el) => wordmark(el));
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const eOut = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const eIO = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const stepN = (t, t0, fps) => Math.floor((t - t0) * fps + 1e-6);
 
 // ── figuras (copia de SEQ en src/brand/index.ts)
 const SEQ = {
@@ -233,255 +101,248 @@ const SEQ = {
 };
 const NAMES = ["buho", "caballo", "paloma"];
 function fig(host, name, variant = "mayor") {
-  const wrap = document.createElement("span");
-  wrap.className = "fig";
-  wrap.style.cssText = "display:block;width:100%;height:100%";
-  wrap.innerHTML = `<svg viewBox="0 0 100 100"><g><path fill="currentColor"/></g></svg>`;
-  host.appendChild(wrap);
-  const g = wrap.querySelector("g"), p = wrap.querySelector("path");
+  host.innerHTML = `<svg viewBox="0 0 100 100"><g><path fill="currentColor"/></g></svg>`;
+  const g = host.querySelector("g"), p = host.querySelector("path");
   const Q = SEQ[name], F = Q.frames(variant), rest = B.figs[name][variant];
-  // t0: inicio del bucle (null = quieta)
   return (t, t0) => {
     if (t0 == null || t < t0) { p.setAttribute("d", rest); g.removeAttribute("transform"); return; }
-    const i = Math.floor((t - t0) * Q.fps + 1e-6) % Q.steps.length;
-    const [f, r, y] = Q.steps[i];
+    const [f, r, y] = Q.steps[stepN(t, t0, Q.fps) % Q.steps.length];
     p.setAttribute("d", F[f]);
     g.setAttribute("transform", `translate(0 ${y}) rotate(${r} ${Q.origin[0]} ${Q.origin[1]})`);
   };
 }
-function trio(host) {
-  return NAMES.map((n) => { const d = document.createElement("div"); d.style.cssText = "width:58px;height:58px"; host.appendChild(d); return fig(d, n); });
-}
-// sonidos propios de cada figura en su bucle (casco, parpadeo, ala)
-function figEvents(name, t0, t1) {
-  const Q = SEQ[name];
-  for (let k = 0, t = t0; t < t1 - 1e-6; k++, t = t0 + k / Q.fps) {
-    const f = Q.steps[k % Q.steps.length][0];
-    if (name === "caballo" && ["g1", "g2", "g4"].includes(f)) ev(t, "hoof", f === "g4" ? 1 : 0);
-    if (name === "buho" && f === "blink1") ev(t, "blink");
-    if (name === "paloma" && f === "f2") ev(t, "wing");
+
+// ── la ciudad, dibujada a mano (coordenadas del mundo; suelo en y = G)
+const G = 470, HOME = 270, S = 1.3; // el mundo se dibuja a escala S alrededor del cuadrado
+// temblor de mano: ondas largas y suaves, no dientes de sierra
+const wob = (x, y) => [x + Math.sin(y * .11 + x * .03) * .55, y + Math.sin(x * .09 + 1.3) * .6 + Math.sin(x * .23 + y * .05) * .3];
+function hand(pts) {
+  let d = "";
+  for (let i = 0; i < pts.length; i++) {
+    const [x0, y0] = pts[i];
+    if (i === 0) { const [a, b] = wob(x0, y0); d += `M${a.toFixed(2)} ${b.toFixed(2)}`; continue; }
+    const [px, py] = pts[i - 1], n = Math.max(1, Math.ceil(Math.hypot(x0 - px, y0 - py) / 5));
+    for (let k = 1; k <= n; k++) { const [a, b] = wob(px + (x0 - px) * k / n, py + (y0 - py) * k / n); d += `L${a.toFixed(2)} ${b.toFixed(2)}`; }
   }
+  return d;
 }
-
-// ── texto palabra a palabra: «*x*» en rojo, «_x_» subrayado rojo
-function words(host, text, t0, rate, kind = "tick") {
-  const toks = text.split(" ");
-  toks.forEach((w, i) => {
-    const s = document.createElement("span");
-    s.className = "w";
-    const at = t0 + i / rate;
-    s.dataset.at = at;
-    let html = w.replace(/\*(.+?)\*/g, '<span class="red">$1</span>').replace(/«/g, '<span class="gq">«</span>').replace(/»/g, '<span class="gq">»</span>');
-    html = html.replace(/\{sesmi\}/g, '<span class="wm">sesmi</span>');
-    if (w.startsWith("_")) { html = html.replace(/_/g, ""); s.classList.add("ul"); s.innerHTML = html; }
-    else s.innerHTML = html;
-    host.appendChild(s);
-    host.appendChild(document.createTextNode(" "));
-    if (kind) ev(at, kind, i);
-  });
-  return t0 + toks.length / rate;
+const P = [];
+const L = (x, dy) => P.push([x, G - dy]);
+L(-10, 0); L(160, 0);
+// casas bajas
+L(160, 26); L(171, 38); L(182, 26); L(182, 32); L(194, 44); L(206, 32); L(206, 28); L(214, 28);
+// torre (la Colegiata)
+L(214, 118); L(218, 118); L(218, 130); L(229, 150); L(240, 130); L(240, 118); L(244, 118); L(244, 60);
+// manzanas
+L(262, 60); L(262, 78); L(300, 78); L(300, 66); L(326, 66); L(326, 52); L(334, 52); L(334, 62); L(340, 62);
+// cúpula (la basílica del Prado)
+const DC = 362, DR = 22, DY = 62;
+for (let a = Math.PI; a > Math.PI / 2 + .14; a -= .12) P.push([DC + DR * Math.cos(a), G - DY - DR * Math.sin(a)]);
+L(358, DY + DR - .5); L(358, DY + DR + 9); L(362, DY + DR + 16); L(366, DY + DR + 9); L(366, DY + DR - .5);
+for (let a = Math.PI / 2 - .14; a >= 0; a -= .12) P.push([DC + DR * Math.cos(a), G - DY - DR * Math.sin(a)]);
+L(384, 62); L(392, 62);
+// bloque de viviendas
+L(392, 118); L(440, 118); L(440, 50);
+// fábrica de dientes de sierra y chimenea
+L(446, 50); L(456, 64); L(456, 50); L(466, 64); L(466, 50); L(476, 64); L(476, 50); L(480, 50); L(480, 172); L(488, 172); L(488, 50); L(494, 50);
+L(494, 30); L(502, 38); L(510, 30); L(522, 30); L(522, 0); L(560, 0);
+const SKY = hand(P);
+// puente viejo sobre el río: arcos colgando del tablero
+let BR = "";
+for (let i = 0; i < 5; i++) {
+  const x0 = 24 + i * 27, x1 = x0 + 27, cx = (x0 + x1) / 2, r = 11.5, pts = [[x0, G + 34]];
+  for (let a = Math.PI; a >= 0; a -= .2) pts.push([cx + r * Math.cos(a), G + 34 - 22 * Math.sin(a) + 0]);
+  pts.push([x1, G + 34]);
+  BR += hand(pts);
 }
-const lines = (host, specs) => specs.forEach(([txt, t0, rate]) => { const d = document.createElement("div"); host.appendChild(d); words(d, txt, t0, rate); });
+let WAT = "";
+for (let r = 0; r < 4; r++) for (let x = 6 + (r % 2) * 14; x < 170 - r * 12; x += 30) WAT += hand([[x, G + 44 + r * 7], [x + 14, G + 44 + r * 7]]);
+let DET = "";
+const box = (x, y, w, h) => { DET += hand([[x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]]); };
+box(225, G - 108, 7, 12);
+for (let c = 0; c < 3; c++) for (let r = 0; r < 4; r++) box(400 + c * 14, G - 106 + r * 20, 5, 7);
+box(272, G - 66, 6, 8); box(286, G - 66, 6, 8); box(306, G - 56, 6, 8);
+const ROAD = [[640, "Madrid"], [790, "Consultoría"], [940, "Barcelona"], [1090, "Banco central"], [1240, "Datos"]];
 
-// ── marco
-const pg = $("pg");
-const PROG = ["vacio", "quote", "flip", "buho", "caballo", "paloma", "m001", "m002", "princ"];
-PROG.forEach(() => pg.appendChild(document.createElement("i")));
+const w = $("wsvg");
+w.innerHTML = `<g transform="translate(${HOME} ${G}) scale(${S}) translate(${-HOME} ${-G})">` +
+  `<path id="ground" d="${hand([[-20, G], [1700, G]])}" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>` +
+  `<path id="sky" d="${SKY}" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round" stroke-linecap="round"/>` +
+  `<path id="bridge" d="${BR}" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>` +
+  `<path id="water" d="${WAT}" fill="none" stroke="currentColor" stroke-opacity=".38" stroke-width="1" stroke-linecap="round"/>` +
+  `<path id="det" d="${DET}" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width=".9"/>` +
+  ROAD.map(([x, s], i) => `<g class="road" data-i="${i}"><line x1="${x}" y1="${G}" x2="${x}" y2="${G + 9}" stroke="currentColor" stroke-width="1.4"/>` +
+    `<text x="${x}" y="${G + 30}" text-anchor="middle" style="font:500 10px var(--display);letter-spacing:.08em;text-transform:uppercase;fill:var(--ink-3)">${s}</text></g>`).join("") + `</g>`;
+const dash = (id) => { const p = $(id), l = p.getTotalLength(); p.style.strokeDasharray = `${l} ${l}`; return (x) => (p.style.strokeDashoffset = l * (1 - clamp(x))); };
+const dGround = dash("ground"), dSky = dash("sky"), dBridge = dash("bridge"), dWater = dash("water");
 
-// ── 1 · intro
-const pat1 = $("pat1"), cells1 = [];
-for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) {
-  const s = document.createElement("span"); s.textContent = "sesmi"[(c + r * 2) % 5]; pat1.appendChild(s); cells1.push([s, r, c]);
-}
-const wmI = wordmark($("wmIntro"), { clip: true });
-const LETTER_END = [447, 949, 1397, 2181, 2382];
-const LT0 = .9, LDT = .15;
-LETTER_END.forEach((_, i) => ev(LT0 + i * LDT, "letter", i));
-ev(1.8, "stamp");
-const trI = trio($("trioIntro"));
-ev(2.9, "pluck", 0);
-// patrón que se llena en diagonal (10 pasos/s)
-for (let d = 0; d <= 23; d += 3) ev(d * .04, "pat", d);
-
-// ── 2 · el vacío
-lines($("vacioT"), [
-  ["Las grandes firmas", 4.0, 10],
-  ["no vienen a *Talavera.*", 4.55, 10],
-  ["Ni a *Ponferrada.*", 5.35, 10],
-  ["Ni a *Linares.*", 5.85, 10],
-]);
-words($("vacioB"), "Y cuando vienen, no entienden el contexto porque no son de aquí.", 6.6, 14);
-(() => { const h = $("vacioC"); const sq = document.createElement("i"); sq.className = "sq"; sq.style.cssText = "width:14px;height:14px"; sq.dataset.at = 7.9; h.appendChild(sq); ev(7.9, "stamp"); const d = document.createElement("div"); h.appendChild(d); words(d, "{sesmi} nace para llenar ese vacío.", 7.95, 10); })();
-
-// ── 3 · cita
-words($("quoteT"), "«Las ciudades que nadie analiza merecen _el _mismo _rigor que Madrid o Barcelona.»", 9.1, 7);
-const ULT = 10.95; [0, 1, 2].forEach((i) => ev(ULT + i * .15, "hot", i));
-words($("quoteB"), "Rigor económico para Talavera, Ponferrada, Linares… y todas las ciudades medias.", 11.8, 16);
-
-// ── 4 · cara oculta
-const pat2 = $("pat2"), figs2 = [];
-for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) {
-  const s = document.createElement("span"); const d = document.createElement("div"); d.className = "fig"; s.appendChild(d); pat2.appendChild(s);
-  figs2.push([fig(d, NAMES[(c + r) % 3], "menor"), NAMES[(c + r) % 3]]);
-}
-ev(13, "flip");
-words($("flipB"), "Investigación económica independiente para las ciudades medias españolas.", 14.3, 12);
-
-// ── 5 · patas
-const PILLARS = [
-  ["buho", "Investigación", "Debemos saber", "Análisis económico independiente sobre territorios y mercados locales. En abierto, sin paywalls."],
-  ["caballo", "Servicios", "Fuerza aplicada", "Valoraciones, análisis de impacto y diagnósticos para empresas y organismos públicos."],
-  ["paloma", "Divulgación", "Socorre enseñando", "Datos, herramientas y materiales para estudiantes y profesores de economía."],
+// ── textos (entran con un fundido suave; salen igual)
+const TEXTS = [
+  [1.0, 4.7, "Hay ciudades que nadie analiza."],
+  [7.2, 10.1, "Donde las grandes firmas no vienen."],
+  [10.3, 12.9, "Y cuando vienen, no son de aquí."],
+  [13.4, 16.5, "Alguien se fue de una de ellas."],
+  [17.0, 20.3, "Aprendió cómo se hace."],
+  [21.5, 25.8, "Y quiso volver."],
+  [26.3, 31.7, "Porque estas ciudades merecen *el *mismo *rigor que Madrid o Barcelona.", true],
+  [32.4, 34.7, "Para entenderla."],
+  [35.0, 37.3, "Para ponerla en marcha."],
+  [37.6, 39.8, "Y para contársela a todos."],
 ];
-const pillarFx = {};
-PILLARS.forEach(([name, h, lm, tx], pi) => {
-  const { a, b } = scene[name];
-  const sec = $("pillarTpl").content.firstElementChild.cloneNode(true);
-  sec.id = name;
-  $("stage").appendChild(sec);
-  const q = (k) => sec.querySelector(`[data-k="${k}"]`);
-  q("n").textContent = `0${pi + 1} / 03`;
-  const big = fig(q("fig"), name, "mayor");
-  const hEl = q("h"); hEl.textContent = h; hEl.dataset.at = a + .05;
-  const lmEl = q("lm"); lmEl.textContent = lm; lmEl.dataset.at = a + .45;
-  words(q("tx"), tx, a + .85, 13);
-  const small = NAMES.map((n, i) => {
-    const d = document.createElement("div"); if (i === pi) d.className = "on";
-    const f = document.createElement("div"); f.className = "fig"; d.appendChild(f); q("idx").appendChild(d); return fig(f, n, "menor");
-  });
-  ev(a, "pluck", pi + 1); ev(a + .45, "lema", pi);
-  figEvents(name, a + .25, b);
-  pillarFx[name] = (t) => { big(t, a + .25); small.forEach((s, i) => s(t, i === pi ? a + .25 : null)); };
+const tEls = TEXTS.map(([a, b, s, byWord], i) => {
+  const d = document.createElement("div"); d.className = "tl";
+  const words = s.split(" ").map((x) => { const red = x.startsWith("*"); return `<span class="w${red ? " hl" : ""}">${x.replace(/\*/g, "")}</span>`; });
+  d.innerHTML = words.join(" ");
+  $("texts").appendChild(d);
+  ev(a, "line", i);
+  return { d, a, b, byWord, ws: [...d.querySelectorAll(".w")] };
 });
 
-// ── 6 · SESMI-001
-words($("m1T"), "¡Bienvenido, Mr. Meta!", 24.55, 10);
-words($("m1S"), "Un análisis económico independiente del Meta Data Center en Talavera de la Reina.", 24.95, 16);
-const W = 640, H = 320, CX = 470, CY = 236;
-(() => {
-  let s = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMaxYMax slice">`;
-  for (let k = 0; k < 10; k++) { const i = 10 - k, d = 18 * Math.pow(1.36, i), o = +(0.5 - i * 0.034).toFixed(3);
-    s += `<rect class="rg" data-i="${i}" data-o="${o}" x="${(CX - d / 2).toFixed(1)}" y="${(CY - d / 2).toFixed(1)}" width="${d.toFixed(1)}" height="${d.toFixed(1)}" fill="none" stroke="currentColor" stroke-opacity="${o}" vector-effect="non-scaling-stroke"/>`; }
-  s += `<line x1="0" y1="${CY}" x2="${W}" y2="${CY}" stroke="currentColor" stroke-opacity=".18" stroke-dasharray="2 5" vector-effect="non-scaling-stroke"/>`;
-  s += `<line x1="${CX}" y1="0" x2="${CX}" y2="${H}" stroke="currentColor" stroke-opacity=".18" stroke-dasharray="2 5" vector-effect="non-scaling-stroke"/>`;
-  s += `<rect x="${CX - 8}" y="${CY - 8}" width="16" height="16" fill="#7A1F10"/></svg>`;
-  $("rings").innerHTML = s;
-})();
-const rings = [...$("rings").querySelectorAll(".rg")].sort((a, b) => a.dataset.i - b.dataset.i);
-const N0 = 25.3, N1 = 26.3; // cuenta 0 → 750 a 10 pasos/s
-for (let k = 0; k <= 10; k++) ev(N0 + k / 10, "count", k);
-ev(N1 + .02, "stamp");
-for (let k = 0; k < 20; k++) if (k % 14 === 1) ev(24.5 + k / 5, "ring");
-(() => { const h = $("m1Q"); words(h, "¿Cuánto de ese dinero se queda realmente en la ciudad?", 26.55, 12); })();
-const CHAP = [["01", 1], ["02", 1], ["03", 0], ["04", 0], ["05", 0]];
-CHAP.forEach(([k, on], i) => {
-  const d = document.createElement("div"); d.className = on ? "on" : "";
-  d.innerHTML = `<div class="h">${k}<i class="sq ${on ? "" : "o"}"></i></div><div class="bar"></div>`;
-  d.dataset.at = 27.4 + i * .1; $("chap").appendChild(d); ev(27.4 + i * .1, "chap", i);
+// ── figuras: tres verbos
+const FIGS = [["buho", "Investigación", 32.2, 34.8], ["caballo", "Servicios", 34.8, 37.4], ["paloma", "Divulgación", 37.4, 40.0]];
+const fEls = FIGS.map(([n, lbl, a, b], i) => {
+  const h = document.createElement("div"); h.className = "fh"; $("figs").appendChild(h);
+  const l = document.createElement("div"); l.className = "flb lbl"; l.innerHTML = `<i></i>${lbl}`; $("figs").appendChild(l);
+  const Q = SEQ[n];
+  for (let k = 0, t = a + .3; t < b; k++, t = a + .3 + k / Q.fps) {
+    const f = Q.steps[k % Q.steps.length][0];
+    if (n === "caballo" && ["g1", "g2", "g4"].includes(f)) ev(t, "hoof", f === "g4" ? 1 : 0);
+    if (n === "buho" && f === "blink1") ev(t, "owl");
+    if (n === "paloma" && f === "f2") ev(t, "wing");
+  }
+  ev(a, "fig", i);
+  return { h, l, a, b, play: fig(h, n) };
 });
 
-// ── 7 · SESMI-002
-words($("m2T"), "Talavera, la ciudad que no arranca", 28.55, 10);
-words($("m2S"), "Diagnóstico económico independiente de una ciudad media española.", 29.0, 16);
-const BASE = 262, TRIES = [[70, 46, 22], [170, 70, 26], [270, 58, 24], [372, 86, 28], [478, 64, 24], [572, 40, 20]];
-const STALL = [];
-for (let x = 0; x <= W; x += 4) {
-  let y = BASE;
-  TRIES.forEach(([c, a, w]) => { const u = (x - c) / w; y -= x < c ? a * Math.exp((-u * u) / 3.2) : a * Math.exp(-Math.pow(u * 2.6, 2)); });
-  y += Math.sin(x * .21) * 1.4; STALL.push([x, BASE - (BASE - y) * 1.8]);
+// ── el cuadrado: parpadea, se va andando, vuelve
+const OUT0 = 13.8, OUT1 = 20.5, OUTF = 6, OUTD = 24;   // ida: 6 pasos/s de 24 px
+const BACK0 = 21.2, BACKF = 10, BACKD = 30;            // vuelta: 10 pasos/s de 30 px (tiene prisa)
+const FAR = HOME + OUTD * Math.round((OUT1 - OUT0) * OUTF);
+const BACK1 = BACK0 + Math.ceil((FAR - HOME) / BACKD) / BACKF;
+function squareX(t) {
+  if (t < OUT0) return [HOME, 0, HOME];
+  if (t < OUT1) { const k = stepN(t, OUT0, OUTF); return [HOME + OUTD * k, k % 2 ? -4 : 0, HOME + OUTD * OUTF * (t - OUT0)]; }
+  if (t < BACK0) return [FAR, 0, FAR];
+  const k = stepN(t, BACK0, BACKF), x = Math.max(HOME, FAR - BACKD * k);
+  return [x, x > HOME && k % 2 ? -4 : 0, Math.max(HOME, FAR - BACKD * BACKF * (t - BACK0))];
 }
-(() => {
-  let s = `<svg viewBox="0 40 ${W} 250" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="sc"><rect id="stClip" x="0" y="0" height="${H}" width="0"/></clipPath></defs>`;
-  for (let y = 70; y <= BASE; y += 24) s += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="currentColor" stroke-opacity="${y === BASE ? .5 : .13}" vector-effect="non-scaling-stroke"/>`;
-  s += `<path clip-path="url(#sc)" d="${STALL.map(([x, y], k) => (k ? "L" : "M") + x + " " + y.toFixed(1)).join("")}" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
-  TRIES.forEach(([c, a]) => { s += `<line clip-path="url(#sc)" x1="${c}" y1="${BASE - a * 1.8 - 16}" x2="${c}" y2="${BASE - a * 1.8 - 6}" stroke="currentColor" stroke-opacity=".45" vector-effect="non-scaling-stroke"/>`; });
-  s += `<rect id="stMk" width="14" height="14" fill="#7A1F10"/></svg>`;
-  $("stall").innerHTML = s;
-})();
-const ST0 = 29.1, ST1 = 31.0, STF = 10; // dibujo a 10 pasos/s
-const stallX = (t) => Math.min(1, Math.max(0, Math.floor((t - ST0) * STF + 1e-6) / ((ST1 - ST0) * STF))) * W;
-TRIES.forEach(([c, a], i) => { const k = Math.ceil((c / W) * (ST1 - ST0) * STF); ev(ST0 + k / STF - .12, "rev", a); });
-(() => { const h = $("m2Q"); const sq = document.createElement("i"); sq.className = "sq o"; sq.style.cssText = "width:14px;height:14px;color:var(--ink)"; sq.dataset.at = 31.0; h.appendChild(sq); const d = document.createElement("div"); h.appendChild(d); words(d, "Próximamente.", 31.0, 10); })();
-
-// ── 8 · principios
-words($("prT"), "Economía rigurosa que entiende la gente.", 31.6, 12);
-const PR = [["01", "Independencia", "Análisis honesto, aunque incomode."], ["02", "Datos abiertos", "Fuentes públicas. Sin paywalls."], ["03", "Dos profundidades", "Paper académico y versión divulgativa."], ["04", "Conocer el territorio", "Desde Talavera de la Reina."]];
-PR.forEach(([k, h, p], i) => {
-  const d = document.createElement("div"); d.className = "prow"; d.style.top = 250 + i * 112 + "px";
-  if (i === PR.length - 1) d.style.borderBottom = "var(--ln)";
-  const at = 32.4 + i * .5; d.dataset.at = at;
-  d.innerHTML = `<div class="k">${k}</div><div class="c"><h3>${h}</h3><p>${p}</p></div>`;
-  $("prRows").appendChild(d); ev(at, "row", i);
+for (let k = 1; k <= Math.round((OUT1 - OUT0) * OUTF); k++) ev(OUT0 + k / OUTF, "step", k);
+for (let k = 1; k <= Math.ceil((FAR - HOME) / BACKD); k++) ev(BACK0 + k / BACKF, "stepB", k);
+ev(BACK1, "home");
+[0, 1, 2].forEach((i) => ev(i, "blink", i));
+[20.8, 21.0].forEach((t, i) => ev(t, "look", i));
+ROAD.forEach(([x], i) => {
+  // cuando el letrero pasa por debajo del cuadrado, a la ida
+  const t = OUT0 + (x - HOME) / (OUTD * OUTF); ev(t, "sign", i);
 });
+ev(5.0, "draw0"); ev(8.6, "draw1");
 
-// ── 9 · cierre
-const pat3 = $("pat3"), cells3 = [];
-for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) { const s = document.createElement("span"); s.textContent = "sesmi"[(c + r * 2) % 5]; pat3.appendChild(s); cells3.push([s, r, c]); }
-const wmE = wordmark($("wmEnd"), { clip: true });
-LETTER_END.forEach((_, i) => ev(35.05 + i * .08, "letter", i + 2));
-const trE = trio($("trioEnd"));
-ev(35, "end");
+// ── «debemos saber.»
+const pat = $("pat"), pfs = [];
+for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) {
+  const s = document.createElement("span"), d = document.createElement("div"); d.className = "fig"; s.appendChild(d); pat.appendChild(s);
+  pfs.push(fig(d, NAMES[(c + r) % 3], "menor"));
+}
+const INK0 = 40.0, SH0 = 44.3, SHD = .07;
+ev(INK0, "flip"); ev(40.55, "saber", 0); ev(40.8, "saber", 1);
 
-// data-at → sonidos declarados en el HTML
-document.querySelectorAll("[data-ev]").forEach((el) => ev(+el.dataset.at, el.dataset.ev));
+// ── firma: la tinta se encoge hasta ser el punto de la i
+const [sqx, sqy, sqw] = B.wordmark.sq.map(Number);
+const wmHost = $("wmEnd");
+wmHost.innerHTML = `<svg viewBox="${B.wordmark.vb}"><defs><clipPath id="wc"><rect id="wcr" x="22" y="-702" height="714" width="0"/></clipPath></defs>` +
+  `<path fill="currentColor" d="${B.wordmark.d}" clip-path="url(#wc)"/><rect id="wdot" fill="#7A1F10" x="${sqx}" y="${sqy}" width="${sqw}" height="${sqw}"/></svg>`;
+const SC = 360 / 2360, DOT = [90 + (sqx - 22) * SC, 380 + (sqy + 702) * SC, sqw * SC];
+const LETTER_END = [447, 949, 1397, 2181, 2382];
+const WM0 = 44.95, WMD = .13;
+for (let k = 1; k <= 6; k++) ev(SH0 + k * SHD, "shrink", k);
+ev(SH0 + 6 * SHD, "land");
+LETTER_END.forEach((_, i) => ev(WM0 + i * WMD, "letter", i));
+ev(46.0, "sign2"); ev(46.6, "url");
+
 EV.sort((a, b) => a.t - b.t);
 window.EVENTS = EV;
 
 // ── pintar
-const atEls = [...document.querySelectorAll("[data-at]")];
-const q10 = (t) => Math.floor(t * 10 + 1e-6) / 10;
-
 window.renderAt = (t) => {
-  let cur = TL.scenes.find(([, a, b]) => t >= a && t < b) || TL.scenes[TL.scenes.length - 1];
-  const name = cur[0];
-  TL.scenes.forEach(([n]) => { $(n).style.display = n === name ? "block" : "none"; });
-  atEls.forEach((el) => (el.style.visibility = t >= +el.dataset.at ? "visible" : "hidden"));
+  $("turb").setAttribute("seed", String(1 + Math.floor(t * 8) % 12)); // el papel «hierve» a 8 pasos/s
 
-  // marco
-  const showChrome = !["intro", "end"].includes(name);
-  $("chrome").style.display = showChrome ? "block" : "none";
-  const pi = PROG.indexOf(name);
-  [...pg.children].forEach((el, i) => (el.className = i < pi ? "done" : i === pi ? "on" : ""));
+  // mundo: suelo, ciudad, carretera
+  const [sx, bob, sxs] = squareX(t);
+  const cam = Math.max(0, sxs - 330);
+  const worldOn = t < 32.2;
+  $("world").style.display = worldOn ? "block" : "none";
+  $("world").style.transform = `translateX(${-cam * S}px)`;
+  $("world").style.opacity = String(1 - eIO((t - 31.6) / .6));
+  dGround(eIO((t - 5.0) / 1.0));
+  dSky(eIO((t - 5.4) / 3.2));
+  dBridge(eIO((t - 6.6) / 1.4));
+  dWater(eIO((t - 7.2) / 1.4));
+  $("det").style.opacity = String(eOut((t - 8.2) / .9));
 
-  if (name === "intro") {
-    const tq = q10(t);
-    cells1.forEach(([s, r, c]) => (s.style.visibility = tq >= (r + c) * .04 ? "visible" : "hidden"));
-    const n = t < LT0 ? 0 : Math.min(5, Math.floor((t - LT0) / LDT + 1e-6) + 1);
-    wmI.clip.setAttribute("width", n ? LETTER_END[n - 1] - 22 + 4 : 0);
-    wmI.dot.style.visibility = t >= 1.8 ? "visible" : "hidden";
-    trI.forEach((f, i) => { $("trioIntro").children[i].style.visibility = t >= 2.9 + i * .1 ? "visible" : "hidden"; f(t, 2.9); });
+  // cuadrado
+  const sq = $("sq");
+  let vis = t < 2.5 ? stepN(t, 0, 2) % 2 === 0 : true;
+  if (t >= 20.7 && t < 20.85) vis = false;
+  if (t >= 20.95 && t < 21.05) vis = false;
+  sq.style.display = vis && t < 32.2 ? "block" : "none";
+  sq.style.opacity = String(1 - eIO((t - 31.6) / .6));
+  sq.style.left = HOME + (sx - HOME - cam) * S - 7 + "px";
+  sq.style.top = G - 14 + bob + "px";
+
+  // textos
+  tEls.forEach(({ d, a, b, byWord, ws }) => {
+    if (t < a - .1 || t > b + .1) { d.style.opacity = 0; return; }
+    const out = 1 - eIO((t - (b - .6)) / .6);
+    if (byWord) {
+      d.style.opacity = out; d.style.transform = "none";
+      ws.forEach((w, i) => { const x = eOut((t - a - i * .14) / .5); w.style.opacity = x; w.style.transform = `translateY(${(1 - x) * 8}px)`; w.classList.contains("hl") && (w.style.color = t > a + 2.6 ? "var(--red)" : ""); });
+    } else {
+      const x = eOut((t - a) / .8);
+      d.style.opacity = x * out; d.style.transform = `translateY(${(1 - x) * 10}px)`;
+    }
+  });
+
+  // figuras
+  fEls.forEach(({ h, l, a, b, play }) => {
+    const on = t >= a && t < b + .05;
+    const x = on ? eOut((t - a) / .5) * (1 - eIO((t - (b - .35)) / .35)) : 0;
+    h.style.opacity = x; l.style.opacity = x;
+    h.style.transform = `translateY(${(1 - eOut((t - a) / .6)) * 10}px)`;
+    if (on) play(t, a + .3);
+  });
+
+  // tinta: se abre a saltos desde el centro y al final se encoge hasta el punto de la i
+  const ink = $("ink");
+  const inkOn = t >= INK0 && t < SH0 + 6 * SHD;
+  ink.style.display = inkOn ? "block" : "none";
+  if (inkOn) {
+    let x0, y0, x1, y1;
+    if (t < SH0) {
+      const k = Math.min(6, stepN(t, INK0, 1 / .07) + 1), r = (k / 6) * 560;
+      [x0, y0, x1, y1] = [270 - r, 480 - r, 270 + r, 480 + r];
+    } else {
+      const k = Math.min(6, stepN(t, SH0, 1 / SHD) + 1), p = eIO(k / 6);
+      const [dx, dy, ds] = DOT;
+      [x0, y0, x1, y1] = [p * dx, p * dy, 540 + p * (dx + ds - 540), 960 + p * (dy + ds - 960)];
+    }
+    ink.style.clipPath = `inset(${y0}px ${540 - x1}px ${960 - y1}px ${x0}px)`;
+    pfs.forEach((f) => f(t, INK0 + .5));
+    $("k0").style.opacity = eOut((t - 40.5) / .6);
+    $("k1").style.visibility = t >= 40.55 ? "visible" : "hidden";
+    $("k2").style.visibility = t >= 40.8 ? "visible" : "hidden";
+    $("k3").style.opacity = eOut((t - 41.7) / .8);
   }
-  if (name === "quote") {
-    // «el mismo rigor» pasa a rojo palabra a palabra
-    [...$("quoteT").querySelectorAll(".ul")].forEach((w, i) => w.classList.toggle("hot", t >= ULT + i * .15));
-  }
-  if (name === "flip") {
-    // cuadrado que crece a saltos desde el centro (6 pasos en .42 s, como en la web)
-    const k = Math.min(6, Math.floor((t - 13) / .07 + 1e-6) + 1), r = (k / 6) * 560;
-    $("flipL").style.clipPath = `inset(${480 - r}px ${270 - r}px ${480 - r}px ${270 - r}px)`;
-    figs2.forEach(([f]) => f(t, 13.4));
-  }
-  if (pillarFx[name]) pillarFx[name](t);
-  if (name === "m001") {
-    const f = Math.floor((t - 24.5) * 5 + 1e-6), k = f % 14;
-    rings.forEach((r, i) => r.setAttribute("stroke-opacity", i === k - 1 ? ".85" : i === k - 2 ? (+r.dataset.o + .18).toFixed(2) : r.dataset.o));
-    const c = Math.max(0, Math.min(10, Math.floor((t - N0) * 10 + 1e-6)));
-    $("m1N").innerHTML = `${Math.round((c / 10) * 750)}<span style="font-size:.5em;letter-spacing:0"> M€</span>`;
-    $("m1N").style.color = c === 10 ? "var(--red)" : "var(--ink)";
-  }
-  if (name === "m002") {
-    const x = stallX(t);
-    $("stClip").setAttribute("width", x);
-    const mk = $("stMk"), pt = STALL[Math.min(STALL.length - 1, Math.round(x / 4))];
-    mk.setAttribute("x", pt[0] - 7); mk.setAttribute("y", pt[1] - 7);
-    mk.setAttribute("opacity", t >= ST0 && t < ST1 + .4 ? 1 : 0);
-  }
-  if (name === "end") {
-    cells3.forEach(([s]) => (s.style.visibility = "visible"));
-    const n = Math.min(5, Math.floor((t - 35.05) / .08 + 1e-6) + 1);
-    wmE.clip.setAttribute("width", n > 0 ? LETTER_END[n - 1] - 22 + 4 : 0);
-    wmE.dot.style.visibility = t >= 35.6 ? "visible" : "hidden";
-    trE.forEach((f, i) => { $("trioEnd").children[i].style.visibility = t >= 36.1 + i * .1 ? "visible" : "hidden"; f(t, 36.1); });
+
+  // firma
+  const endOn = t >= SH0;
+  $("endL").style.display = endOn ? "block" : "none";
+  if (endOn) {
+    $("wdot").style.visibility = t >= SH0 + 6 * SHD ? "visible" : "hidden";
+    const n = t < WM0 ? 0 : Math.min(5, stepN(t, WM0, 1 / WMD) + 1);
+    $("wcr").setAttribute("width", n ? LETTER_END[n - 1] - 22 + 6 : 0);
+    [["e1", 46.0], ["e2", 46.6], ["e3", 47.0]].forEach(([id, a]) => {
+      const x = eOut((t - a) / .8); $(id).style.opacity = x; $(id).style.transform = `translateY(${(1 - x) * 8}px)`;
+    });
   }
 };
 window.renderAt(0);

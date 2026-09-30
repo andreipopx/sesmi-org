@@ -1,9 +1,8 @@
 """Banda sonora del reel, sintetizada desde cero y sincronizada con la imagen.
 
-Lee timeline.json (tempo, duración) y out/events.json (lo que reel.html declara: cada palabra que
-aparece, cada cuadrado rojo, los cascos del caballo, el aleteo de la paloma…) y escribe out/audio.wav.
-Base: pad en re menor (Dm · B♭ · F · C, un acorde cada 4 s), bajo y un pulso seco a 120 BPM.
-Requiere numpy.
+Lee timeline.json y out/events.json (lo que declara reel.html: cada frase, cada paso del cuadrado,
+el trazo de la ciudad, las figuras…) y escribe out/audio.wav. Piano de fieltro y cuerdas suaves en
+re mayor, sin percusión; el lápiz suena mientras se dibuja la ciudad. Requiere numpy.
 """
 import json
 import wave
@@ -16,9 +15,9 @@ TL = json.loads((HERE / "timeline.json").read_text())
 EVENTS = json.loads((HERE / "out/events.json").read_text())
 SR = 48000
 DUR = TL["duration"]
-BEAT = 60 / TL["bpm"]
 N = int(SR * (DUR + 0.05))
-rng = np.random.default_rng(7)
+EIGHTH = 60 / 72 / 2  # 72 BPM
+rng = np.random.default_rng(11)
 
 dry = np.zeros((N, 2))
 wet = np.zeros((N, 2))  # envío a reverb
@@ -45,19 +44,13 @@ def put(buf, t0, sig, gain=1.0, pan=0.0):
     buf[i : i + len(s), 1] += s * gain * r * 1.414
 
 
-def lp(x, fc):
-    """Paso bajo de un polo (vectorizado con filtro IIR vía lfilter casero en bloques)."""
-    a = np.exp(-2 * np.pi * fc / SR)
-    y = np.empty_like(x)
-    acc = 0.0
-    for k in range(len(x)):  # señales cortas: aceptable
-        acc = (1 - a) * x[k] + a * acc
-        y[k] = acc
-    return y
+def both(t0, sig, g_dry, g_wet, pan=0.0):
+    put(dry, t0, sig, g_dry, pan)
+    put(wet, t0, sig, g_wet, pan)
 
 
-def bp_noise(d, lo, hi):
-    n = int(SR * d)
+def band_noise(d, lo, hi):
+    n = max(2, int(SR * d))
     spec = np.fft.rfft(rng.standard_normal(n))
     f = np.fft.rfftfreq(n, 1 / SR)
     spec[(f < lo) | (f > hi)] = 0
@@ -65,278 +58,217 @@ def bp_noise(d, lo, hi):
     return x / (np.abs(x).max() + 1e-9)
 
 
-def env(d, a=0.003, dec=0.2):
-    t = tt(d)
-    return np.minimum(1, t / max(a, 1e-4)) * np.exp(-t / dec)
-
-
 # ── instrumentos ─────────────────────────────────────────────────────────────
-def marimba(m, d=0.9):
-    t, f = tt(d), hz(m)
-    s = np.sin(2 * np.pi * f * t) * np.exp(-t / 0.35)
-    for r, a, dec in ((4, 0.35, 0.05), (10, 0.12, 0.012)):
-        if f * r < 15000:  # sin parciales por encima de ~15 kHz (evita aliasing)
-            s += a * np.sin(2 * np.pi * f * r * t) * np.exp(-t / dec)
-    return s * np.minimum(1, t / 0.002)
+def piano(m, vel=0.5, dur=None):
+    """Piano de fieltro: parciales ligeramente inarmónicos, dos cuerdas, macillo blando."""
+    f = hz(m)
+    base = float(np.clip(2.4 * (220 / f) ** 0.45, 0.7, 5.0))
+    dur = dur or min(6.0, base * 2.2)
+    t = tt(dur)
+    s = np.zeros_like(t)
+    for n in range(1, 11):
+        fn = n * f * np.sqrt(1 + 0.00035 * n * n)
+        if fn > 12000:
+            break
+        amp = (1 / n**1.25) * np.exp(-n * (0.42 - 0.25 * vel))
+        dec = base / (1 + 0.55 * (n - 1))
+        for det in (-0.9, 0.9):  # centésimas
+            s += 0.5 * amp * np.sin(2 * np.pi * fn * (1 + det / 1731) * t + n) * np.exp(-t / dec)
+    s *= np.minimum(1, t / 0.004)
+    ham = band_noise(0.012, 200, 2500) * np.exp(-tt(0.012) / 0.003)
+    s[: len(ham)] += 0.12 * vel * ham
+    s *= np.clip((dur - t) / 0.25, 0, 1)
+    return s * vel
 
 
-def bell(m, d=2.2):
+def strings(notes, d, att=1.6, rel=1.4):
+    """Pad de cuerdas: sierras suaves (pocos armónicos), desafinadas y con vibrato lento."""
+    t = tt(d)
+    env = np.minimum(1, t / att) ** 2 * np.clip((d - t) / rel, 0, 1)
+    out = np.zeros((len(t), 2))
+    for j, m in enumerate(notes):
+        f = hz(m)
+        for ch, det in ((0, -3.5), (1, 3.5)):
+            vib = 1 + 0.0025 * np.sin(2 * np.pi * (4.6 + j * 0.3) * t + j)
+            ph = 2 * np.pi * np.cumsum(f * (1 + det / 1731) * vib) / SR
+            w = sum(np.sin(h * ph) / h**1.6 for h in range(1, 7))
+            out[:, ch] += w * env
+    return out / max(1, len(notes))
+
+
+def bell(m, d=2.5):
     t, f = tt(d), hz(m)
-    s = sum(a * np.sin(2 * np.pi * f * r * t) * np.exp(-t / dd) for r, a, dd in [(1, 1, 0.9), (2.76, 0.35, 0.4), (5.4, 0.12, 0.15), (2, 0.2, 0.7)])
+    s = sum(a * np.sin(2 * np.pi * f * r * t) * np.exp(-t / dd) for r, a, dd in [(1, 1, 1.0), (2.76, 0.3, 0.45), (5.4, 0.08, 0.18), (2, 0.18, 0.8)])
     return s * np.minimum(1, t / 0.003)
 
 
-def tick():
-    s = bp_noise(0.018, 2500, 6000) * env(0.018, 0.0005, 0.004)
-    t = tt(0.018)
-    s += 0.5 * np.sin(2 * np.pi * rng.uniform(1900, 2400) * t) * np.exp(-t / 0.006)
+def thud(f0=90, f1=42, d=0.6, dec=0.2):
+    t = tt(d)
+    ph = 2 * np.pi * np.cumsum(f1 + (f0 - f1) * np.exp(-t / 0.05)) / SR
+    return np.sin(ph) * np.exp(-t / dec) * np.minimum(1, t / 0.003)
+
+
+def tap():
+    t = tt(0.06)
+    s = np.sin(2 * np.pi * 520 * t) * np.exp(-t / 0.012)
+    s += 0.5 * band_noise(0.06, 400, 1800) * np.exp(-t / 0.006)
     return s
 
 
-def thud(f0=90, f1=42, d=0.45, dec=0.16):
-    t = tt(d)
-    ph = 2 * np.pi * np.cumsum(f1 + (f0 - f1) * np.exp(-t / 0.04)) / SR
-    return np.sin(ph) * np.exp(-t / dec) * np.minimum(1, t / 0.002)
+def pencil(t0, t1):
+    """Lápiz sobre papel: gestos de ruido de 0,1–0,35 s."""
+    t = t0
+    while t < t1:
+        d = rng.uniform(0.1, 0.35)
+        n = band_noise(d, 1800, 7500)
+        x = tt(d)
+        e = np.sin(np.pi * x / d) ** 0.7 * (0.6 + 0.4 * np.sin(2 * np.pi * rng.uniform(6, 14) * x) ** 2)
+        put(dry, t, n * e, rng.uniform(0.05, 0.085), pan=rng.uniform(-0.4, 0.4))
+        t += d + rng.uniform(0.0, 0.08)
 
 
-def stamp():
-    s = thud(110, 48, 0.5, 0.14)
-    click = bp_noise(0.03, 700, 3500) * env(0.03, 0.0005, 0.008)
-    s[: len(click)] += 0.6 * click
-    t = tt(0.12)
-    s[: len(t)] += 0.35 * np.sin(2 * np.pi * 880 * t) * np.exp(-t / 0.03)
-    return s
-
-
-def hoof(acc):
-    t = tt(0.09)
-    s = np.sin(2 * np.pi * (520 if acc else 610) * t) * np.exp(-t / 0.018)
-    s += 0.8 * bp_noise(0.09, 900, 2600) * env(0.09, 0.0005, 0.01)
-    s += 0.6 * thud(160, 90, 0.09, 0.03)
-    return s
-
-
-def wing():
-    d = 0.22
-    t = tt(d)
-    e = np.sin(np.pi * np.minimum(1, t / d)) ** 2
-    return bp_noise(d, 500, 3000) * e
-
-
-def whoosh_steps(t0):
-    """Barrido a saltos (6 pasos en .42 s), como el cuadrado que se abre."""
-    for k in range(6):
-        lo = 300 + k * 450
-        s = bp_noise(0.07, lo, lo * 2.2) * env(0.07, 0.002, 0.03)
-        put(dry, t0 + k * 0.07, s, 0.22 + k * 0.03, pan=-0.5 + k * 0.2)
-        put(wet, t0 + k * 0.07, s, 0.2)
-
-
-def riser(t0, d):
-    t = tt(d)
-    n = bp_noise(d, 800, 7000)
-    e = (t / d) ** 2.5
-    put(dry, t0, n * e, 0.14)
-    put(wet, t0, n * e, 0.2)
-
-
-def rev(a):
-    """Intento de arranque que se cala: tono de motor que sube y se muere."""
-    d = 0.38
-    t = tt(d)
-    top = 70 + a * 1.9
-    f = np.where(t < 0.2, 62 + (top - 62) * (t / 0.2) ** 0.7, top * np.exp(-(t - 0.2) / 0.08) + 40 * (1 - np.exp(-(t - 0.2) / 0.08)))
-    ph = 2 * np.pi * np.cumsum(f) / SR
-    saw = sum(np.sin(h * ph) / h for h in range(1, 13))  # diente de sierra de banda limitada
-    s = lp(saw, 1400) * 0.6 * np.minimum(1, t / 0.02) * np.where(t < 0.2, 1, np.exp(-(t - 0.2) / 0.07))
-    return s * (0.5 + a / 172)
-
-
-def count_blip(k):
-    t = tt(0.05)
-    return np.sin(2 * np.pi * (700 + k * 90) * t) * np.exp(-t / 0.014)
-
-
-# ── base musical ─────────────────────────────────────────────────────────────
-D, F, G, A, Bb, C = 62, 65, 67, 69, 70, 72
-CHORDS = [  # (raíz del bajo, notas del pad)
-    (38, [50, 57, 62, 65, 69]),  # Dm(add9) → D2 · A3 D4 F4 A4
-    (34, [46, 53, 58, 62, 65]),  # B♭
-    (41, [53, 57, 60, 65, 69]),  # F
-    (36, [48, 55, 60, 64, 67]),  # C
+# ── armonía (re mayor) ───────────────────────────────────────────────────────
+Dm, Bm, Gm, Am = [62, 66, 69], [59, 62, 66], [59, 62, 67], [61, 64, 69]
+SECTIONS = [  # (inicio, fin, bajo, acorde, arpegio: None | 'q' negras | 'e' corcheas)
+    (3.0, 5.0, 38, Dm, None),
+    (5.0, 7.0, 38, Dm, "q"), (7.0, 9.0, 35, Bm, "q"), (9.0, 11.0, 43, Gm, "q"), (11.0, 13.0, 45, Am, "q"),
+    (13.0, 15.0, 38, Dm, "e"), (15.0, 17.0, 37, Am, "e"), (17.0, 19.0, 35, Bm, "e"), (19.0, 20.5, 43, Gm, "e"),
+    (20.5, 21.2, 43, [62, 67, 69], None),
+    (21.2, 22.8, 43, Gm, "e"), (22.8, 24.4, 45, Am, "e"), (24.4, 26.0, 38, Dm, "e"),
+    (26.0, 27.5, 35, Bm, "e"), (27.5, 29.0, 43, Gm, "e"), (29.0, 30.5, 42, Dm, "e"), (30.5, 32.2, 45, Am, "e"),
+    (32.2, 34.8, 38, Dm, "e"), (34.8, 37.4, 35, Bm, "e"), (37.4, 40.0, 43, Gm, "e"),
+    (40.55, 44.3, 38, [57, 62, 66, 69], None),
+    (44.72, DUR, 38, [62, 64, 66, 69], None),
 ]
+PAT = [0, 1, 2, 3, 4, 3, 2, 1]
 
 
 def chord_at(t):
-    if t >= 35:
-        return (38, [50, 57, 62, 64, 65, 69])
-    return CHORDS[int(t // 4) % 4]
+    for a, b, bass, ch, _ in SECTIONS:
+        if a <= t < b:
+            return bass, ch
+    return 38, Dm
 
 
-def pad():
-    out = np.zeros((N, 2))
-    seg = 4.0
-    starts = [x * seg for x in range(int(35 // seg) + 1)] + [35.0]
-    starts = sorted(set(s for s in starts if s <= 35))
-    for i, s0 in enumerate(starts):
-        s1 = starts[i + 1] if i + 1 < len(starts) else DUR
-        d = s1 - s0 + 0.8
-        t = tt(d)
-        _, notes = chord_at(s0 + 0.01)
-        e = np.minimum(1, t / 0.6) * np.clip((d - t) / 0.8, 0, 1)
-        for j, m in enumerate(notes):
-            f = hz(m)
-            for side, det in ((0, -0.12), (1, 0.12)):
-                w = sum(a * np.sin(2 * np.pi * f * h * (1 + det / 100) * t + j) for h, a in ((1, 1), (2, 0.28), (3, 0.1)))
-                i0 = int(s0 * SR)
-                n = min(len(w), N - i0)
-                out[i0 : i0 + n, side] += (w * e)[:n] * 0.05
-    # respiración lenta
-    tt_all = np.arange(N) / SR
-    out *= (0.85 + 0.15 * np.sin(2 * np.pi * tt_all / 8))[:, None]
-    return out
-
-
-def groove():
-    """Pulso a 120 BPM: bombo en 1 y 3, golpe seco en 2 y 4, hi-hat en contratiempos, bajo."""
-    sections = [(4.0, 9.0, "full"), (9.0, 13.0, "light"), (15.5, 35.0, "full")]
-    k_s, rim_s = thud(120, 45, 0.4, 0.12), None
-    for a, b, mode in sections:
-        n_beats = int(round((b - a) / BEAT))
-        for i in range(n_beats):
-            t = a + i * BEAT
-            if i % 2 == 0:
-                put(dry, t, k_s, 0.55 if mode == "full" else 0.4)
-            if mode == "full" and i % 2 == 1:
-                rim = bp_noise(0.06, 1200, 5000) * env(0.06, 0.0005, 0.012)
-                put(dry, t, rim, 0.16, pan=0.15)
-                put(wet, t, rim, 0.1)
-            if mode == "full":
-                hat = bp_noise(0.03, 7000, 14000) * env(0.03, 0.0005, 0.008)
-                put(dry, t + BEAT / 2, hat, 0.07, pan=0.35)
-            # bajo: 1, «y» del 2 y 4 del compás (2 s)
-            pos = i % 4
-            if pos in (0, 3) or (mode == "full" and pos == 1 and i % 8 == 1):
-                root, _ = chord_at(t + 0.01)
-                d = 0.45
-                tb = tt(d)
-                f = hz(root + 12 if pos == 3 else root)
-                bs = (np.sin(2 * np.pi * f * tb) + 0.25 * np.sin(4 * np.pi * f * tb)) * np.exp(-tb / 0.22) * np.minimum(1, tb / 0.005)
-                put(dry, t + (BEAT / 2 if pos == 1 else 0), bs, 0.32)
+def music():
+    k8 = 0
+    for a, b, bass, ch, arp in SECTIONS:
+        d = b - a
+        loud = 0.9 if a >= 26 and a < 40 else 0.6
+        st = strings([bass + 12] + ch, d + 1.2, att=min(1.6, d * 0.6), rel=1.2)
+        g = 0.05 * loud if a < 40.5 else 0.06
+        put(dry, a, st[:, 0], g, -0.5)
+        put(dry, a, st[:, 1], g, 0.5)
+        put(wet, a, st.mean(axis=1), g * 0.8)
+        if a >= 5:
+            both(a, piano(bass, 0.42), 0.55, 0.25)
+        if arp:
+            tones = [bass + 12] + ch + [ch[0] + 12]
+            step = EIGHTH * (2 if arp == "q" else 1)
+            n = int(round(d / step))
+            for i in range(n):
+                t = a + i * step
+                m = tones[PAT[k8 % len(PAT)]]
+                k8 += 1
+                vel = 0.26 + (0.06 if i % 2 == 0 else 0) + (0.04 if a >= 26 else 0)
+                both(t, piano(m, vel), 0.5, 0.35, pan=-0.35 + 0.1 * (k8 % 8))
 
 
 # ── eventos de la imagen ─────────────────────────────────────────────────────
-PENTA = [74, 77, 79, 81, 84, 86, 89]  # D5 F5 G5 A5 C6 D6 F6
-PILLAR = [(69, 76), (72, 79), (74, 81)]  # quinta sobre A4, C5, D5
-LEMA = [81, 84, 86]
+LINE_NOTES = [81, 78, 76, 81, 83, 86, 81, 74, 76, 78]
+SIGNS = [86, 88, 90, 93, 95]
 
 
 def events():
     for e in EVENTS:
         t, k, v = e["t"], e["k"], e.get("v")
-        if k == "tick":
-            put(dry, t, tick(), 0.16, pan=rng.uniform(-0.35, 0.35))
-        elif k == "pat":
-            put(dry, t, marimba(86 + [0, 3, 5, 7, 10, 12, 15, 17][v // 3], 0.3), 0.035, pan=-0.6 + v / 20)
-            put(wet, t, marimba(86, 0.3), 0.03)
-        elif k == "letter":
-            s = marimba(PENTA[v])
-            put(dry, t, s, 0.3, pan=-0.4 + v * 0.16)
-            put(wet, t, s, 0.25)
-        elif k in ("stamp", "stamp2"):
-            s = stamp()
-            put(dry, t, s, 0.6 if k == "stamp" else 0.35)
-            put(wet, t, s, 0.12)
-        elif k == "pluck":
-            if v == 0:  # trío de figuras: arpegio
-                for j, m in enumerate((62, 69, 74)):
-                    put(dry, t + j * 0.1, marimba(m), 0.3, pan=-0.3 + j * 0.3)
-                    put(wet, t + j * 0.1, marimba(m), 0.25)
-            else:
-                for m in PILLAR[v - 1]:
-                    put(dry, t, marimba(m, 1.2), 0.3)
-                    put(wet, t, marimba(m, 1.2), 0.3)
-        elif k == "lema":
-            s = bell(LEMA[v], 1.8)
-            put(dry, t, s, 0.12, pan=0.2)
-            put(wet, t, s, 0.25)
-        elif k == "pluckHi":
-            s = bell(86, 2.5)
-            put(dry, t, s, 0.14)
-            put(wet, t, s, 0.3)
+        if k == "blink":  # el cursor que parpadea: tres notas sueltas
+            both(t, piano([74, 78, 81][v], 0.3), 0.6, 0.5)
+        elif k == "draw0":
+            pencil(t + 0.2, 8.8)
+        elif k == "line":
+            _, ch = chord_at(t + 0.01)
+            m = LINE_NOTES[v]
+            both(t, piano(m, 0.38), 0.55, 0.5, pan=0.15)
+        elif k in ("step", "stepB"):
+            put(dry, t, tap(), 0.05 if k == "step" else 0.045, pan=(-0.25 if v % 2 else 0.25))
+        elif k == "sign":
+            both(t, bell(SIGNS[v], 1.8), 0.06, 0.12, pan=0.3)
+        elif k == "look":
+            both(t, piano([81, 79][v], 0.3), 0.5, 0.5)
+        elif k == "home":
+            both(t, bell(74, 3.0), 0.08, 0.2)
+        elif k == "fig":
+            both(t, bell([81, 83, 86][v], 3.0), 0.1, 0.25)
+        elif k == "owl":
+            both(t, piano(93, 0.15, 0.6), 0.25, 0.2, pan=0.3)
         elif k == "hoof":
-            put(dry, t, hoof(v), 0.3 if v else 0.22, pan=-0.1)
-            put(wet, t, hoof(v), 0.05)
-        elif k == "blink":
-            s = marimba(93, 0.25)
-            put(dry, t, s, 0.07, pan=0.3)
+            put(dry, t, tap() * (1.2 if v else 1), 0.07, pan=-0.15)
         elif k == "wing":
-            put(dry, t, wing(), 0.2, pan=0.25)
-            put(wet, t, wing(), 0.1)
+            d = 0.22
+            x = tt(d)
+            both(t, band_noise(d, 500, 2800) * np.sin(np.pi * x / d) ** 2, 0.07, 0.05, pan=0.2)
         elif k == "flip":
-            riser(t - 0.7, 0.7)
-            whoosh_steps(t)
-            boom = thud(70, 32, 2.0, 0.6)
-            put(dry, t, boom, 0.75)
-            put(wet, t, boom, 0.15)
-            s = bell(62, 3.0)
-            put(wet, t + 0.42, s, 0.25)
-        elif k == "hot":
-            s = marimba([81, 84, 86][v], 1.0)
-            put(dry, t, s, 0.25)
-            put(wet, t, s, 0.25)
-        elif k == "count":
-            put(dry, t, count_blip(v), 0.16, pan=-0.2)
-        elif k == "ring":
-            t_ = tt(1.2)
-            s = np.sin(2 * np.pi * 1320 * t_) * np.exp(-t_ / 0.4)
-            put(wet, t, s, 0.07)
-            put(dry, t, s, 0.03)
-        elif k == "rev":
-            s = rev(v)
-            put(dry, t, s, 0.3, pan=-0.6 + (EVENTS.index(e) % 6) * 0.24)
-            put(wet, t, s, 0.08)
-        elif k == "chap":
-            s = marimba([74, 77, 81, 79, 77][v], 0.6)
-            put(dry, t, s, 0.18 if v < 2 else 0.1, pan=-0.4 + v * 0.2)
-            put(wet, t, s, 0.12)
-        elif k == "row":
-            s = marimba([62, 65, 69, 74][v], 1.0)
-            put(dry, t, s, 0.3)
-            put(wet, t, s, 0.25)
-            put(dry, t, thud(100, 50, 0.3, 0.1), 0.25)
-        elif k == "end":
-            # final: cierre del pulso, acorde de campanas y golpe grave
-            put(dry, t, thud(80, 36, 2.5, 0.7), 0.7)
-            for j, m in enumerate((50, 57, 62, 64, 69, 74)):
-                s = bell(m, 4.4 - j * 0.1)
-                put(dry, t + j * 0.04, s, 0.07, pan=-0.5 + j * 0.2)
-                put(wet, t + j * 0.04, s, 0.18)
+            d = 0.9
+            x = tt(d)
+            both(t - d, band_noise(d, 900, 7000) * (x / d) ** 2.5, 0.12, 0.2)
+            for j in range(6):
+                lo = 300 + j * 420
+                s = band_noise(0.07, lo, lo * 2.2) * np.exp(-tt(0.07) / 0.03)
+                both(t + j * 0.07, s, 0.14, 0.12, pan=-0.5 + j * 0.2)
+            both(t, thud(70, 32, 2.5, 0.8), 0.6, 0.15)
+        elif k == "saber":
+            ms = (38, 50, 57) if v == 0 else (62, 66, 69, 74)
+            for j, m in enumerate(ms):
+                both(t + j * 0.015, piano(m, 0.55), 0.55, 0.4)
+        elif k == "shrink":
+            both(t, piano(90 - v * 2, 0.18, 0.5), 0.35, 0.2)
+        elif k == "land":
+            both(t, thud(95, 45, 0.6, 0.18), 0.55, 0.1)
+            for j, m in enumerate((38, 50, 57, 62, 64, 66, 69, 74)):
+                both(t + j * 0.035, piano(m, 0.5 if j < 3 else 0.4, 6.0), 0.5, 0.45, pan=-0.4 + j * 0.1)
+            both(t + 0.3, bell(86, 4.0), 0.06, 0.2)
+        elif k == "letter":
+            both(t, piano([74, 76, 78, 81, 86][v], 0.22, 1.2), 0.35, 0.3)
+        elif k == "sign2":
+            both(t, bell(81, 3.0), 0.05, 0.15)
+        elif k == "url":
+            both(t, bell(86, 3.0), 0.05, 0.15)
 
 
-def reverb(x, seconds=2.2):
+def reverb(x, seconds=3.2):
     n = int(SR * seconds)
     t = np.arange(n) / SR
     out = np.zeros_like(x)
-    L = len(x) + n
-    nfft = 1 << (L - 1).bit_length()
+    nfft = 1 << (len(x) + n - 1).bit_length()
     for ch in range(2):
-        ir = rng.standard_normal(n) * np.exp(-t / (seconds / 6.9)) * np.minimum(1, t / 0.01)
-        ir[: int(0.012 * SR)] = 0  # pre-delay
-        y = np.fft.irfft(np.fft.rfft(x[:, ch], nfft) * np.fft.rfft(ir, nfft), nfft)[: len(x)]
-        out[:, ch] = y
-    return out / (np.abs(out).max() + 1e-9) * np.abs(x).max() * 1.2
+        ir = rng.standard_normal(n) * np.exp(-t / (seconds / 6.9)) * np.minimum(1, t / 0.02)
+        ir[: int(0.02 * SR)] = 0
+        spec = np.fft.rfft(ir)  # reverb oscura: atenuar agudos de la cola
+        f = np.fft.rfftfreq(n, 1 / SR)
+        ir = np.fft.irfft(spec / (1 + (f / 4500) ** 2), n)
+        out[:, ch] = np.fft.irfft(np.fft.rfft(x[:, ch], nfft) * np.fft.rfft(ir, nfft), nfft)[: len(x)]
+    return out / (np.abs(out).max() + 1e-9) * np.abs(x).max() * 1.1
+
+
+def room():
+    """Tono de sala: ruido rosa muy bajo, para que el silencio no sea digital."""
+    w = rng.standard_normal((N, 2))
+    spec = np.fft.rfft(w, axis=0)
+    f = np.fft.rfftfreq(N, 1 / SR)
+    spec /= np.sqrt(np.maximum(f, 20))[:, None]
+    spec[f > 6000] *= 0.2
+    x = np.fft.irfft(spec, N, axis=0)
+    return x / np.abs(x).max() * 0.006
 
 
 def main():
-    dry[:] += pad()
-    groove()
+    music()
     events()
-    mix = dry + 0.45 * reverb(wet + 0.3 * dry)
-    # fundido de entrada corto y de salida al final
-    tt_all = np.arange(N) / SR
-    mix *= np.clip(tt_all / 0.05, 0, 1)[:, None] * np.clip((DUR - tt_all) / 1.2, 0, 1)[:, None]
-    mix = np.tanh(mix * 1.3) / np.tanh(1.3)
+    mix = dry + 0.55 * reverb(wet + 0.25 * dry) + room()
+    t = np.arange(N) / SR
+    mix *= np.clip(t / 0.1, 0, 1)[:, None] * np.clip((DUR - t) / 2.5, 0, 1)[:, None]
+    mix = np.tanh(mix * 1.2) / np.tanh(1.2)
     mix *= 0.89 / np.abs(mix).max()
     pcm = (mix * 32767).astype("<i2")
     with wave.open(str(HERE / "out/audio.wav"), "wb") as w:
