@@ -46,7 +46,6 @@ html,body{margin:0;background:var(--paper)}
 .ht{font:700 112px/.9 var(--strong);letter-spacing:-.045em;text-align:center}
 .ht .dot{display:inline-block;width:.17em;height:.17em;background:var(--paper);margin-left:.04em}
 
-#grain{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.09}
 #vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 50% 45%,transparent 55%,rgba(28,24,20,.07))}
 </style>
 </head>
@@ -71,10 +70,6 @@ html,body{margin:0;background:var(--paper)}
     <div class="abs" style="left:60px;right:60px;top:570px;text-align:center;font:400 20px/1.45 var(--text);color:color-mix(in srgb,var(--paper) 74%,var(--ink))" id="k3">Investigación económica independiente, en&nbsp;abierto, para las ciudades medias.</div>
   </div>
 
-  <svg id="grain" viewBox="0 0 540 960" preserveAspectRatio="none">
-    <filter id="gf"><feTurbulence id="turb" type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1"/><feColorMatrix type="saturate" values="0"/></filter>
-    <rect width="540" height="960" filter="url(#gf)"/>
-  </svg>
   <div id="vig"></div>
 </div>
 
@@ -264,8 +259,6 @@ window.EVENTS = EV;
 
 // ── pintar
 window.renderAt = (t) => {
-  $("turb").setAttribute("seed", String(1 + Math.floor(t * 8) % 12)); // el papel «hierve» a 8 pasos/s
-
   // mundo: suelo, ciudad, carretera
   const [sx, bob, sxs] = squareX(t);
   const cam = Math.max(0, sxs - 330);
