@@ -36,10 +36,11 @@ export const SEQ: Record<FigName, Sequence> = {
     origin: [50, 85],
   },
   caballo: {
-    // Galope transverso (Muybridge), 8 posturas; empieza y acaba en la más parecida al dibujo quieto
-    fps: 10,
+    // Las 5 posturas de galope del dibujo original con una intermedia entre cada par (10 fotogramas).
+    // Empieza en el galope volador (= dibujo quieto) y la última intermedia vuelve a él: empalma al parar.
+    fps: 12,
     frames: () => FRAMES.caballo.run,
-    steps: [["g8", 0, 0], ["g1", 0, 0], ["g2", 0, 0], ["g3", 0, 0], ["g4", 0, 0], ["g5", 0, 0], ["g6", 0, 0], ["g7", 0, 0]],
+    steps: [["g1", 0, -0.5], ["g2", 0.25, -0.25], ["g3", 0.5, 0], ["g4", 0, -0.75], ["g5", -0.5, -1.5], ["g6", -1, -1], ["g7", -1.5, -0.5], ["g8", -0.25, -0.25], ["g9", 1, 0], ["g10", 0.5, -0.25]],
     origin: [50, 50],
   },
   paloma: {
