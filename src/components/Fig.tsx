@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { FIGS, SEQ, prefersReducedMotion, type FigName, type FigVariant } from "@/brand";
+import { FIGS, SEQ, type FigName, type FigVariant } from "@/brand";
+import { ticker } from "@/lib/ticker";
 
 interface FigProps {
   name: FigName;
@@ -26,23 +27,23 @@ export function Fig({ name, variant = "menor", anim = false, label, className }:
     const el = ref.current, g = gRef.current, path = pathRef.current;
     if (!anim || !el || !g || !path) return;
     const Q = SEQ[name], F = Q.frames(variant), restD = FIGS[name][variant];
-    let i = 0, timer: number | null = null, stopAt = 0;
+    let i = 0, stopAt = 0;
 
     const rest = () => { path.setAttribute("d", restD); g.removeAttribute("transform"); };
-    const stop = () => { if (timer !== null) clearInterval(timer); timer = null; stopAt = 0; rest(); };
+    const stop = () => { tk.stop(); stopAt = 0; rest(); };
     const step = () => {
       if (stopAt && Date.now() > stopAt && i % Q.steps.length === 0) return stop();
       const [f, r, y] = Q.steps[i % Q.steps.length]; i++;
       path.setAttribute("d", F[f]);
       g.setAttribute("transform", `translate(0 ${y}) rotate(${r} ${Q.origin[0]} ${Q.origin[1]})`);
     };
+    const tk = ticker(Q.fps, step);
     const play = (ms?: number) => {
-      if (prefersReducedMotion()) return;
       stopAt = ms ? Date.now() + ms : 0;
-      if (timer === null) { i = 0; step(); timer = window.setInterval(step, 1000 / Q.fps); }
+      if (!tk.running) { i = 0; tk.start(); }
     };
     // termina el ciclo en curso y se para
-    const soft = () => { if (timer !== null) stopAt = Date.now(); };
+    const soft = () => { if (tk.running) stopAt = Date.now(); };
 
     if (anim === "loop") {
       const io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? play() : stop())));

@@ -27,7 +27,8 @@ interface Sequence {
   frames: (variant: FigVariant) => Frames;
 }
 
-// A pocos fps, estilo dibujo animado a mano (mismo ritmo que el kit del prototipo).
+// A pocos fps, estilo dibujo animado a mano. Los fps dividen a 60 (5, 6…) para que cada fotograma
+// dure los mismos refrescos de pantalla (ver src/lib/ticker.ts).
 export const SEQ: Record<FigName, Sequence> = {
   buho: {
     fps: 5,
@@ -36,20 +37,21 @@ export const SEQ: Record<FigName, Sequence> = {
     origin: [50, 85],
   },
   caballo: {
-    fps: 7,
+    // Las 5 posturas de galope originales + una intermedia al volver al galope volador (= dibujo quieto),
+    // para que el bucle y la parada empalmen. 6 fps: divide a 60, todos los pasos duran lo mismo.
+    fps: 6,
     frames: () => FRAMES.caballo.run,
-    steps: [["g1", 0, -0.5], ["g2", 0.5, 0], ["g3", -0.5, -1.5], ["g4", -1.5, -0.5], ["g5", 1, 0]],
+    steps: [["g1", 0, -0.5], ["g2", 0.5, 0], ["g3", -0.5, -1.5], ["g4", -1.5, -0.5], ["g5", 1, 0], ["g6", 0.5, -0.25]],
     origin: [50, 50],
   },
   paloma: {
-    fps: 7,
+    // Aleteo simétrico de 6 fotogramas (el ala baja y sube por los mismos pasos); 6 fps.
+    fps: 6,
     frames: () => FRAMES.paloma.flap,
-    steps: [["f1", -0.5, 1], ["f2", 0, 0.5], ["f3", 0.5, -0.5], ["f4", 0.5, -1.5], ["f5", 0, -2], ["f6", -0.5, -0.5]],
+    steps: [["f1", 0, 1], ["f2", 0, -0.5], ["f3", 0, -1.5], ["f4", 0, -2], ["f5", 0, -1.5], ["f6", 0, -0.5]],
     origin: [50, 50],
   },
 };
 
 export const FIG_NAMES: FigName[] = ["buho", "caballo", "paloma"];
 
-export const prefersReducedMotion = () =>
-  typeof window !== "undefined" && !!window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

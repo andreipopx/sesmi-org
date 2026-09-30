@@ -12,7 +12,7 @@
 | Styling | Plain CSS: tokens + `@font-face` in `src/index.css`, the grid in `src/styles/sesmi.css` (ported from the approved "Rejilla" prototype). Tailwind 3 stays configured **without preflight** (no `@tailwind base`) only for shadcn |
 | Components | shadcn/ui (Radix UI primitives) — in `src/components/ui/`, do not edit manually; the site pages do not use them |
 | Routing | React Router v6 (`src/AppRoutes.tsx`) |
-| Animation | Hand-rolled: SVG frame swaps via `setInterval` (no Framer Motion in the site) |
+| Animation | Hand-rolled: SVG frame swaps on a vsync-aligned `requestAnimationFrame` ticker (`src/lib/ticker.ts`; no Framer Motion in the site) |
 | i18n | None — the site is Spanish only (the old `LanguageContext` / `translations.ts` were removed) |
 | Build | `npm run build` → `dist/` |
 | Tests | Vitest (`src/test/routes.test.tsx`: routes, redirects, 404, waitlist mock) + Playwright |
@@ -51,7 +51,7 @@ Titles/favicons live in the `META` map in `SiteLayout.tsx` — add new routes th
 | `Fig.tsx` | Brand figure (`name` buho/caballo/paloma, `variant` menor <64px / mayor ≥64px, `anim`, `label`). Decorative (aria-hidden) unless `label` |
 | `Wordmark.tsx` | `<Wordmark dot="red|ink"/>` vector wordmark (i-dot = red square); `<Sesmi/>` for «sesmi» inside running text |
 | `Hero.tsx` | Home hero: «s e s m i» letter pattern + big wordmark; square magnifier inverts to «debemos saber.» over a figure pattern (mouse follows); on touch there is no magnifier: a tap flips the whole hero to that hidden face (stepped reveal from the tap point) and another tap flips it back; red square cursor; toggles `html.hero-wm-visible` so the top-bar wordmark hides while the hero wordmark is visible (not while flipped, `html.hero-flip`) |
-| `Illustration.tsx` | Line illustrations `rings` (SESMI-001, 750 M€) and `stall` (SESMI-002); animate every 180 ms only while on screen |
+| `Illustration.tsx` | Line illustrations `rings` (SESMI-001, 750 M€) and `stall` (SESMI-002); animate at 5 steps/s only while on screen; the stall marker vanishes at the end of the series and reappears at the start after a pause |
 | `MethodDiagram.tsx` | «Cómo trabajamos» cell diagram (datos → análisis → paper + divulgativa) with the red marker running the flow |
 | `PillarHeader.tsx` | Page header of each pillar: back cell, signature (figure · wordmark · section), h1, lema, intro, big figure (`fig="all"` = three) |
 | `RowLink.tsx` | Numbered grid row that is one link (internal `<Link>` or `mailto:`) |
@@ -63,8 +63,10 @@ Brand data: `src/brand/brand.json` (figure paths in a 100×100 box, animation fr
 ### Figures and animation
 
 - Three figures = three pillars: **búho** Investigación («Debemos saber»), **caballo** Servicios («Fuerza aplicada»), **paloma** Divulgación («Socorre enseñando»).
-- At rest a figure is the clean vector. `anim` figures play a few-fps hand-drawn loop (búho 5 fps blink + sway, caballo 7 fps gallop g1–g5, paloma 7 fps flap f1–f6) on mouse hover over the figure **or its nearest `[data-anim-host]` ancestor**, on focus, or ~2.2 s on touch; they finish the cycle and stop on leave. `anim="loop"` loops while on screen.
-- Everything animated (figures, illustrations, method marker, hero magnifier transition) respects `prefers-reduced-motion`. Intervals are cleared on unmount.
+- At rest a figure is the clean vector. `anim` figures play a few-fps hand-drawn loop (búho 5 fps blink + sway; caballo 6 fps, the original 5 gallop poses + one in-between back to the flying gallop (= rest drawing) so it joins when it loops or stops; paloma 6 fps, 6-frame symmetric wing flap) on mouse hover over the figure **or its nearest `[data-anim-host]` ancestor**, on focus, or ~2.2 s on touch; they finish the cycle and stop on leave, so loops and endings join without a jump. `anim="loop"` loops while on screen.
+- Timing: `src/lib/ticker.ts` steps on `requestAnimationFrame`; every fps must divide 60 (5, 6, 10, 12, 15…) so all frames last the same number of screen refreshes.
+- **Brand decision:** animations run even with `prefers-reduced-motion` (figures, illustrations, method marker, hero transitions). Only smooth scrolling is turned off for those users. Intervals are cleared on unmount and illustrations pause off-screen.
+- Frame sources (not in the repo): the gallop and flap are generated parametrically and traced to paths; the output lives in `src/brand/brand.json` → `frames`.
 
 ---
 

@@ -1,15 +1,15 @@
+import { ticker } from "@/lib/ticker";
 import { useEffect, useRef, type ReactElement } from "react";
-import { prefersReducedMotion } from "@/brand";
 
 /**
  * Ilustraciones de línea de las publicaciones:
  *  - rings: SESMI-001 (750 M€ que se dispersan en anillos)
  *  - stall: SESMI-002 (una curva que intenta arrancar y se cala)
- * Se animan a ~180 ms por paso solo mientras están en pantalla y nunca con reduced-motion.
+ * Se animan a 5 pasos por segundo solo mientras están en pantalla (también con reduced-motion: decisión de marca).
  */
 export type IllustrationKind = "rings" | "stall";
 
-const TICK = 180;
+const FPS = 5; // divide a 60: pasos de duración exacta
 const W = 640, H = 320;
 
 // ── rings
@@ -33,6 +33,7 @@ for (let x = 0; x <= W; x += 4) {
   y += Math.sin(x * 0.21) * 1.4;
   STALL.push([x, y]);
 }
+const STALL_PAUSE = 24; // pasos (de 3 puntos) en blanco entre vueltas
 const STALL_D = STALL.map(([x, y], k) => (k ? "L" : "M") + x + " " + y.toFixed(1)).join("");
 const GRID: number[] = [];
 for (let y = 142; y <= BASE; y += 24) GRID.push(y);
@@ -45,8 +46,8 @@ export function Illustration({ kind }: { kind: IllustrationKind }) {
 
   useEffect(() => {
     const host = hostRef.current, svg = svgRef.current;
-    if (!host || !svg || prefersReducedMotion()) return;
-    let f = 0, timer: number | null = null;
+    if (!host || !svg) return;
+    let f = 0;
     // anillos ordenados del menor al mayor
     const rg = [...svg.querySelectorAll<SVGRectElement>(".rg")].sort((a, b) => +a.dataset.i! - +b.dataset.i!);
     const mk = svg.querySelector<SVGRectElement>(".mk");
@@ -58,20 +59,19 @@ export function Illustration({ kind }: { kind: IllustrationKind }) {
           r.setAttribute("stroke-opacity", i === k - 1 ? ".85" : i === k - 2 ? (+r.dataset.o! + 0.18).toFixed(2) : r.dataset.o!),
         );
       } else if (mk) {
-        const p = STALL[(f * 3) % STALL.length];
+        // recorre la serie, desaparece al final y reaparece al principio tras una pausa (sin salto visible)
+        const pos = (f * 3) % (STALL.length + STALL_PAUSE);
+        if (pos >= STALL.length) { mk.setAttribute("opacity", "0"); return; }
+        const p = STALL[pos];
         mk.setAttribute("x", String(p[0] - 4.5));
         mk.setAttribute("y", String(p[1] - 4.5));
         mk.setAttribute("opacity", "1");
       }
     };
-    const io = new IntersectionObserver((es) =>
-      es.forEach((e) => {
-        if (e.isIntersecting && timer === null) timer = window.setInterval(tick, TICK);
-        else if (!e.isIntersecting && timer !== null) { clearInterval(timer); timer = null; }
-      }),
-    );
+    const tk = ticker(FPS, tick);
+    const io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? tk.start() : tk.stop())));
     io.observe(host);
-    return () => { io.disconnect(); if (timer !== null) clearInterval(timer); };
+    return () => { io.disconnect(); tk.stop(); };
   }, [kind]);
 
   let body: ReactElement;
