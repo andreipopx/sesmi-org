@@ -123,7 +123,7 @@ def pencil(t0, t1):
         n = band_noise(d, 1800, 7500)
         x = tt(d)
         e = np.sin(np.pi * x / d) ** 0.7 * (0.6 + 0.4 * np.sin(2 * np.pi * rng.uniform(6, 14) * x) ** 2)
-        put(dry, t, n * e, rng.uniform(0.05, 0.085), pan=rng.uniform(-0.4, 0.4))
+        put(dry, t, n * e, rng.uniform(0.028, 0.045), pan=rng.uniform(-0.4, 0.4))
         t += d + rng.uniform(0.0, 0.08)
 
 

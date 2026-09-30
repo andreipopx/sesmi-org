@@ -40,8 +40,8 @@ if (si > 0) {
   writeFileSync(join(out, "events.json"), JSON.stringify(await page.evaluate(() => window.EVENTS), null, 1));
   const n = Math.round(TL.duration * TL.fps);
   const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(TL.fps), "-i", "-",
-    "-vf", "noise=c0s=9:c0f=t+u", // grano de papel (solo luminancia, cambia en cada fotograma)
-    "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-pix_fmt", "yuv420p", "-r", String(TL.fps), join(out, "video.mp4")],
+    "-vf", "noise=c0s=7:c0f=u", // grano de papel fijo (solo luminancia): textura sin inflar el tamaño
+    "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-pix_fmt", "yuv420p", "-r", String(TL.fps), join(out, "video.mp4")],
     { stdio: ["pipe", "inherit", "inherit"] });
   for (let i = 0; i < n; i++) {
     const png = await shot(i / TL.fps);

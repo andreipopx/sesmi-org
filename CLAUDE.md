@@ -59,12 +59,15 @@ Titles/favicons live in the `META` map in `SiteLayout.tsx` — add new routes th
 
 ### Promo video (`promo/reel/`)
 
-Vertical reel/story (1080×1920, 30 fps, ~40 s, with sound) built from the site's own brand assets —
-not part of the Vite build. `reel.html` draws every scene as a pure function of time (fonts from
+Vertical reel/story (1080×1920, 30 fps, 51 s, with sound) built from the site's own brand assets —
+not part of the Vite build. Concept piece, not a feature list: the red square (the i-dot) lives in a
+hand-drawn mid-size city, leaves, learns and comes back; manifesto, the three figures as three verbs,
+«debemos saber.», and the ink shrinks into the dot of the wordmark. Felt piano + strings, no drums. `reel.html` draws every scene as a pure function of time (fonts from
 `public/fonts/`, figures and wordmark from `src/brand/brand.json`, scene times in `timeline.json`);
 `render.mjs` screenshots it frame by frame with Playwright/Chromium and pipes to ffmpeg, also dumping the
 page's sound events; `audio.py` (numpy) synthesises the soundtrack synced to those events.
-`./promo/reel/build.sh` regenerates `promo/reel/sesmi-reel.mp4` (intermediate files go to the ignored `out/`).
+`./promo/reel/build.sh` regenerates `promo/reel/sesmi-reel.mp4` at −14 LUFS; paper grain is added by ffmpeg at
+encode time (intermediate files go to the ignored `out/`).
 
 Brand data: `src/brand/brand.json` (figure paths in a 100×100 box, animation frames, wordmark) and
 `src/brand/index.ts` (typed access + `SEQ` animation sequences). SVG exports in `public/brand/`.
