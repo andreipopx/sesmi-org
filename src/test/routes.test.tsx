@@ -11,9 +11,9 @@ const at = (path: string) =>
 
 describe("rutas", () => {
   it.each([
-    ["/investigacion", "Análisis económico independiente"],
-    ["/servicios", "Consultoría económica para ciudades reales"],
-    ["/divulgacion", "El conocimiento económico es un bien público"],
+    ["/investigacion", "Investigación independiente, en abierto"],
+    ["/servicios", "Análisis riguroso para ciudades reales"],
+    ["/divulgacion", "El conocimiento es un bien público"],
     ["/nosotros", "Suficiente experiencia para saber cómo se hace."],
   ])("%s tiene su h1", (path, h1) => {
     at(path);
@@ -28,11 +28,11 @@ describe("rutas", () => {
   });
 
   it.each([
-    ["/research", "Análisis económico independiente"],
-    ["/research/sesmi-001", "Análisis económico independiente"],
-    ["/services", "Consultoría económica para ciudades reales"],
-    ["/learning", "El conocimiento económico es un bien público"],
-    ["/academia", "El conocimiento económico es un bien público"],
+    ["/research", "Investigación independiente, en abierto"],
+    ["/research/sesmi-001", "Investigación independiente, en abierto"],
+    ["/services", "Análisis riguroso para ciudades reales"],
+    ["/learning", "El conocimiento es un bien público"],
+    ["/academia", "El conocimiento es un bien público"],
   ])("redirige %s", (path, h1) => {
     at(path);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(h1);

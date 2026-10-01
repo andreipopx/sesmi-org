@@ -4,7 +4,7 @@ import { Fig } from "./Fig";
 import { Wordmark } from "./Wordmark";
 
 const LETTERS = "sesmi";
-const TAGLINE = "Investigación económica independiente para las ciudades medias españolas.";
+const TAGLINE = "Conocimiento en abierto, para cualquiera con ganas de aprender. Empezamos por la economía y las matemáticas.";
 
 function Trio() {
   return (

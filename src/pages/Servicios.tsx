@@ -1,5 +1,6 @@
 import { PillarHeader } from "@/components/PillarHeader";
 import { RowLink } from "@/components/RowLink";
+import { Sesmi } from "@/components/Wordmark";
 
 const SERVICES: [string, string, string][] = [
   ["Valoración de empresas y activos", "Valoraciones por DCF, múltiplos de mercado y análisis de sensibilidad para compraventas de empresas familiares, entradas de socios, herencias o disputas societarias.", "Para empresas familiares, bufetes y bancos locales"],
@@ -14,13 +15,19 @@ const Servicios = () => (
     <PillarHeader
       fig="caballo"
       label="Servicios"
-      title="Consultoría económica para ciudades reales"
+      title="Análisis riguroso para ciudades reales"
       lema="Fuerza aplicada"
-      intro="El tipo de análisis que hasta ahora solo podían permitirse las grandes ciudades. El rigor de las grandes firmas, sin sus tarifas ni su distancia."
+      intro="El tipo de análisis que hasta ahora solo podían permitirse las grandes ciudades: el rigor de las grandes firmas, sin sus tarifas ni su distancia. Hoy los servicios son de economía, que es lo que hacemos; la sociedad está abierta a sumar otras disciplinas."
     />
     {SERVICES.map(([t, s, w], i) => (
       <RowLink key={t} to="/servicios#hablamos" n={String(i + 1).padStart(2, "0")} title={t} sub={s} who={w} />
     ))}
+    <RowLink
+      to="mailto:hola@sesmi.org?subject=Otra%20disciplina"
+      n="+"
+      title="¿Tu proyecto pide otra disciplina?"
+      sub={<><Sesmi /> no es cerrada. Cuéntanos qué necesitas y vemos cómo hacerlo, o con quién.</>}
+    />
     <div className="bh sm" id="hablamos">
       <div className="f" />
       <div className="tt"><h2>Cada proyecto es distinto. Hablamos.</h2></div>

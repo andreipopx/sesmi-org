@@ -3,14 +3,15 @@ import type { FigName } from "@/brand";
 import { Arrow } from "@/components/Sprite";
 import { Fig } from "@/components/Fig";
 import { Hero } from "@/components/Hero";
+import { RowLink } from "@/components/RowLink";
 import { Illustration } from "@/components/Illustration";
 import { WaitlistRow } from "@/components/WaitlistRow";
 import { Sesmi } from "@/components/Wordmark";
 
 const DOORS: { to: string; fig: FigName; title: string; lema: string; text: string }[] = [
-  { to: "/investigacion", fig: "buho", title: "Investigación", lema: "Debemos saber", text: "Análisis económico independiente sobre territorios y mercados locales. En abierto, sin paywalls." },
-  { to: "/servicios", fig: "caballo", title: "Servicios", lema: "Fuerza aplicada", text: "Valoraciones, análisis de impacto y diagnósticos para empresas y organismos públicos." },
-  { to: "/divulgacion", fig: "paloma", title: "Divulgación", lema: "Socorre enseñando", text: "Datos, herramientas y materiales para estudiantes y profesores de economía." },
+  { to: "/investigacion", fig: "buho", title: "Investigación", lema: "Debemos saber", text: "Investigación independiente y en abierto, sin paywalls. Empezamos por la economía de las ciudades medias." },
+  { to: "/servicios", fig: "caballo", title: "Servicios", lema: "Fuerza aplicada", text: "Hoy, análisis económico para empresas y organismos públicos. Abiertos a sumar otras disciplinas." },
+  { to: "/divulgacion", fig: "paloma", title: "Divulgación", lema: "Socorre enseñando", text: "Datos, herramientas y materiales para estudiantes, profesores y cualquiera con ganas de aprender." },
 ];
 
 const Index = () => (
@@ -54,6 +55,13 @@ const Index = () => (
       </div>
       <div className="a"><Arrow /></div>
     </Link>
+
+    <RowLink
+      to="/nosotros#abierta"
+      n="+"
+      title="Una sociedad abierta"
+      sub={<>Empezamos por la economía y las matemáticas, pero <Sesmi /> es de quien quiera aprender o aportar: estudiantes, profesores y gente de cualquier disciplina.</>}
+    />
 
     <WaitlistRow id="aviso-inicio" inputId="wl-1" sub="Déjanos tu email y te avisamos. Sin spam." />
   </>
