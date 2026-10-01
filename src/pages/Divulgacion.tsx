@@ -12,11 +12,11 @@ const Divulgacion = () => (
     <PillarHeader
       fig="paloma"
       label="Divulgación"
-      title="El conocimiento económico es un bien público"
+      title="El conocimiento es un bien público"
       lema="Socorre enseñando"
       intro={
         <>
-          Datos, herramientas y materiales para estudiantes y profesores de economía, gratuitos o a coste mínimo.{" "}
+          Datos, herramientas y materiales gratuitos o a coste mínimo, para quien quiera aprender.{" "}
           <em>Esta sección está en construcción:</em> estamos preparando los primeros recursos.
         </>
       }
@@ -30,8 +30,8 @@ const Divulgacion = () => (
     <RowLink
       to="mailto:hola@sesmi.org?subject=Divulgaci%C3%B3n"
       n="···"
-      title="¿Eres profesor de economía?"
-      sub="Si quieres colaborar o tienes algo en mente, escríbenos."
+      title="¿Quieres colaborar?"
+      sub="Si tienes algo que enseñar o una idea, escríbenos."
     />
   </>
 );

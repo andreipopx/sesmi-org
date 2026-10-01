@@ -9,9 +9,9 @@ const NotFound = () => (
       title="Esta página no existe."
       intro="Puede que la dirección haya cambiado o que nunca haya existido. Estas son las tres patas de la casa:"
     />
-    <RowLink to="/investigacion" n={<Fig name="buho" />} title="Investigación" sub="Análisis económico independiente, en abierto." />
-    <RowLink to="/servicios" n={<Fig name="caballo" />} title="Servicios" sub="Consultoría económica para ciudades reales." />
-    <RowLink to="/divulgacion" n={<Fig name="paloma" />} title="Divulgación" sub="Datos y materiales para estudiantes y profesores." />
+    <RowLink to="/investigacion" n={<Fig name="buho" />} title="Investigación" sub="Investigación independiente, en abierto." />
+    <RowLink to="/servicios" n={<Fig name="caballo" />} title="Servicios" sub="Análisis riguroso para empresas y organismos públicos." />
+    <RowLink to="/divulgacion" n={<Fig name="paloma" />} title="Divulgación" sub="Datos y materiales para quien quiera aprender." />
   </>
 );
 
