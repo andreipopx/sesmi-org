@@ -1,0 +1,16 @@
+{
+  "lines": [
+    {"id": "p1", "who": "abuelo", "text": "¿Por qué cerró la fábrica?"},
+    {"id": "p2", "who": "chica", "text": "¿Hay trabajo de lo mío aquí?"},
+    {"id": "p3", "who": "madre", "text": "¿Cuánto va a subir el alquiler?"},
+    {"id": "p4", "who": "tendero", "text": "¿Merece la pena abrir una tienda?"},
+    {"id": "p5", "who": "vecina", "text": "¿Adónde va el dinero del ayuntamiento?"},
+    {"id": "p6", "who": "joven", "text": "¿Por qué no llega el tren?"},
+    {"id": "p7", "who": "abuela", "text": "¿Cuántos jóvenes se fueron el año pasado?"},
+    {"id": "p8", "who": "abuelo", "text": "¿Qué deja una gran empresa cuando llega?"},
+    {"id": "p9", "who": "chica", "text": "¿Y si nos quedamos?"},
+    {"id": "n1", "who": "narradora", "text": "Son preguntas de verdad. Merecen respuestas de verdad."},
+    {"id": "n2", "who": "narradora", "text": "Con datos. En abierto. Para cualquiera."},
+    {"id": "n3", "who": "narradora", "text": "Debemos saber."}
+  ]
+}

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · Una sociedad abierta</title>
+<!--
+  Versión A · «Una sociedad abierta». En cada ciudad hay preguntas (cuatro vecinos, con su voz);
+  las respuestas están debajo y hay que ir a buscarlas; hace dos siglos la gente se juntaba para
+  eso; hoy queremos recuperar esa idea. Tiempos de voz en script.json (+ out/vo.json).
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.ppl{position:absolute;width:9px;height:9px;background:var(--ink);margin:-4.5px 0 0 -4.5px}
+.ppl.red{background:var(--red)}
+.qlab{position:absolute;font:italic 400 18px/1.28 var(--text);color:var(--ink);width:170px}
+.qlab .w{display:inline-block;opacity:0}
+.era{position:absolute;left:0;right:0;top:110px;text-align:center;color:var(--ink-3);font-size:12px}
+.fl{position:absolute;top:410px;width:150px;text-align:center;color:var(--ink-3)}
+.fl i{display:inline-block;width:7px;height:7px;background:var(--red);margin-right:8px;vertical-align:1px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="world" style="transform:scale(1.25);transform-origin:270px 470px">
+    <div class="layer" id="cityL"><svg id="csv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="under"><svg id="usv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="tableL"><svg id="tsv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="lead"><svg id="lsv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="people"></div>
+    <div class="layer" id="labels"></div>
+  </div>
+  <div class="layer" id="crowd"></div>
+  <div class="layer" id="figs"></div>
+  <div class="lbl era" id="era"></div>
+  <div class="layer" id="subs"></div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, eOut, eIO, clamp, stepN, fade, line, wordAt } = S;
+const T = (id) => line(id).t;
+const NS = "http://www.w3.org/2000/svg";
+const G = 470;
+
+// ── ciudad
+const city = S.drawCity($("csv"), { G });
+ev(.2, "draw0"); ev(3.4, "draw1");
+
+// ── la gente: cuadraditos en ventanas y en la calle
+const HOME = [[228, G - 102], [275, G - 62], [289, G - 62], [309, G - 52], [403, G - 102], [431, G - 62], [130, G - 6], [196, G - 6], [345, G - 6], [505, G - 6]];
+const ppl = HOME.map(([x, y], i) => { const d = S.el("div", "ppl", $("people")); return { d, x, y, at: 4.3 + i * .09 }; });
+ppl.forEach((p) => ev(p.at, "pop"));
+// quién pregunta (índice en HOME), dónde va su pregunta y desde dónde sale la guía
+const ASK = [["q1", 0, 70, 226], ["q2", 5, 300, 196], ["q3", 8, 282, 300], ["q4", 7, 62, 316]];
+const qfx = ASK.map(([id, who, lx, ly]) => {
+  const L = line(id), lab = S.el("div", "qlab", $("labels"));
+  lab.style.left = lx + "px"; lab.style.top = ly + "px"; if (id === "q3") lab.style.width = "150px";
+  const ws = L.words.map(([w]) => S.el("span", "w", lab, w));
+  ws.forEach((w, i) => i < ws.length - 1 && lab.insertBefore(document.createTextNode(" "), w.nextSibling));
+  const ln = document.createElementNS(NS, "path"); $("lsv").appendChild(ln);
+  ln.setAttribute("fill", "none"); ln.setAttribute("stroke", "var(--ink-3)"); ln.setAttribute("stroke-width", "1");
+  ev(L.t, "ask", who);
+  return { L, lab, ws, ln, who, lx, ly };
+});
+const QOUT = T("n2") + 1.1; // las preguntas se quedan flotando hasta que llega la respuesta
+
+// ── debajo del suelo: estratos de datos (las respuestas existen)
+const U0 = wordAt("n2", 2), DIG = wordAt("n2", 8);
+(() => {
+  let d = "";
+  for (let r = 0; r < 4; r++) for (let x = 6 + r * 9; x < 534; x += 16) d += S.hand([[x, G + 22 + r * 14], [x + 7, G + 22 + r * 14]]);
+  const bars = [[60, [10, 16, 13, 22, 19]], [250, [8, 12, 20, 15, 24, 18]], [430, [18, 14, 11, 16, 9]]];
+  let b = "";
+  bars.forEach(([x0, hs]) => hs.forEach((h, k) => { b += S.box(x0 + k * 9, G + 76 - h, 5, h); }));
+  $("usv").innerHTML = `<path id="strata" d="${d}" fill="none" stroke="var(--ink)" stroke-opacity=".32" stroke-width="1"/>` +
+    `<path id="bars" d="${b}" fill="none" stroke="var(--ink)" stroke-opacity=".6" stroke-width="1"/>` +
+    `<rect id="digger" width="10" height="10" fill="var(--red)"/>`;
+})();
+const dStrata = S.dash($("strata")), dBars = S.dash($("bars"));
+ev(U0, "dig0");
+for (let k = 0; k < 6; k++) ev(DIG + k / 6, "dig", k);
+
+// ── siglo XVIII: la gente se junta alrededor de una mesa
+const M0 = wordAt("n3", 5), M1 = M0 + 2.6;          // empiezan a andar con «gente»
+const SEAT = [[176, 392], [214, 392], [252, 392], [290, 392], [328, 392], [366, 392], [195, 438], [252, 438], [309, 438], [347, 438]];
+$("tsv").innerHTML = `<path id="table" d="${S.hand([[150, 412], [392, 412]]) + S.hand([[166, 412], [166, 430]]) + S.hand([[376, 412], [376, 430]])}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>`;
+const dTable = S.dash($("table"));
+for (let k = 1; k <= Math.round((M1 - M0) * 6); k += 2) ev(M0 + k / 6, "step", k);
+const ICONS = [["escuela", 118, wordAt("n4", 1)], ["invento", 237, wordAt("n4", 3)], ["libro", 356, wordAt("n4", 5)]];
+const icons = ICONS.map(([k, x, t]) => {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", S.ICON[k]()); p.setAttribute("fill", "none"); p.setAttribute("stroke", "var(--ink)"); p.setAttribute("stroke-width", "1.1");
+  p.setAttribute("transform", `translate(${x} 250) scale(1.5)`); p.setAttribute("stroke-linecap", "round");
+  $("tsv").appendChild(p); ev(t, "icon", ICONS.findIndex((i) => i[0] === k));
+  return { draw: S.dash(p), t };
+});
+const BACK0 = wordAt("n6", 0) + .2, BACK1 = BACK0 + 1.8;  // hoy: vuelven a la ciudad
+const SESMI = wordAt("n6", 4);                         // «idea»: aparece el cuadrado rojo
+ev(SESMI, "stamp");
+
+// ── las tres figuras: entender, hacer, compartir
+const FIG = [["buho", "Investigación", 30, "n7"], ["caballo", "Servicios", 195, "n8"], ["paloma", "Divulgación", 360, "n9"]];
+const FIG_OUT = line("n9").end + .5;
+const figs = FIG.map(([n, lbl, x, id]) => {
+  const h = S.el("div", "abs", $("figs")); h.style.cssText = `left:${x}px;top:250px;width:150px;height:150px`;
+  const l = S.el("div", "fl lbl", $("figs"), `<i></i>${lbl}`); l.style.left = x + "px";
+  const t0 = line(id).t; ev(t0, "fig", FIG.findIndex((f) => f[0] === n)); S.figEvents(n, t0 + .2, FIG_OUT);
+  return { h, l, t0, play: S.fig(h, n) };
+});
+
+// ── sociedad abierta: mucha gente
+const C0 = wordAt("n10", 1), C1 = wordAt("n10", 8) + .3;
+const crowd = [];
+for (let r = 0; r < 12; r++) for (let c = 0; c < 11; c++) {
+  const x = 30 + c * 48 + (r % 2) * 24 + Math.sin(r * 7.1 + c * 3.3) * 6, y = 130 + r * 34 + Math.cos(r * 2.9 + c * 5.1) * 5;
+  if (x > 520) continue;
+  const d = Math.hypot(x - 270, y - 320);
+  const e = S.el("div", "ppl", $("crowd")); e.style.left = x + "px"; e.style.top = y + "px";
+  if ((r * 11 + c) % 29 === 7) e.classList.add("red");
+  crowd.push([e, C0 + (d / 330) * (C1 - C0)]);
+}
+for (let k = 0; k < 10; k++) ev(C0 + k * (C1 - C0) / 10, "pop");
+
+// ── subtítulos de la narradora
+const subs = ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10"].map((id) =>
+  S.sub(id, { parent: $("subs"), hot: id === "n10" ? [1, 2] : id === "n2" ? [8] : [] }));
+
+// ── «debemos saber.» y firma
+const FLIP = 50.0, SHRINK = 53.0;
+const saber = S.saber(FLIP, SHRINK, { a: wordAt("n11", 0), b: wordAt("n11", 1), tag: "Conocimiento en abierto, para cualquiera." });
+const firma = S.firma(SHRINK + .42);
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+window.renderAt = (t) => {
+  // ciudad: se dibuja, se apaga para la historia, vuelve hoy, se va para las figuras
+  city.draw(t, .2, 3.2);
+  const FIGIN = T("n7") - .4;
+  const cityOp = t >= FIGIN ? 1 - eIO((t - FIGIN) / .6) : t < T("n3") ? 1 : t < BACK0 ? 1 - .82 * eIO((t - T("n3")) / 1.2) : .18 + .82 * eIO((t - BACK0) / 1.2);
+  $("cityL").style.opacity = cityOp;
+
+  // gente
+  const toTable = (p, i) => {
+    const [sx, sy] = SEAT[i];
+    if (t < M0) return [p.x, p.y];
+    if (t < BACK0) { const k = clamp(stepN(t, M0, 6) / ((M1 - M0) * 6)); const e = eIO(k); return [p.x + (sx - p.x) * e, p.y + (sy - p.y) * e]; }
+    const k = clamp(stepN(t, BACK0, 6) / ((BACK1 - BACK0) * 6)), e = eIO(k);
+    return [sx + (p.x - sx) * e, sy + (p.y - sy) * e];
+  };
+  const pplOp = t < T("n7") - .4 ? 1 : 1 - eIO((t - T("n7") + .4) / .6);
+  ppl.forEach((p, i) => {
+    const [x, y] = toTable(p, i);
+    p.d.style.left = x + "px"; p.d.style.top = y + "px";
+    p.d.style.display = t >= p.at && pplOp > 0 ? "block" : "none";
+    p.d.style.opacity = pplOp;
+    const asking = qfx.find((q) => q.who === i && t >= q.L.t && t < QOUT);
+    p.d.classList.toggle("red", !!asking);
+  });
+
+  // preguntas
+  qfx.forEach(({ L, lab, ws, ln, who, lx, ly }) => {
+    const on = t >= L.t - .05 && t < QOUT;
+    lab.style.display = on ? "block" : "none"; ln.style.display = on ? "block" : "none";
+    if (!on) return;
+    const dim = t > L.end + .3 ? .45 : 1;
+    const op = dim * (1 - eIO((t - (QOUT - .6)) / .6));
+    lab.style.opacity = op; ln.style.opacity = op * .8;
+    ws.forEach((w, i) => { const x = eOut((t - L.t - L.words[i][1] + .04) / .28); w.style.opacity = x; });
+    const [px, py] = HOME[who], ax = lx > 270 ? lx + lab.offsetWidth - 14 : lx + 10, ay = ly + lab.offsetHeight + 6;
+    const p = clamp((t - L.t) / .5);
+    ln.setAttribute("d", `M${ax} ${ay} L${ax + (px - ax) * p} ${ay + (py - 10 - ay) * p}`);
+  });
+
+  // debajo del suelo
+  const uOp = t < T("n3") ? 1 : 1 - .85 * eIO((t - T("n3")) / 1.2);
+  $("under").style.opacity = t < T("n7") - .4 ? uOp : 0;
+  dStrata(eIO((t - U0) / 1.4)); dBars(eIO((t - U0 - .7) / 1.4));
+  const dg = $("digger"), dk = Math.min(6, Math.max(0, stepN(t, DIG, 6)));
+  dg.setAttribute("x", 265); dg.setAttribute("y", G - 10 + dk * 9);
+  dg.style.display = t >= DIG - .3 && t < T("n3") + 1 ? "block" : "none";
+
+  // mesa e iconos
+  $("tableL").style.opacity = t < BACK0 ? 1 : 1 - eIO((t - BACK0) / .8);
+  dTable(eIO((t - M0 - 1) / 1.6));
+  icons.forEach((ic) => ic.draw(eIO((t - ic.t + .1) / .7)));
+  $("tsv").querySelectorAll("path:not(#table)").forEach((p) => (p.style.opacity = 1 - eIO((t - wordAt("n5", 2)) / .8)));
+  const era = $("era");
+  if (t >= T("n3") && t < BACK0) { era.textContent = "Siglo XVIII"; era.style.opacity = fade(t, T("n3") + .3, BACK0, .8, .5); }
+  else if (t >= BACK0 && t < T("n7") - .4) { era.textContent = "Hoy"; era.style.opacity = fade(t, BACK0 + .2, T("n7") - .4, .8, .5); }
+  else era.style.opacity = 0;
+
+  // el cuadrado rojo de sesmi, hoy, en mitad de la calle
+  let sq = $("sesmiSq");
+  if (!sq) { sq = S.el("div", "ppl red", $("people")); sq.id = "sesmiSq"; sq.style.cssText += ";width:13px;height:13px;margin:-6.5px 0 0 -6.5px;left:270px;top:" + (G - 7) + "px"; }
+  sq.style.display = t >= SESMI && t < T("n7") - .4 + .6 ? "block" : "none";
+  sq.style.opacity = pplOp;
+
+  // figuras
+  figs.forEach(({ h, l, t0, play }) => {
+    const x = t >= t0 - .05 && t < FIG_OUT + .1 ? eOut((t - t0) / .45) * (1 - eIO((t - (FIG_OUT - .4)) / .4)) : 0;
+    h.style.opacity = x; l.style.opacity = x;
+    h.style.transform = `translateY(${(1 - eOut((t - t0) / .55)) * 10}px)`;
+    play(t, t0 + .2);
+  });
+
+  // multitud
+  const cOut = 1 - eIO((t - (FLIP - .5)) / .5);
+  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < FLIP + .5 ? "block" : "none"; e.style.opacity = .55 * cOut * eOut((t - at) / .3); });
+
+  subs.forEach((f) => f(t));
+  saber(t);
+  firma(t);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>
