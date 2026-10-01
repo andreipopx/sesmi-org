@@ -33,8 +33,7 @@ const Nosotros = () => (
       <div className="pp">
         <p>
           Las Sociedades Económicas del siglo XVIII reunían a gente de oficios y saberes distintos con un mismo fin: mejorar
-          su tierra. <Sesmi /> quiere ser eso. Empezamos por la economía y las matemáticas porque es lo que sabemos hacer,
-          pero está abierta a estudiantes, profesores y gente de cualquier disciplina que quiera aprender o aportar.
+          su tierra. <Sesmi /> quiere ser eso: una sociedad abierta a quien quiera aprender o aportar.
         </p>
       </div>
     </div>
@@ -62,7 +61,7 @@ const Nosotros = () => (
     </div>
     <RowLink to="mailto:hola@sesmi.org" n="01" title="Escríbenos" sub="hola@sesmi.org" />
     <RowLink to="/servicios" n="02" title="Encarga un análisis" sub="Valoración, impacto económico, due diligence, daños o diagnóstico estratégico." />
-    <RowLink to="/divulgacion" n="03" title="Colabora en Divulgación" sub="Estudiantes, profesores o curiosos, de economía o de cualquier otra materia." />
+    <RowLink to="/divulgacion" n="03" title="Colabora en Divulgación" sub="Para quien quiera aportar materiales o ideas." />
   </>
 );
 

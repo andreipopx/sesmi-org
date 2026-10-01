@@ -28,7 +28,7 @@ const Investigacion = () => (
       label="Investigación"
       title="Investigación independiente, en abierto"
       lema="Debemos saber"
-      intro="Publicamos todo en abierto, sin paywalls: el conocimiento es un bien público. Empezamos por la economía y las matemáticas, que es lo que sabemos hacer; si investigas en otra disciplina y quieres sumarte, escríbenos."
+      intro="Publicamos todo en abierto, sin paywalls: el conocimiento es un bien público."
     />
 
     <article className="pub" id="sesmi-001" aria-labelledby="p1-h">

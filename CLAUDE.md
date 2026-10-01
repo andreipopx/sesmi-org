@@ -104,7 +104,7 @@ Liberation Mono are gone.
 
 ### Tone and Voice
 
-An open society: research, services and teaching, starting with economics and mathematics (the founders' field) but open to students, teachers and people from any discipline — say so, never present sesmi as closed or economics-only. Editorial, rigorous, and direct — written for any intelligent reader, not just economists. Founding principle: *"debemos saber."* The site is Spanish only.
+An open society: knowledge in the open, for anyone. Keep it light — say it is open, never present sesmi as closed or economics-only, and don't over-explain which disciplines it starts with. Editorial, rigorous, and direct — written for any intelligent reader, not just economists. Founding principle: *"debemos saber."* The site is Spanish only.
 
 ### Design Rules
 

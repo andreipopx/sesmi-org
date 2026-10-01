@@ -16,7 +16,7 @@ const Divulgacion = () => (
       lema="Socorre enseñando"
       intro={
         <>
-          Datos, herramientas y materiales gratuitos o a coste mínimo, para estudiantes, profesores y cualquiera con ganas de aprender. Empezamos por la economía y las matemáticas.{" "}
+          Datos, herramientas y materiales gratuitos o a coste mínimo, para quien quiera aprender.{" "}
           <em>Esta sección está en construcción:</em> estamos preparando los primeros recursos.
         </>
       }
@@ -30,8 +30,8 @@ const Divulgacion = () => (
     <RowLink
       to="mailto:hola@sesmi.org?subject=Divulgaci%C3%B3n"
       n="···"
-      title="¿Enseñas, estudias o sabes de algo?"
-      sub="Si quieres colaborar, en economía o en cualquier otra materia, escríbenos."
+      title="¿Quieres colaborar?"
+      sub="Si tienes algo que enseñar o una idea, escríbenos."
     />
   </>
 );

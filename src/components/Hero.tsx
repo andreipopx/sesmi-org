@@ -4,7 +4,7 @@ import { Fig } from "./Fig";
 import { Wordmark } from "./Wordmark";
 
 const LETTERS = "sesmi";
-const TAGLINE = "Conocimiento en abierto, para cualquiera con ganas de aprender. Empezamos por la economía y las matemáticas.";
+const TAGLINE = "Conocimiento en abierto, para cualquiera.";
 
 function Trio() {
   return (
