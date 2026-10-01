@@ -12,6 +12,8 @@ S.clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 S.eOut = (x) => 1 - Math.pow(1 - S.clamp(x), 3);
 S.eIO = (x) => { x = S.clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
 S.stepN = (t, t0, fps) => Math.floor((t - t0) * fps + 1e-6);
+/** t cuantizado a fps (6 por defecto): para que fundidos y movimientos vayan a saltos. */
+S.q = (t, fps = 6) => Math.floor(t * fps + 1e-6) / fps;
 S.el = (tag, cls, parent, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; (parent || S.$("stage")).appendChild(e); return e; };
 /** Visible con fundido entre a y b (entrada fi, salida fo). */
 S.fade = (t, a, b, fi = .6, fo = .6) => S.eOut((t - a) / fi) * (1 - S.eIO((t - (b - fo)) / fo));
@@ -211,7 +213,7 @@ S.saber = (open, shrink, lines = {}) => {
     pfs.forEach((f) => f(t, open + .5));
     a.style.visibility = t >= tA ? "visible" : "hidden";
     b.style.visibility = t >= tB ? "visible" : "hidden";
-    if (tag) tag.style.opacity = S.eOut((t - tB - .9) / .8);
+    if (tag) tag.style.opacity = S.eOut((S.q(t) - tB - .9) / .8);
   };
 };
 
@@ -234,7 +236,8 @@ S.firma = (t0, opts = {}) => {
     if (!on) return;
     const n = t < W0 ? 0 : Math.min(5, S.stepN(t, W0, 1 / .13) + 1);
     L.querySelector(".wcr").setAttribute("width", n ? END[n - 1] - 22 + 6 : 0);
-    [[e1, t0 + 1.3], [e2, t0 + 1.9], [e3, t0 + 2.3]].forEach(([e, a]) => { const x = S.eOut((t - a) / .8); e.style.opacity = x; e.style.transform = `translateY(${(1 - x) * 8}px)`; });
+    const tq = S.q(t); // a saltos de 6 fps, como todo lo demás
+    [[e1, t0 + 1.3], [e2, t0 + 1.9], [e3, t0 + 2.3]].forEach(([e, a]) => { const x = S.eOut((tq - a) / .8); e.style.opacity = x; e.style.transform = `translateY(${(1 - x) * 8}px)`; });
   };
 };
 })();
