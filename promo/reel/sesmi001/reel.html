@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · SESMI-001</title>
+<!--
+  Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
+  ../assets/video/calculadora-mecanismo.mp4  ../assets/video/ia-lacre.mp4
+-->
+<!--
+  Tráiler de SESMI-001 «¡Bienvenido, Mr. Meta!» (~36 s). Homenaje dibujado a «Bienvenido, Mister Marshall» (1953):
+  todo está dibujado aquí (S.drawCity + trazo a mano); nada de metraje, carteles ni música de la película.
+  A (0–10,9 s)   1953: el pueblo se engalana a saltos (banderines, arco «¡BIENVENIDOS!», gente); la comitiva pasa de largo.
+  B (10,9–17,9)  Hoy: aparece la nave del centro de datos y crece a saltos hasta ser más grande que la ciudad.
+  C (17,9–22,2)  750 M€: contador a saltos, anillos cuadrados a 5 fps, dos cortes secos de macro.
+  B (22,2–28,5)  cuadraditos rojos salen de la nave: unos se quedan en la ciudad, otros siguen de largo.
+  D (28,5–30,75) cinco capítulos, a saltos · E «debemos saber.» (S.saber) · F cartela final en papel.
+  Nada de logos ni marcas de terceros; es una pregunta abierta. Todo es función de t (a 6 fps; 5 fps los anillos y los ventiladores).
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.sc{display:none}
+#scA,#scB{z-index:1}#scC{z-index:2}#scD{z-index:3}
+#plates{z-index:5}
+#subs{z-index:25}
+.tag{position:absolute;left:0;right:0;top:128px;text-align:center;font:500 14px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.tag i{display:inline-block;width:8px;height:8px;background:var(--red);margin-right:10px;vertical-align:1px}
+.pp{position:absolute;width:13px;height:13px;background:var(--ink);margin:-6.5px 0 0 -6.5px;transform-origin:50% 100%;display:none}
+.pp.k{width:9px;height:9px;margin:-4.5px 0 0 -4.5px}
+#board{position:absolute;left:120px;width:300px;top:262px;height:46px;display:flex;align-items:center;justify-content:center;font:500 30px/1 var(--display);letter-spacing:.06em;color:var(--ink);white-space:nowrap}
+#board span{visibility:hidden}
+/* contador */
+#cnt{position:absolute;left:0;right:0;top:512px;height:150px;display:flex;align-items:flex-end;justify-content:center;gap:14px}
+#cnt .num{width:300px;text-align:right;font:500 150px/.9 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--ink)}
+#cnt .unit{width:86px;font:500 44px/1 var(--display);letter-spacing:-.02em;color:var(--ink-3);padding-bottom:8px;visibility:hidden}
+#cnt.hit .num{color:var(--red)}
+/* capítulos */
+#chhead{position:absolute;left:30px;top:146px;font:500 13px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);visibility:hidden}
+#chhead i,.sqi{display:inline-block;width:9px;height:9px;background:var(--red);margin-right:10px;vertical-align:0}
+.chrow{position:absolute;left:30px;right:30px;height:92px;display:none}
+.chrow .ln{position:absolute;left:0;right:0;top:0;height:1px;background:var(--ink)}
+.chrow .hh{position:absolute;left:0;right:0;top:15px;display:flex;align-items:center;gap:10px;font:500 14px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--ink-3)}
+.chrow .hh .sq{width:9px;height:9px;background:var(--red);display:block}
+.chrow .hh .sq.o{background:transparent;border:1px solid var(--ink-3)}
+.chrow .hh .st{margin-left:auto;font:500 11px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--red);visibility:hidden}
+.chrow .tx{position:absolute;left:0;right:0;top:41px;font:400 22px/1.2 var(--text);color:var(--ink);visibility:hidden}
+.chrow.off .tx{color:var(--ink-2)}
+.chrow .bar{position:absolute;left:0;top:84px;height:2px;width:0;background:var(--rule,rgba(28,24,20,.14))}
+.chrow.on .bar{background:var(--red)}
+/* cartela final */
+#cart{position:absolute;inset:0;background:var(--paper);z-index:21;display:none}
+#cart .abs{text-align:center;left:0;right:0}
+#cart .st{top:148px;font:500 13px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+#cart .st i{display:inline-block;width:9px;height:9px;background:var(--red);margin-right:10px;vertical-align:0}
+#cart h1{margin:0;font:500 66px/.98 var(--display);letter-spacing:-.035em;color:var(--ink)}
+#cart h1 div{visibility:hidden}
+#cart .sb{top:358px;font:400 21px/1.3 var(--text);color:var(--ink-2)}
+#cart .ow{top:420px;left:195px;right:auto;width:150px;height:150px;color:var(--ink)}
+#cart .op{top:604px;font:500 12px/1.3 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+#cart .ur{top:646px;font:500 28px/1 var(--display);letter-spacing:-.01em;color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- A · 1953 -->
+  <div class="layer sc" id="scA"><svg id="svA" viewBox="0 0 540 960"></svg><div class="layer" id="crowdA"></div><div id="board"></div></div>
+  <!-- B · hoy: la nave y la ciudad -->
+  <div class="layer sc" id="scB"><svg id="svB" viewBox="0 0 540 960"></svg></div>
+  <!-- C · 750 M€ -->
+  <div class="layer sc" id="scC"><svg id="svC" viewBox="0 0 540 960"></svg><div id="cnt"><div class="num" id="num">0</div><div class="unit" id="unit">M€</div></div></div>
+  <!-- D · capítulos -->
+  <div class="layer sc" id="scD"><div id="chhead"><i></i>SESMI-001 · Cinco capítulos</div></div>
+  <div class="tag sc" id="tag"></div>
+  <div class="layer" id="plates"></div>
+  <div class="layer" id="subs"></div>
+  <div id="cart">
+    <div class="abs st" id="cSt"><i></i>SESMI-001 · En elaboración</div>
+    <h1 class="abs" style="top:190px"><div id="cT1">¡Bienvenido,</div><div id="cT2">Mr. Meta!</div></h1>
+    <div class="abs sb" id="cSb">Un análisis económico independiente</div>
+    <div class="abs ow" id="cOw"></div>
+    <div class="abs op" id="cOp">En abierto. Paper y versión divulgativa.</div>
+    <div class="abs ur" id="cUr">Apúntate en sesmi.org</div>
+  </div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, clamp, stepN, eOut, line, wordAt } = S;
+const NS = "http://www.w3.org/2000/svg";
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const T = (id) => line(id).t, WD = (id, i) => wordAt(id, i);
+/** progreso a saltos: 0 antes de t0, luego n pasos (fps 6 por defecto) hasta 1. */
+const steps = (t, t0, n, fps = 6) => (t < t0 ? 0 : Math.min(n, stepN(t, t0, fps) + 1) / n);
+const INK = "var(--ink)", RED = "#7A1F10";
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const cutT = []; const cut = (t, v = 0) => { cutT.push(t); ev(t, "cut", v); };
+
+// ── tiempos de las escenas
+const A1 = 10.9;                         // A → B (Hoy)
+const B1 = line("n4").end + .4;          // B → C (contador)
+const C1 = line("n5").end + .2;          // C → B (la pregunta)
+const D0 = line("n6").end + .2;          // B → D (capítulos)
+const OPEN = 30.75;                      // cara de tinta
+const SH = line("n7").end + .2;          // fin de la voz → cartela
+const LAND = SH + .42;
+const DUR = LAND + .5 + 2.1;
+window.REEL_DURATION = DUR;
+
+// ═════════ A · 1953
+const GA = 500;
+const svA = $("svA");
+const cityA = S.drawCity(svA, { G: GA, era: "1775" });
+cityA.g.querySelector(".bridge").style.display = "none"; cityA.g.querySelector(".water").style.display = "none";
+const BIEN = "¡BIENVENIDOS!";
+// banderines: cuerdas entre edificios y desde el arco; cada banderín aparece con el trazo (a saltos)
+const bunting = (p0, p1, sag, nf) => {
+  const g = svgEl("g", {}, svA), P = (u) => { const m = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 + 2 * sag]; return [(1 - u) ** 2 * p0[0] + 2 * (1 - u) * u * m[0] + u * u * p1[0], (1 - u) ** 2 * p0[1] + 2 * (1 - u) * u * m[1] + u * u * p1[1]]; };
+  const pts = Array.from({ length: 13 }, (_, k) => P(k / 12));
+  const path = svgEl("path", { d: S.hand(pts), fill: "none", stroke: INK, "stroke-width": 1.2, "stroke-linecap": "round" }, g);
+  const dash = S.dash(path);
+  const flags = Array.from({ length: nf }, (_, k) => {
+    const u = (k + .5) / nf, [x, y] = P(u), c = k % 3;
+    const el = svgEl("polygon", { points: `${(x - 5).toFixed(1)},${y.toFixed(1)} ${(x + 5).toFixed(1)},${y.toFixed(1)} ${x.toFixed(1)},${(y + 11).toFixed(1)}`, fill: c === 0 ? INK : c === 1 ? RED : "none", stroke: INK, "stroke-width": 1 }, g);
+    return { el, u, x, y };
+  });
+  return { g, flags, set(p) { g.style.display = p > 0 ? "" : "none"; dash(p); flags.forEach((f) => (f.el.style.display = f.u <= p ? "" : "none")); } };
+};
+const AX0 = 22, AX1 = 518;
+const STR = [
+  { b: bunting([229, 352], [313, 434], 10, 6), t0: WD("n1", 7) },
+  { b: bunting([313, 434], [362, 414], 6, 4), t0: WD("n1", 8) },
+  { b: bunting([362, 414], [458, 458], 12, 7), t0: WD("n1", 10) },
+  { b: bunting([AX0, 250], [229, 352], 16, 15), t0: WD("n1", 12) + .55 },
+  { b: bunting([AX0, 250], [171, 462], 10, 11), t0: WD("n1", 12) + .8 },
+  { b: bunting([AX1, 250], [430, 446], 8, 12), t0: WD("n1", 12) + 1.05 },
+  { b: bunting([AX0 + 12, 316], [AX1 - 12, 316], 14, 28), t0: WD("n1", 13) + .1 },
+];
+STR.forEach((s) => ev(s.t0, "flag"));
+// arco: dos curvas (mampostería) y un rótulo colgado
+const yo = (x) => 250 - 54 * (1 - ((x - 270) / 248) ** 2);
+const arcPts = (off) => { const a = [[AX0 + off, GA + 10], [AX0 + off, yo(AX0 + off) + off]]; for (let x = AX0 + off + 8; x < AX1 - off; x += 24) a.push([x, yo(x) + off]); a.push([AX1 - off, yo(AX1 - off) + off], [AX1 - off, GA + 10]); return a; };
+const arch1 = svgEl("path", { d: S.hand(arcPts(0)), fill: "none", stroke: INK, "stroke-width": 1.8, "stroke-linejoin": "round", "stroke-linecap": "round" }, svA);
+const arch2 = svgEl("path", { d: S.hand(arcPts(14)), fill: "none", stroke: INK, "stroke-width": 1.2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svA);
+const dA1 = S.dash(arch1), dA2 = S.dash(arch2);
+const ROT = [[130, yo(130) + 14, 130, 262], [410, yo(410) + 14, 410, 262]].map(([a, b, c, d]) => svgEl("path", { d: S.hand([[a, b], [c, d]]), fill: "none", stroke: INK, "stroke-width": 1.2 }, svA));
+const boardBox = svgEl("path", { d: S.box(120, 262, 300, 46), fill: "var(--paper-2)", stroke: INK, "stroke-width": 1.6, "stroke-linejoin": "round" }, svA);
+const pole = [AX0 + 7, AX1 - 7].map((x) => svgEl("rect", { x: x - 5, y: yo(x) - 7, width: 10, height: 10, fill: RED }, svA));
+const ARCH0 = WD("n1", 12), LET0 = WD("n1", 15) + .15;
+ev(ARCH0, "arch"); for (let k = 0; k < BIEN.length; k++) ev(LET0 + k / 9, "letter1", k);
+const boardEl = $("board");
+const letters = [...BIEN].map((c) => S.el("span", "", boardEl, c));
+// gente: cuadraditos de tinta en la acera (dos filas) que se agolpan
+const crowd = [];
+for (let i = 0; i < 42; i++) {
+  const row = i % 2, kid = i % 7 === 3;
+  const x = 30 + (i / 42) * 480 + (rnd() - .5) * 10, y = GA + 26 + row * 22 + (kid ? 3 : 0);
+  const d = S.el("div", "pp" + (kid ? " k" : ""), $("crowdA")); d.style.left = x.toFixed(1) + "px"; d.style.top = y + "px";
+  crowd.push({ d, x });
+}
+const order = crowd.map((_, i) => i).sort(() => rnd() - .5);
+const PPL0 = WD("n1", 13) + .1;
+order.forEach((ci, k) => { crowd[ci].at = PPL0 + Math.floor(k / 3.2) / 6; });
+for (let s = 0; s < 12; s++) ev(PPL0 + s / 6, "pop", s);
+// la comitiva: cuatro coches negros que cruzan sin parar (60 px por paso, 6 pasos/s)
+const CAR0 = T("n2") - .2, CSTEP = 66, CARS = [];
+for (let j = 0; j < 4; j++) {
+  const g = svgEl("g", {}, svA);
+  svgEl("rect", { x: 0, y: -13, width: 72, height: 11, fill: INK }, g);
+  svgEl("polygon", { points: "15,-13 24,-24 52,-24 60,-13", fill: INK }, g);
+  svgEl("rect", { x: 28, y: -21, width: 9, height: 6, fill: "var(--paper)" }, g);
+  svgEl("rect", { x: 41, y: -21, width: 9, height: 6, fill: "var(--paper)" }, g);
+  [9, 54].forEach((x) => svgEl("rect", { x, y: -9, width: 9, height: 9, fill: "var(--paper)", stroke: INK, "stroke-width": 1.6 }, g));
+  if (j === 0) { svgEl("path", { d: "M66 -13 L66 -30", stroke: INK, "stroke-width": 1.2 }, g); svgEl("rect", { x: 66, y: -31, width: 8, height: 7, fill: RED }, g); }
+  CARS.push({ g, off: -110 - j * 118 });
+}
+const CARN = Math.ceil((540 + 110 + 3 * 118 + 40) / CSTEP) + 1;
+for (let k = 0; k < CARN; k++) ev(CAR0 + k / 6, "car", k);
+// un banderín cae al paso del último coche; la gente se encoge de hombros (se achaparra)
+const FALLT = CAR0 + (CARN - 3) / 6 + .3, SLUMP = FALLT + .25;
+const fl = STR[6].b.flags[17], FALLY = GA - 4;
+const fallEl = svgEl("polygon", { points: "-5,0 5,0 0,11", fill: RED, stroke: INK, "stroke-width": 1 }, svA);
+ev(FALLT + 3 / 6, "fall");
+ev(SLUMP, "slump");
+cut(0, 0);
+
+// ═════════ B · hoy: la ciudad y la nave
+const GB = 540, NL = 240, CS = .62, CX0 = -90, GC = 470;
+const svB = $("svB");
+const world = svgEl("g", {}, svB);
+svgEl("path", { d: S.hand([[-30, GB], [570, GB]]), fill: "none", stroke: INK, "stroke-width": 1.7, "stroke-linecap": "round" }, world);
+const cityB = S.drawCity(world, { G: GC, era: "hoy" });
+cityB.g.setAttribute("transform", `translate(${CX0} ${GB - CS * GC}) scale(${CS})`);
+cityB.g.querySelectorAll("path").forEach((p) => (p.style.vectorEffect = "non-scaling-stroke"));
+["ground", "bridge", "water"].forEach((c) => (cityB.g.querySelector("." + c).style.display = "none"));
+// la nave, en coordenadas propias (origen: esquina inferior izquierda; H = 180, L = 700), escalada por pasos
+const NH = 240, NLEN = 700;
+const nave = svgEl("g", { transform: `translate(${NL} ${GB}) scale(.3)` }, world);
+nave.style.cssText = "";
+const navFill = svgEl("rect", { x: 0, y: -NH, width: 0, height: NH, fill: "var(--paper-2)" }, nave);
+const NP = []; // piezas, con orden de aparición (x)
+const piece = (d, ord, o = {}) => { const el = svgEl("path", { d, fill: o.fill || "none", stroke: o.stroke || INK, "stroke-width": o.w || 1.3, "stroke-linecap": "round", "stroke-linejoin": "round" }, nave); el.style.vectorEffect = "non-scaling-stroke"; NP.push({ el, ord }); return el; };
+piece(S.hand([[0, 0], [0, -NH]]), 0, { w: 1.8 });
+piece(S.hand([[0, -NH], [NLEN, -NH]]), 40, { w: 1.8 });
+piece(S.hand([[0, -NH + 16], [NLEN, -NH + 16]]), 60);
+const FANS = [], LEDS = [], FANR = 8;
+for (let j = 0; j < 10; j++) {
+  const bx = j * 70, cx = bx + 35;
+  piece(S.hand([[bx + 70, -NH + 16], [bx + 70, 0]]), bx + 70);
+  let lv = ""; for (let r = 0; r < 5; r++) lv += S.hand([[bx + 12, -NH + 40 + r * 18], [bx + 58, -NH + 40 + r * 18]]);
+  piece(lv, bx + 10, { w: 1, stroke: "var(--ink-2)" });
+  piece(S.box(cx - 20, -NH - 22, 40, 22), bx + 15);
+  const fg = svgEl("g", { transform: `translate(${cx} ${-NH - 11})` }, nave);
+  const circ = []; for (let k = 0; k <= 12; k++) { const a = (k / 12) * Math.PI * 2; circ.push([FANR * Math.cos(a), FANR * Math.sin(a)]); }
+  const cp = svgEl("path", { d: S.hand(circ), fill: "none", stroke: INK, "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, fg);
+  const bl = svgEl("path", { d: `M${-FANR + 1} 0 L${FANR - 1} 0 M0 ${-FANR + 1} L0 ${FANR - 1}`, fill: "none", stroke: INK, "stroke-width": 1.2 }, fg);
+  bl.style.vectorEffect = "non-scaling-stroke";
+  NP.push({ el: fg, ord: bx + 20 }); FANS.push({ bl });
+  for (let r = 0; r < 5; r++) {
+    const rx = bx + 6 + r * 13;
+    let d = S.box(rx, -78, 9, 72); for (let u = 1; u < 6; u++) d += `M${rx} ${-78 + u * 12}L${rx + 9} ${-78 + u * 12}`;
+    piece(d, rx, { w: 1 });
+    const led = svgEl("rect", { x: rx + 1.5, y: -75, width: 3, height: 3, fill: RED }, nave); NP.push({ el: led, ord: rx + .5 }); LEDS.push({ led, k: j * 5 + r });
+  }
+}
+NP.sort((a, b) => a.ord - b.ord);
+const money = svgEl("g", {}, world);
+const T_CITY = A1 + .05, T_NAVE0 = WD("n3", 1), T_NAVE1 = T_NAVE0 + 1.5;
+ev(T_CITY, "draw0"); ev(T_NAVE0, "draw1");
+const GROW = [[WD("n4", 1), .45], [WD("n4", 3), .6], [WD("n4", 5), .8], [WD("n4", 9), 1]];
+GROW.forEach(([t], i) => ev(t, "grow", i));
+const kAt = (t) => { let k = .3; GROW.forEach(([tt, v]) => { if (t >= tt) k = v; }); return k; };
+// el dinero: cuadraditos rojos que salen de la nave
+const XD = NL - 6, STEPPX = 30;
+const WIN = cityB.windows, wsel = [0, 1, 2, 3, 4, 5, 6, 9, 13, 16, 17, 7, 10, 14];
+const FL = [];
+{ let te = WD("n6", 1) + .15, i = 0, ns = 0;
+  while (te < WD("n6", 11) + .05) {
+    const stay = (i * 5 + 2) % 7 < 3, f = { i, te, stay, el: svgEl("rect", { width: 11, height: 11, fill: RED }, money) };
+    if (stay) {
+      const [wx, wy, ww, wh] = WIN[wsel[ns++ % wsel.length]];
+      f.wx = CX0 + CS * (wx + ww / 2); f.wy = GB + CS * (wy + wh / 2 - GC); f.kStop = Math.ceil((XD - f.wx) / STEPPX);
+      ev(te + (f.kStop + 2) / 6, "stay", ns);
+    }
+    FL.push(f); ev(te, "coin", i);
+    te += i < 4 ? 2 / 6 : 1 / 6; i++;
+  }
+}
+cut(A1, 1);
+const tagEl = $("tag");
+
+// ═════════ C · 750 M€
+const svC = $("svC"), CCX = 270, CCY = 330, RS = .78;
+const RINGS = Array.from({ length: 10 }, (_, k) => { const i = k + 1, d = 18 * Math.pow(1.36, i) * RS; return { i, d, o: +(.62 - i * .04).toFixed(3), el: svgEl("rect", { x: (CCX - d / 2).toFixed(1), y: (CCY - d / 2).toFixed(1), width: d.toFixed(1), height: d.toFixed(1), fill: "none", stroke: INK, "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, svC) }; });
+svgEl("path", { d: `M${CCX - 270} ${CCY}H${CCX + 270}M${CCX} ${CCY - 250}V${CCY + 250}`, stroke: INK, "stroke-opacity": .18, "stroke-dasharray": "2 5", fill: "none" }, svC).style.vectorEffect = "non-scaling-stroke";
+svgEl("rect", { x: CCX - 8, y: CCY - 8, width: 16, height: 16, fill: RED }, svC);
+const C0 = T("n5"), HIT = C0 + 12 / 6;                 // 13 saltos: 750 cae al terminar «cincuenta»
+const MAC = [[C0 + .6, C0 + 1.25], [HIT + .9, HIT + 1.5]];
+ev(C0, "tick0"); for (let k = 1; k <= 13; k++) ev(C0 + (k - 1) / 6, "tick", k);
+ev(HIT, "hit");
+cut(B1, 2); cut(MAC[0][0], 3); cut(MAC[0][1], 4); cut(MAC[1][0], 5); cut(MAC[1][1], 6); cut(C1, 7);
+const macs = [
+  S.clip("calculadora-mecanismo", { t0: MAC[0][0], t1: MAC[0][1], start: 3.0, from: [1.3, 58, 50], to: [1.55, 58, 50], grade: "calido", parent: $("plates"), z: 2 }),
+  S.clip("ia-lacre", { t0: MAC[1][0], t1: MAC[1][1], start: .6, from: [1.1, 50, 55], to: [1.3, 50, 60], grade: "natural", parent: $("plates"), z: 2 }),
+];
+
+// ═════════ D · capítulos
+const CH = [["01", "Contexto: la inversión y la ciudad", 1], ["02", "Impacto económico directo e indirecto", 1], ["03", "Empleo y capital humano", 0], ["04", "Fiscalidad y retorno local", 0], ["05", "Recomendaciones de negociación", 0]];
+const rows = CH.map(([n, tx, on], i) => {
+  const r = S.el("div", "chrow " + (on ? "on" : "off"), $("scD"));
+  r.style.top = 186 + i * 100 + "px";
+  r.innerHTML = `<div class="ln"></div><div class="hh"><span>${n}</span><i class="sq${on ? "" : " o"}"></i><span class="st">En curso</span></div><div class="tx">${tx}</div><div class="bar"></div>`;
+  const t0 = D0 + i * .4; ev(t0, "chap", i); if (on) ev(t0 + .5, "chapOn", i);
+  return { r, t0, on, st: r.querySelector(".st"), tx: r.querySelector(".tx"), bar: r.querySelector(".bar") };
+});
+cut(D0, 8);
+
+// ═════════ E · «debemos saber.» y F · cartela
+const saber = S.saber(OPEN, SH, { a: WD("n7", 0), b: WD("n7", 1) });
+const cart = $("cart"), owHost = $("cOw");
+const owl = S.fig(owHost, "buho");
+const CT = { st: LAND - .42, t1: LAND - .42, t2: LAND - .25, sb: LAND, ow: LAND + .17, op: LAND + .34, ur: LAND + .5 };
+S.figEvents("buho", CT.ow, DUR);
+ev(CT.sb, "sign2"); ev(CT.ur, "url");
+
+// ── subtítulos (la voz, palabra a palabra)
+const subs = {};
+const mkSub = (id, top, o = {}) => { const p = S.el("div", "layer", $("subs")); subs[id] = { p, u: S.sub(id, { parent: p, style: `top:${top}px`, ...o }) }; };
+mkSub("n1", 596); mkSub("n2", 640); mkSub("n3", 620); mkSub("n4", 620);
+mkSub("n5", 690, { out: line("n5").end + .15 });
+mkSub("n6", 620, { hot: [7, 8], out: line("n6").end + .1 });
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+// ═════════ render
+const hide = (e) => (e.style.display = "none");
+window.renderAt = (t) => {
+  const inA = t < A1, inB = (t >= A1 && t < B1) || (t >= C1 && t < D0), inC = t >= B1 && t < C1, inD = t >= D0 && t < OPEN;
+  $("scA").style.display = inA ? "block" : "none";
+  $("scB").style.display = inB ? "block" : "none";
+  $("scC").style.display = inC ? "block" : "none";
+  $("scD").style.display = inD ? "block" : "none";
+
+  // ── A
+  if (inA) {
+    cityA.draw(S.q(t), .1, 1.6);
+    STR.forEach((s) => s.b.set(steps(t, s.t0, 4)));
+    const pa = steps(t, ARCH0, 5), pb = steps(t, ARCH0 + .15, 5);
+    dA1(pa); dA2(pb); arch1.style.display = pa > 0 ? "" : "none"; arch2.style.display = pb > 0 ? "" : "none";
+    const bo = t >= ARCH0 + .85; boardBox.style.display = bo ? "" : "none"; ROT.forEach((r) => (r.style.display = bo ? "" : "none"));
+    pole.forEach((p) => (p.style.display = pa >= 1 ? "" : "none"));
+    boardEl.style.display = bo ? "flex" : "none";
+    const nl = t < LET0 ? 0 : Math.min(BIEN.length, Math.floor((t - LET0) * 9 + 1e-6) + 1);
+    letters.forEach((l, i) => (l.style.visibility = i < nl ? "visible" : "hidden"));
+    const sl = t >= SLUMP ? Math.min(2, stepN(t, SLUMP, 6) + 1) : 0;
+    crowd.forEach((c) => {
+      c.d.style.display = t >= c.at ? "block" : "none";
+      const sc = sl === 0 ? 1 : sl === 1 ? .72 : .55;
+      c.d.style.transform = sl ? `scaleY(${sc})` : "none";
+    });
+    const cs = t < CAR0 ? -1 : stepN(t, CAR0, 6);
+    CARS.forEach((c) => { const x = c.off + CSTEP * cs; c.g.style.display = cs >= 0 && x > -130 && x < 560 ? "" : "none"; c.g.setAttribute("transform", `translate(${x} ${GA + 4}) scale(1.3)`); });
+    // el banderín que cae: sale de su cuerda y baja en cuatro saltos
+    const fk = t < FALLT ? 0 : Math.min(4, stepN(t, FALLT, 6) + 1);
+    fl.el.style.display = fk > 0 || fl.u > steps(t, STR[6].t0, 4) ? "none" : "";
+    if (fl.u > steps(t, STR[6].t0, 4)) fallEl.style.display = "none";
+    else if (fk === 0) fallEl.style.display = "none";
+    else { const q = [.12, .4, .75, 1][fk - 1]; fallEl.style.display = ""; fallEl.setAttribute("transform", `translate(${fl.x.toFixed(1)} ${(fl.y + (FALLY - fl.y) * q).toFixed(1)}) rotate(${[20, 55, 95, 100][fk - 1]})`); }
+    $("tag").className = "tag"; $("tag").style.display = "block"; $("tag").innerHTML = "<i></i>1953";
+    $("tag").style.opacity = t >= .15 ? 1 : 0;
+  }
+
+  // ── B
+  if (inB) {
+    const pre = t < C1;
+    cityB.draw(S.q(t), T_CITY, 1.1);
+    const k = kAt(t), P = steps(t, T_NAVE0, 9);
+    nave.setAttribute("transform", `translate(${NL} ${GB}) scale(${k})`);
+    navFill.setAttribute("width", (P * NLEN).toFixed(1));
+    const n = Math.floor(P * NP.length + 1e-6);
+    NP.forEach((p, i) => (p.el.style.display = i < n ? "" : "none"));
+    const f5 = stepN(t, 0, 5), f6 = stepN(t, 0, 6);
+    FANS.forEach((f, j) => f.bl.setAttribute("transform", `rotate(${((f6 + j * 3) * 30) % 90})`));
+    LEDS.forEach((l) => (l.led.style.display = (f5 + l.k * 2) % 6 < 3 ? "" : "none"));
+    const Z = pre ? 1 : 1.12;
+    world.setAttribute("transform", `translate(0 ${GB}) scale(${Z}) translate(0 ${-GB})`);
+    // dinero
+    FL.forEach((f) => {
+      if (t < f.te) { f.el.style.display = "none"; return; }
+      const kk = stepN(t, f.te, 6), x0 = XD - STEPPX * kk, yb = GB - 14 - (f.i % 3) * 4;
+      let x = x0, y = yb, s = 11;
+      if (f.stay) {
+        if (kk < f.kStop) { x = x0; }
+        else if (kk === f.kStop) { x = f.wx; }
+        else if (kk === f.kStop + 1) { x = f.wx; y = (yb + f.wy) / 2; }
+        else { x = f.wx; y = f.wy; s = 8; }
+      } else if (x0 < -14) { f.el.style.display = "none"; return; }
+      f.el.style.display = ""; f.el.setAttribute("width", s); f.el.setAttribute("height", s);
+      f.el.setAttribute("x", (x - s / 2).toFixed(1)); f.el.setAttribute("y", (y - s / 2).toFixed(1));
+    });
+    const tg = $("tag");
+    if (pre) { tg.className = "tag"; tg.style.display = "block"; tg.innerHTML = "<i></i>Hoy"; tg.style.opacity = 1; } else tg.style.display = "none";
+  } else if (!inA) $("tag").style.display = "none";
+
+  // ── C
+  if (inC) {
+    const k = t < C0 ? 0 : Math.min(13, stepN(t, C0, 6) + 1);
+    const v = Math.round(750 * eOut(k / 13) / 5) * 5;
+    $("num").textContent = v; $("cnt").classList.toggle("hit", t >= HIT);
+    $("unit").style.visibility = t >= HIT ? "visible" : "hidden";
+    const f = t < HIT ? -1 : stepN(t, HIT, 5), kk = f < 0 ? -1 : f % 14;
+    RINGS.forEach((r, i) => {
+      r.el.style.display = v >= r.i * 75 ? "" : "none";
+      r.el.setAttribute("stroke-opacity", i === kk - 1 ? .85 : i === kk - 2 ? (r.o + .18).toFixed(2) : r.o);
+    });
+  }
+  macs.forEach((m) => m(t));
+  const onMac = MAC.some(([a, b]) => t >= a && t < b);
+  Object.values(subs).forEach((s) => (s.p.style.color = onMac ? "var(--paper)" : ""));
+  Object.values(subs).forEach((s) => s.u(t));
+
+  // ── D
+  if (inD) {
+    $("chhead").style.visibility = t >= D0 - .05 ? "visible" : "hidden";
+    rows.forEach((w) => {
+      const s = t < w.t0 ? -1 : stepN(t, w.t0, 6);
+      w.r.style.display = s >= 0 ? "block" : "none";
+      w.tx.style.visibility = s >= 1 ? "visible" : "hidden";
+      w.st.style.visibility = w.on && s >= 1 ? "visible" : "hidden";
+      const pw = s < 2 ? 0 : w.on ? Math.min(1, (s - 1) / 4) : 1;
+      w.bar.style.width = pw * 100 + "%";
+    });
+  }
+
+  // ── E/F
+  saber(t);
+  if (t >= SH) {
+    cart.style.display = "block";
+    const k = Math.min(6, stepN(t, SH, 1 / .07) + 1), r = (k / 6) * 560;
+    cart.style.clipPath = t >= LAND ? "none" : `inset(${480 - r}px ${270 - r}px ${480 - r}px ${270 - r}px)`;
+    $("cSt").style.opacity = 1;
+    $("cT1").style.visibility = t >= CT.t1 ? "visible" : "hidden";
+    $("cT2").style.visibility = t >= CT.t2 ? "visible" : "hidden";
+    $("cSb").style.opacity = t >= CT.sb ? 1 : 0;
+    $("cOw").style.opacity = t >= CT.ow ? 1 : 0; owl(t, CT.ow);
+    $("cOp").style.opacity = t >= CT.op ? 1 : 0;
+    $("cUr").style.opacity = t >= CT.ur ? 1 : 0;
+  } else cart.style.display = "none";
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>

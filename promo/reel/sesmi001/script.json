@@ -1,11 +1,46 @@
 {
  "lines": [
-  {"id": "n1", "who": "narradora", "text": "En mil novecientos cincuenta y tres, un pueblo entero se preparó para recibir a los americanos.", "t": 0},
-  {"id": "n2", "who": "narradora", "text": "Pasaron de largo.", "t": 0},
-  {"id": "n3", "who": "narradora", "text": "Hoy llega otro gigante.", "t": 0},
-  {"id": "n4", "who": "narradora", "text": "El centro de datos más grande del sur de Europa.", "t": 0},
-  {"id": "n5", "who": "narradora", "text": "Setecientos cincuenta millones de euros.", "t": 0},
-  {"id": "n6", "who": "narradora", "text": "Y la pregunta es la misma: ¿cuánto se queda en la ciudad?", "t": 0},
-  {"id": "n7", "who": "narradora", "text": "Debemos saber.", "t": 0}
+  {
+   "id": "n1",
+   "who": "narradora",
+   "text": "En mil novecientos cincuenta y tres, un pueblo entero se preparó para recibir a los americanos.",
+   "t": 0.7
+  },
+  {
+   "id": "n2",
+   "who": "narradora",
+   "text": "Pasaron de largo.",
+   "t": 7.9
+  },
+  {
+   "id": "n3",
+   "who": "narradora",
+   "text": "Hoy llega otro gigante.",
+   "t": 11.2
+  },
+  {
+   "id": "n4",
+   "who": "narradora",
+   "text": "El centro de datos más grande del sur de Europa.",
+   "t": 14.0
+  },
+  {
+   "id": "n5",
+   "who": "narradora",
+   "text": "Setecientos cincuenta millones de euros.",
+   "t": 17.9
+  },
+  {
+   "id": "n6",
+   "who": "narradora",
+   "text": "Y la pregunta es la misma: ¿cuánto se queda en la ciudad?",
+   "t": 22.4
+  },
+  {
+   "id": "n7",
+   "who": "narradora",
+   "text": "Debemos saber.",
+   "t": 31.2
+  }
  ]
 }

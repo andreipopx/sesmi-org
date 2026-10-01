@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · SESMI-002</title>
+<!--
+  Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
+  ../assets/video/planetario-eisinga-engranajes.mp4  ../assets/video/calculadora-mecanismo.mp4
+  ../assets/video/reloj-bolsillo-waltham.mp4  ../assets/video/metronome.mp4
+-->
+<!--
+  Tráiler de la investigación SESMI-002 (26,3 s). Arranque en frío: cuatro cortes secos de macros mecánicos
+  que aceleran, como un motor que se prepara. Después, la curva «stall» de la web (seis intentos que suben y
+  se calan) dibujada a pluma en grande; el cuadrado rojo es la punta de la pluma y sube y se cae en cada intento,
+  mientras una manivela gira a saltos al pie. «¿Por qué?»: tinta, y la ciudad pequeña y quieta. «Vamos a averiguarlo.
+  Con datos, y en abierto.»: el búho, los datos que se ordenan y una puerta que se abre. Cierre: «debemos saber.»
+  y la cartela. Pocos fps: pluma a 10, manivela, datos y puerta a 6, clips a 6. Todo es función de t.
+  Los eventos (try, crank, stall, clac, cut…) suenan en audio.py. Tiempos de la voz en script.json.
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+#stage{background:var(--ink)}
+.photo img{max-width:none}
+#shade{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse 80% 62% at 50% 48%,rgba(28,24,20,0) 35%,rgba(28,24,20,.58) 100%)}
+.scene{position:absolute;inset:0;display:none}
+.scene>svg{position:absolute;inset:0;width:540px;height:960px;overflow:visible}
+#curve{background:var(--paper);z-index:10}
+#porque{background:var(--ink);color:var(--paper);z-index:12}
+#data{background:var(--paper);z-index:11}
+#cart{background:var(--paper);z-index:19}
+#subs{position:absolute;inset:0;z-index:25;pointer-events:none}
+.hw{position:absolute;width:140px;margin-left:-70px;text-align:center;font:italic 400 17px/1 var(--text);color:var(--ink-2);visibility:hidden}
+.hw span{background:var(--paper);padding:0 5px}
+.cnt{position:absolute;left:0;right:0;top:788px;text-align:center;color:var(--ink-2);font-size:12px;font-variant-numeric:tabular-nums}
+.cnt b{font:inherit;color:var(--red)}
+.pq{position:absolute;left:0;right:0;top:236px;text-align:center;font:700 128px/.98 var(--strong);letter-spacing:-.04em}
+.pq div{visibility:hidden}
+.dlbl{position:absolute;left:0;right:0;top:304px;text-align:center;color:var(--ink-3);font-size:12px}
+.cart .abs{visibility:hidden}
+.ctitle{left:40px;top:226px;width:470px;font:500 68px/1.02 var(--display);letter-spacing:-.03em}
+.csub{left:40px;top:606px;width:420px;font:400 20px/1.42 var(--text);color:var(--ink-2)}
+.ccta{left:40px;top:712px;border:1px solid var(--ink);padding:15px 20px;font:500 18px/1 var(--display);letter-spacing:-.005em;white-space:nowrap}
+.ccta i{display:inline-block;width:9px;height:9px;background:var(--red);margin-right:12px;vertical-align:1px}
+.cstat{left:40px;top:192px;font-size:13px;color:var(--ink);display:flex;align-items:center;gap:12px}
+.cstat i{display:inline-block;width:11px;height:11px;background:var(--red)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="shots" style="z-index:2;overflow:hidden"></div>
+  <div id="shade"></div>
+  <div class="scene" id="curve"><svg id="csv" viewBox="0 0 540 960"></svg><div id="hw"></div><div class="lbl cnt" id="cnt"></div></div>
+  <div class="scene" id="porque"><svg id="psv" viewBox="0 0 540 960"></svg><div class="pq"><div id="pA">¿Por</div><div id="pB">qué?</div></div></div>
+  <div class="scene" id="data"><svg id="dsv" viewBox="0 0 540 960"></svg><div class="lbl dlbl" id="dlbl">Investigación</div></div>
+  <div class="scene cart" id="cart"></div>
+  <div id="subs"></div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, clamp, stepN, line, wordAt, eOut } = S;
+const NS = "http://www.w3.org/2000/svg", B = window.BRAND;
+const N1 = line("n1").t, N2 = line("n2").t, N3 = line("n3").t, N4 = line("n4").t, N5 = line("n5").t;
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const show = (el, on, how = "block") => { const d = on ? how : "none"; if (el.style.display !== d) el.style.display = d; };
+const vis = (el, on) => { const v = on ? "visible" : "hidden"; if (el.style.visibility !== v) el.style.visibility = v; };
+
+// ═════ 1 · arranque en frío (0–2,5 s): macros mecánicos, cortes cada vez más rápidos, todo a 6 fps
+const FPS = 6;
+const clip = (slug, ar, from, to, n, start) => ({ clip: slug, ar, from, to, n: n / 6, start });
+const SHOTS = [
+  clip("planetario-eisinga-engranajes", 1920 / 1080, [1.6, .45, .35], [1.8, .45, .35], 5, .5),
+  clip("calculadora-mecanismo", 1920 / 1080, [1.9, .58, .52], [2.2, .58, .50], 4, 3.6),
+  clip("reloj-bolsillo-waltham", 1920 / 1080, [1.7, .55, .47], [2.0, .56, .50], 3, 1.2),
+  clip("metronome", 1920 / 1080, [2.3, .48, .40], [2.5, .48, .42], 3, .3),
+];
+let tc = 0;
+SHOTS.forEach((s, i) => { s.t0 = tc; tc += s.n; s.t1 = tc; ev(s.t0, "cut", i); });
+const P0 = tc;                                  // 2,5 s: corte a papel, empieza la curva
+ev(P0, "cut", SHOTS.length);
+const mk = (s) => {
+  const o = { t0: s.t0, t1: s.t1, grade: "calido", fps: FPS, parent: $("shots"), z: 2 };
+  const base = S.clip(s.clip, { ...o, start: s.start });
+  const img = base.img;
+  return (t) => {
+    base(t);
+    if (t < s.t0 || t >= s.t1) return;
+    const tq = s.t0 + stepN(t, s.t0, FPS) / FPS, p = clamp((tq - s.t0) / Math.max(.001, s.t1 - s.t0));
+    const [z, fx, fy] = s.from.map((v, i) => v + (s.to[i] - v) * p);
+    const k = Math.max(540 / s.ar, 960) * z, H = k, W = k * s.ar;
+    const L = clamp(270 - fx * W, 540 - W, 0), T = clamp(480 - fy * H, 960 - H, 0), st = img.style;
+    st.objectFit = "fill"; st.inset = "auto"; st.transform = "none";
+    st.width = W.toFixed(1) + "px"; st.height = H.toFixed(1) + "px"; st.left = L.toFixed(1) + "px"; st.top = T.toFixed(1) + "px";
+  };
+};
+const shotFns = SHOTS.map(mk);
+
+// ═════ 2 · la curva «stall» (n1, n2): misma curva que la web, en grande, a pluma, seis intentos
+const TRIES = [[70, 46, 22], [170, 70, 26], [270, 58, 24], [372, 86, 28], [478, 64, 24], [572, 40, 20]];
+const BASEY = 632, KA = 3.3, KX = .78, OX = 14;
+const px = (x) => OX + x * KX;
+const PTS = [];
+for (let x = 0; x <= 640; x += 4) {
+  let y = 0;
+  TRIES.forEach(([c, a, w]) => { const u = (x - c) / w; y += x < c ? a * Math.exp((-u * u) / 3.2) : a * Math.exp(-Math.pow(u * 2.6, 2)); });
+  PTS.push([px(x), BASEY - y * KA + Math.sin(x * .21) * 2]);
+}
+const idxOfX = (x) => Math.round(x / 4);
+const HUMPS = [];
+const DR = [.9, .8, .7, .6, .5, .5], HOLD = .17, FALL = .25, GAP = .05;
+let ts = N1;
+TRIES.forEach(([c], i) => {
+  let pk = idxOfX(c); for (let k = idxOfX(c - 10); k <= idxOfX(c + 10); k++) if (PTS[k][1] < PTS[pk][1]) pk = k;
+  const b = i < 5 ? idxOfX((c + TRIES[i + 1][0]) / 2) : idxOfX(610);
+  const a = i ? HUMPS[i - 1].b : 0;
+  HUMPS.push({ i, S: ts, Dr: DR[i], a, c: pk, b, n: Math.ceil(DR[i] * 6 - 1e-6) });
+  ts += DR[i] + HOLD + FALL + GAP;
+});
+const WORDS = ["un plan", "una feria", "un polígono", "una promesa", "un foro", "otra vez"];
+const PEN = 10;                                  // fps de la pluma
+const CLAC = N2 + line("n2").dur + .25;          // el único «clac» del silencio
+HUMPS.forEach((h) => {
+  ev(h.S, "try", { i: h.i, rise: h.Dr, hold: HOLD });
+  for (let k = 0; k < h.n; k++) ev(h.S + k / 6, "crank", h.i);
+  ev(h.S + h.Dr + HOLD, "stall", h.i);
+});
+ev(CLAC, "clac");
+
+const csv = $("csv"), hw = $("hw");
+// rejilla (como la web: seis líneas horizontales, la base más marcada)
+const gridEls = [];
+for (let k = 0; k < 6; k++) {
+  const y = BASEY - k * 24 * KA;
+  gridEls.push(svgEl("path", { d: S.hand([[0, y], [540, y]]), fill: "none", stroke: "#1C1814", "stroke-opacity": k ? .14 : .55, "stroke-width": 1 }, csv));
+}
+// marcas sobre cada joroba + palabra a mano
+const tickEls = [], wordEls = [];
+HUMPS.forEach((h) => {
+  const [x, y] = PTS[h.c];
+  tickEls.push(svgEl("path", { d: S.hand([[x, y - 20], [x, y - 9]]), fill: "none", stroke: "#1C1814", "stroke-opacity": .5, "stroke-width": 1.2 }, csv));
+  const w = S.el("div", "hw", hw); w.style.left = x.toFixed(1) + "px"; w.style.top = (y - 46).toFixed(1) + "px"; w.innerHTML = `<span>${WORDS[h.i]}</span>`;
+  wordEls.push(w);
+});
+const trail = svgEl("path", { fill: "none", stroke: "#1C1814", "stroke-width": 2.3, "stroke-linejoin": "round", "stroke-linecap": "round" }, csv);
+const mark = svgEl("rect", { width: 15, height: 15, fill: "#7A1F10" }, csv);
+// manivela al pie
+const CX = 270, CY = 698;
+const circ = (r, n = 22) => { const p = []; for (let k = 0; k <= n; k++) { const a = (k / n) * Math.PI * 2; p.push([CX + r * Math.cos(a), CY + r * Math.sin(a)]); } return S.hand(p); };
+svgEl("path", { d: circ(31) + circ(5, 10) + S.hand([[CX - 46, CY + 50], [CX + 46, CY + 50]]) + S.hand([[CX - 23, CY + 30], [CX - 34, CY + 50]]) + S.hand([[CX + 23, CY + 30], [CX + 34, CY + 50]]), fill: "none", stroke: "#1C1814", "stroke-width": 1.6, "stroke-linecap": "round" }, csv);
+const crank = svgEl("g", {}, csv);
+svgEl("path", { d: S.hand([[CX, CY], [CX, CY - 62]]) + S.box(CX - 7, CY - 72, 14, 14), fill: "none", stroke: "#1C1814", "stroke-width": 2, "stroke-linecap": "round" }, crank);
+const cnt = $("cnt");
+const theta = (t) => {
+  let th = 0;
+  HUMPS.forEach((h) => {
+    if (t < h.S) return;
+    th += Math.min(h.n, stepN(t, h.S, 6) + 1) * 58;
+    if (t >= h.S + h.Dr + HOLD) th -= 38;           // al calarse, la manivela rebota
+  });
+  if (t >= CLAC) th -= 24;
+  return th;
+};
+const penAt = (t) => {
+  const tq = t < P0 ? P0 : P0 + stepN(t, P0, PEN) / PEN;
+  let idx = 0;
+  HUMPS.forEach((h) => {
+    if (tq < h.S) return;
+    const u = tq - h.S;
+    if (u < h.Dr) idx = h.a + (h.c - h.a) * Math.pow(u / h.Dr, 1.2);
+    else if (u < h.Dr + HOLD) idx = h.c;
+    else if (u < h.Dr + HOLD + FALL) idx = h.c + (h.b - h.c) * ((u - h.Dr - HOLD) / FALL);
+    else idx = h.b;
+  });
+  return idx;
+};
+const drawCurve = (t) => {
+  const idx = penAt(t), k = Math.floor(idx + 1e-6), f = idx - k;
+  const pts = PTS.slice(0, k + 1);
+  if (f > 1e-6 && k < PTS.length - 1) pts.push([PTS[k][0] + (PTS[k + 1][0] - PTS[k][0]) * f, PTS[k][1] + (PTS[k + 1][1] - PTS[k][1]) * f]);
+  trail.setAttribute("d", S.hand(pts));
+  const [x, y] = pts[pts.length - 1];
+  mark.setAttribute("x", (x - 7.5).toFixed(1)); mark.setAttribute("y", (y - 7.5).toFixed(1));
+  crank.setAttribute("transform", `rotate(${theta(t)} ${CX} ${CY})`);
+  const gn = t < P0 ? 0 : Math.min(6, Math.floor((t - P0) * 6) + 1);     // la rejilla sube a saltos
+  gridEls.forEach((g, i) => vis(g, i < gn));
+  let cur = 0; HUMPS.forEach((h) => { if (t >= h.S) cur = h.i + 1; });
+  HUMPS.forEach((h) => { vis(tickEls[h.i], t >= h.S); vis(wordEls[h.i], t >= h.S + .1); });
+  cnt.innerHTML = cur ? `Intento <b style="color:inherit">${cur}</b>` + (t >= CLAC ? ` · <b>se cala</b>` : "") : "";
+};
+
+// ═════ 3 · «¿Por qué?» (n3): tinta, y la ciudad pequeña y quieta abajo
+const T_INK = N3 - .15;
+ev(T_INK, "cut", "ink");
+const psv = $("psv");
+const cg = svgEl("g", { transform: "translate(119 461.5) scale(.55)" }, psv);
+const city = S.drawCity(psv, { G: 470, color: "#F7F3EE" });
+cg.appendChild(city.g);
+city.draw(999, 0);
+const W3 = [wordAt("n3", 0), wordAt("n3", 1)];
+
+// ═════ 4 · «Vamos a averiguarlo. Con datos, y en abierto.» (n4)
+const T_PAPER = N4 - .15;
+ev(T_PAPER, "cut", "paper");
+const dsv = $("dsv");
+// búho de marca, grande, que se anima
+const owlHost = S.el("div", "abs", $("data")); owlHost.style.cssText = "left:185px;top:124px;width:170px;height:170px;color:var(--ink)";
+const owl = S.fig(owlHost, "buho", "mayor");
+const OWL0 = N4 + .05;
+ev(N4, "fig", 0);
+S.figEvents("buho", OWL0, N5 - .6);
+// marco con puerta: pared derecha en dos trozos; la parte baja es la puerta (bisagra arriba)
+const FX0 = 60, FX1 = 400, FY0 = 330, FY1 = 560, DY = 420;
+svgEl("path", { d: S.hand([[FX1, DY], [FX1, FY0], [FX0, FY0], [FX0, FY1], [FX1, FY1]]), fill: "none", stroke: "#1C1814", "stroke-width": 1.8, "stroke-linejoin": "round", "stroke-linecap": "round" }, dsv);
+const doorG = svgEl("g", {}, dsv);
+svgEl("path", { d: S.hand([[FX1, DY], [FX1, FY1]]), fill: "none", stroke: "#1C1814", "stroke-width": 1.8, "stroke-linecap": "round" }, doorG);
+// datos: cuadraditos que aparecen sueltos, se ordenan en columnas y luego se ordenan por altura
+let seed = 7; const rnd = () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const HS = [6, 3, 9, 5, 12, 2, 8, 4, 10], sorted = [...HS].sort((a, b) => a - b);
+const XB = 74, PITCH = 30, YB = 546;
+const SQ = [];
+const TA = wordAt("n4", 3), TB = N4 + 3.0;       // «Con» → ordenan en columnas; «datos» → ordenan por altura
+HS.forEach((h, j) => {
+  const rank = sorted.indexOf(h);
+  for (let l = 0; l < h; l++) {
+    const r = svgEl("rect", { width: 20, height: 9, fill: "#1C1814" }, dsv);
+    SQ.push({ r, j, p0: [FX0 + 12 + rnd() * (FX1 - FX0 - 50), FY0 + 14 + rnd() * (FY1 - FY0 - 40)], p1: [XB + j * PITCH, YB - 12 * (l + 1) + 3], p2: [XB + rank * PITCH, YB - 12 * (l + 1) + 3], ta: N4 + .12 + rnd() * 1.25 });
+  }
+});
+const stepK = (t, t0, n = 3) => (t < t0 ? 0 : Math.min(n, stepN(t, t0, 6) + 1)) / n;
+// el cuadrado rojo (la punta de la pluma) espera junto a la puerta; el candado la cierra
+const redSq = svgEl("rect", { width: 15, height: 15, fill: "#7A1F10", x: 353, y: 531 }, dsv);
+const LOCK0 = wordAt("n4", 5), LK1 = wordAt("n4", 7) + .25;
+const lockG = svgEl("g", {}, dsv);
+svgEl("rect", { x: 388, y: 534, width: 24, height: 20, fill: "#F7F3EE" }, lockG);
+svgEl("path", { d: S.box(388, 534, 24, 20), fill: "none", stroke: "#1C1814", "stroke-width": 1.8, "stroke-linecap": "round" }, lockG);
+const shackle = svgEl("path", { d: S.hand([[393, 534], [393, 524], [396, 519], [404, 519], [407, 524], [407, 534]]), fill: "none", stroke: "#1C1814", "stroke-width": 1.8, "stroke-linecap": "round", "stroke-linejoin": "round" }, lockG);
+ev(LOCK0, "lock");
+ev(LK1, "unlock");
+const DOOR0 = LK1 + .5, RED0 = DOOR0 + .3;
+for (let k = 0; k < 4; k++) ev(DOOR0 + k / 6, "door", k);
+for (let k = 0; k < 3; k++) ev(RED0 + k / 6, "hop", k);
+const DOORA = [0, 14, 36, 60], REDX = [353, 392, 438, 485];
+const drawData = (t) => {
+  owl(t, OWL0);
+  SQ.forEach((q) => {
+    const on = t >= q.ta; q.r.style.display = on ? "block" : "none";
+    if (!on) return;
+    const kA = stepK(t, TA + q.j * .04), kB = stepK(t, TB + q.j * .04);
+    const x = kB > 0 ? q.p1[0] + (q.p2[0] - q.p1[0]) * kB : q.p0[0] + (q.p1[0] - q.p0[0]) * kA;
+    const y = kB > 0 ? q.p1[1] + (q.p2[1] - q.p1[1]) * kB : q.p0[1] + (q.p1[1] - q.p0[1]) * kA;
+    q.r.setAttribute("x", x.toFixed(1)); q.r.setAttribute("y", y.toFixed(1));
+  });
+  vis(redSq, t >= LOCK0 - .1);
+  const hop = t < RED0 ? 0 : Math.min(3, stepN(t, RED0, 6) + 1);
+  redSq.setAttribute("x", REDX[hop]);
+  show(lockG, t >= LOCK0 && t < LK1 + .5);
+  const open = t >= LK1;
+  const lf = t < LK1 ? 0 : Math.min(3, stepN(t, LK1, 6) + 1);         // primero se abre el arco, luego cae
+  lockG.setAttribute("transform", lf <= 1 ? "" : `translate(0 ${lf === 2 ? 14 : 34})`);
+  shackle.setAttribute("transform", open ? "translate(0 -7)" : "");
+  const dk = t < DOOR0 ? 0 : Math.min(3, stepN(t, DOOR0, 6));
+  doorG.setAttribute("transform", `rotate(${-DOORA[t < DOOR0 ? 0 : Math.min(3, stepN(t, DOOR0, 6) + 1)]} ${FX1} ${DY})`);
+};
+
+// ═════ 5 · «debemos saber.» (n5) y cartela
+const OPEN = N5 - .55;
+const SHRINK = N5 + line("n5").dur + .45;
+const saber = S.saber(OPEN, SHRINK, { a: N5, b: wordAt("n5", 1) });
+// cartela (debajo de la cara de tinta, que se encoge y la descubre)
+const C0 = SHRINK + .42 + .05, CT = C0 + .3, CS = CT + .45, CC = CS + .6;
+const DUR = CC + 2.2;
+const cart = $("cart");
+const wm = S.el("div", "abs", cart); wm.style.cssText = "left:40px;top:126px;width:84px;visibility:visible";
+const [sqx, sqy, sqw] = B.wordmark.sq.map(Number);
+wm.innerHTML = `<svg viewBox="${B.wordmark.vb}" style="display:block;width:100%;overflow:visible"><path fill="currentColor" d="${B.wordmark.d}"/><rect fill="#7A1F10" x="${sqx}" y="${sqy}" width="${sqw}" height="${sqw}"/></svg>`;
+const cst = S.el("div", "abs lbl cstat", cart, "<i></i>SESMI-002 · Próximamente");
+const ctt = S.el("div", "abs ctitle", cart, "Talavera,<br>la ciudad<br>que no arranca");
+const mini = S.el("div", "abs", cart); mini.style.cssText = "left:0;top:0;width:540px;height:960px";
+mini.innerHTML = `<svg viewBox="0 0 540 960" style="position:absolute;inset:0;width:540px;height:960px;overflow:visible"></svg>`;
+{
+  const g = mini.firstChild, pts = [], KM = .72, OXM = 40, BY = 570, KAM = 1.2;
+  for (let x = 0; x <= 640; x += 4) {
+    let y = 0; TRIES.forEach(([c, a, w]) => { const u = (x - c) / w; y += x < c ? a * Math.exp((-u * u) / 3.2) : a * Math.exp(-Math.pow(u * 2.6, 2)); });
+    pts.push([OXM + x * KM, BY - y * KAM + Math.sin(x * .21)]);
+  }
+  svgEl("path", { d: S.hand([[OXM, BY], [OXM + 640 * KM, BY]]), fill: "none", stroke: "#1C1814", "stroke-opacity": .4, "stroke-width": 1 }, g);
+  svgEl("path", { d: S.hand(pts), fill: "none", stroke: "#1C1814", "stroke-width": 1.7, "stroke-linejoin": "round" }, g);
+  svgEl("rect", { x: pts[pts.length - 1][0] - 6, y: pts[pts.length - 1][1] - 6, width: 12, height: 12, fill: "#7A1F10" }, g);
+}
+const csb = S.el("div", "abs csub", cart, "Diagnóstico económico independiente de una ciudad media española");
+const cta = S.el("div", "abs ccta", cart, "<i></i>Avisarme cuando salga · sesmi.org");
+ev(C0, "sign2"); ev(CT, "title"); ev(CS, "sign2"); ev(CC, "url");
+
+// ═════ subtítulos (la voz, palabra a palabra)
+const subs = $("subs");
+const sub1 = S.sub("n1", { parent: subs, style: "top:126px", hot: [7, 8], out: N1 + line("n1").dur + .45 });
+const sub2 = S.sub("n2", { parent: subs, style: "top:126px", hot: [2], out: N2 + line("n2").dur + .4 });
+const sub4 = S.sub("n4", { parent: subs, style: "top:612px", hot: [7], out: N4 + line("n4").dur + .3 });
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+window.SESMI002_DURATION = DUR;
+
+window.renderAt = (t) => {
+  shotFns.forEach((f) => f(t));
+  show($("shade"), t < P0);
+  const inCurve = t >= P0 && t < T_INK;
+  show($("curve"), inCurve);
+  if (inCurve) drawCurve(t);
+  const inP = t >= T_INK && t < T_PAPER;
+  show($("porque"), inP);
+  if (inP) { vis($("pA"), t >= W3[0] - .02); vis($("pB"), t >= W3[1] - .02); }
+  const inD = t >= T_PAPER && t < OPEN;
+  show($("data"), inD);
+  if (inD) drawData(t);
+  const inC = t >= OPEN;
+  show(cart, inC);
+  if (inC) {
+    vis(cst, t >= C0); vis(ctt, t >= CT); vis(mini, t >= CT + .15); vis(csb, t >= CS); vis(cta, t >= CC);
+  }
+  saber(t);
+  sub1(t); sub2(t); sub4(t);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>

@@ -1,9 +1,34 @@
 {
  "lines": [
-  {"id": "n1", "who": "narradora", "text": "Hay ciudades que lo intentan una y otra vez.", "t": 0},
-  {"id": "n2", "who": "narradora", "text": "Y no arrancan.", "t": 0},
-  {"id": "n3", "who": "narradora", "text": "¿Por qué?", "t": 0},
-  {"id": "n4", "who": "narradora", "text": "Vamos a averiguarlo. Con datos, y en abierto.", "t": 0},
-  {"id": "n5", "who": "narradora", "text": "Debemos saber.", "t": 0}
+  {
+   "id": "n1",
+   "who": "narradora",
+   "text": "Hay ciudades que lo intentan una y otra vez.",
+   "t": 2.7
+  },
+  {
+   "id": "n2",
+   "who": "narradora",
+   "text": "Y no arrancan.",
+   "t": 9.75
+  },
+  {
+   "id": "n3",
+   "who": "narradora",
+   "text": "¿Por qué?",
+   "t": 12.25
+  },
+  {
+   "id": "n4",
+   "who": "narradora",
+   "text": "Vamos a averiguarlo. Con datos, y en abierto.",
+   "t": 14.6
+  },
+  {
+   "id": "n5",
+   "who": "narradora",
+   "text": "Debemos saber.",
+   "t": 20.45
+  }
  ]
 }
