@@ -32,8 +32,9 @@ const Nosotros = () => (
       <div className="tt"><h2>Una sociedad abierta</h2></div>
       <div className="pp">
         <p>
-          Las Sociedades Económicas del siglo XVIII reunían a gente de oficios y saberes distintos con un mismo fin: mejorar
-          su tierra. <Sesmi /> quiere ser eso: una sociedad abierta a quien quiera aprender o aportar.
+          Las Sociedades Económicas del siglo XVIII juntaban a gente de saberes distintos para mejorar su tierra: abrían
+          escuelas, premiaban inventos y traducían libros. <Sesmi /> quiere ser eso: una sociedad abierta a quien quiera
+          aprender o aportar.
         </p>
       </div>
     </div>
