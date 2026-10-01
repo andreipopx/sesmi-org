@@ -64,9 +64,10 @@ of the Vite build. One folder per version, shared pieces in `shared/`:
 
 | Version | Video | Idea |
 |---------|-------|------|
-| `sociedad/` | `sesmi-sociedad.mp4` (58 s) | Neighbours' questions (own voices), answers underground, the 18th-c. Sociedades Económicas, «una sociedad abierta» |
-| `preguntas/` | `sesmi-preguntas.mp4` (41 s) | Night city, each window lights with a question, «¿Y si nos quedamos?», dawn |
+| `sociedad/` | `sesmi-sociedad.mp4` (64 s) | Neighbours' questions (own voices), answers underground, the 18th-c. Sociedades Económicas, «una sociedad abierta» |
+| `preguntas/` | `sesmi-preguntas.mp4` (43 s) | Night city, each window lights with a question, «¿Y si nos quedamos?», dawn |
 | `250/` | `sesmi-250.mp4` (57 s) | The same city in 1775 (engraving + harpsichord), the year runs to 2026, «la idea sigue siendo buena» |
+| `teaser/` | `sesmi-teaser.mp4` (18 s) | Launch-film style: 14 macro shots cut on the beat, «debemos saber.», wordmark |
 | `vuelta/` | `sesmi-vuelta.mp4` (51 s) | Earlier text-only version (red square leaves and comes back) |
 
 Each version: `reel.html` (every scene a pure function of time), `timeline.json`, `script.json`
@@ -74,7 +75,12 @@ Each version: `reel.html` (every scene a pure function of time), `timeline.json`
 word-synced subtitles, ink face, sign-off), `base.css`, `render.mjs` (Playwright → ffmpeg, adds paper
 grain), `vo.py` (ElevenLabs TTS with word timestamps; each take is transcribed and retried if it
 doesn't match the script; cached in `out/vo/`), `voices.json` (Spanish voices added to the account),
-`synth.py` (piano, harpsichord, strings…, music ducked under the voice).
+`synth.py` (piano, harpsichord, strings…, music ducked under the voice), `frames.sh` (video clips → frame
+sequences), `credits.py` (writes `sesmi-<version>-creditos.txt` for the post caption).
+Footage lives in `assets/` (`archivo/` engravings, seals, printer's marks; `foto/`; `video/`), each folder with a
+`credits.json` (Wikimedia Commons, PD/CC0/CC BY/CC BY-SA only; `ia-*` and `anim-*` clips were made with
+Higgsfield/Kling for sesmi — `anim-*` are archive engravings brought to life). **Low-fps rule:** everything moves
+in steps like the brand figures — `S.photo`/`S.clip` default to 6 fps; no long fades or smooth continuous motion.
 `./promo/reel/shared/build.sh <version>` rebuilds one video; needs `ELEVENLABS_API_KEY` in the
 environment only when a voice line changed (never commit the key). Intermediate files go to ignored `out/`.
 
