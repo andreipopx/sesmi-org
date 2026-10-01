@@ -22,6 +22,7 @@ const TL = json(join(dir, "timeline.json"));
 const BRAND = json(join(here, "../../../src/brand/brand.json"));
 const SCRIPT = json(join(dir, "script.json"));
 const VO = json(join(dir, "out/vo.json"));
+const CLIPS = json(join(here, "../assets/video/.frames/clips.json"));
 const out = join(dir, "out");
 mkdirSync(out, { recursive: true });
 
@@ -30,7 +31,7 @@ if (process.env.CHROMIUM_PATH) launch.executablePath = process.env.CHROMIUM_PATH
 const browser = await pw.chromium.launch(launch);
 const page = await browser.newPage({ viewport: { width: 540, height: 960 }, deviceScaleFactor: 2 });
 page.on("pageerror", (e) => { console.error("error en la página:", e.message); process.exitCode = 1; });
-await page.addInitScript((d) => Object.assign(window, d), { BRAND, TL, SCRIPT, VO });
+await page.addInitScript((d) => Object.assign(window, d), { BRAND, TL, SCRIPT, VO, CLIPS });
 await page.goto(pathToFileURL(join(dir, "reel.html")).href);
 await page.evaluate(async () => {
   await Promise.all([
@@ -40,7 +41,14 @@ await page.evaluate(async () => {
   await document.fonts.ready;
 });
 const stage = await page.$("#stage");
-const shot = async (t) => { await page.evaluate((t) => window.renderAt(t), t); return stage.screenshot({ type: "png" }); };
+const shot = async (t) => {
+  // pinta el instante t y espera a que estén decodificadas las imágenes visibles (fotos y fotogramas de clips)
+  await page.evaluate(async (t) => {
+    window.renderAt(t);
+    await Promise.all([...document.images].filter((i) => i.offsetParent).map((i) => (i.complete && i.naturalWidth ? 0 : i.decode().catch(() => 0))));
+  }, t);
+  return stage.screenshot({ type: "png" });
+};
 
 const si = process.argv.indexOf("--still");
 if (process.argv.includes("--events")) {

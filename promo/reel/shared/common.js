@@ -238,3 +238,62 @@ S.firma = (t0, opts = {}) => {
   };
 };
 })();
+
+// ── imagen real: fotos (paneo/zoom lento) y clips de vídeo (fotograma a fotograma)
+(() => {
+const S = window.S;
+/** Etalonajes: 'grabado' = blanco y negro cálido (papel y tinta); 'calido' = color apagado y cálido. */
+S.GRADE = {
+  grabado: "grayscale(1) sepia(.28) contrast(1.12) brightness(.97)",
+  calido: "saturate(.72) sepia(.18) contrast(1.06) brightness(.98)",
+  noche: "grayscale(.6) sepia(.2) contrast(1.15) brightness(.7)",
+  natural: "none",
+};
+/**
+ * Plano de foto a pantalla completa (o en una caja). opts:
+ *   t0, t1        cuándo está en pantalla
+ *   from, to      [escala, x%, y%] al principio y al final (paneo/zoom lento, lineal)
+ *   grade         clave de S.GRADE · fadeIn/fadeOut (s; 0 = corte seco) · box {left, top, width, height} (px)
+ */
+S.photo = (src, opts = {}) => {
+  const o = { from: [1.08, 50, 50], to: [1.0, 50, 50], grade: "calido", fadeIn: 0, fadeOut: 0, ...opts };
+  const box = S.el("div", "photo", opts.parent);
+  const b = o.box || { left: 0, top: 0, width: 540, height: 960 };
+  box.style.cssText = `position:absolute;overflow:hidden;left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px;display:none;z-index:${o.z ?? 2}`;
+  const img = S.el("img", "", box);
+  img.src = src;
+  img.style.cssText = `position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:${S.GRADE[o.grade] || o.grade};transform-origin:50% 50%`;
+  const upd = (t) => {
+    const on = t >= o.t0 && t < o.t1;
+    box.style.display = on ? "block" : "none";
+    if (!on) return;
+    const p = S.clamp((t - o.t0) / (o.t1 - o.t0));
+    const [s, x, y] = o.from.map((v, i) => v + (o.to[i] - v) * p);
+    img.style.objectPosition = `${x}% ${y}%`;
+    img.style.transform = `scale(${s})`;
+    box.style.opacity = (o.fadeIn ? S.eOut((t - o.t0) / o.fadeIn) : 1) * (o.fadeOut ? 1 - S.eIO((t - (o.t1 - o.fadeOut)) / o.fadeOut) : 1);
+  };
+  upd.img = img; upd.box = box;
+  return upd;
+};
+/**
+ * Clip de vídeo: assets/video/<slug>.mp4, pintado desde sus fotogramas (assets/video/.frames/<slug>/,
+ * los genera shared/frames.sh). opts como S.photo + start (s dentro del clip) y rate (velocidad).
+ */
+S.clip = (slug, opts = {}) => {
+  const meta = (window.CLIPS || {})[slug];
+  if (!meta) throw new Error(`clip sin fotogramas: ${slug} (ejecuta shared/frames.sh)`);
+  const o = { start: 0, rate: 1, ...opts };
+  const dir = `../assets/video/.frames/${slug}/`;
+  const f = S.photo(dir + "0001.jpg", o);
+  const upd = (t) => {
+    f(t);
+    if (t < o.t0 || t >= o.t1) return;
+    const k = Math.min(meta.n, Math.max(1, 1 + Math.floor((o.start + (t - o.t0) * o.rate) * meta.fps + 1e-6)));
+    const name = String(k).padStart(4, "0") + ".jpg";
+    if (!f.img.src.endsWith("/" + name)) f.img.src = dir + name;
+  };
+  upd.img = f.img; upd.box = f.box;
+  return upd;
+};
+})();
