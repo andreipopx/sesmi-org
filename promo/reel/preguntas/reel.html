@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · Preguntas</title>
+<!--
+  Versión B · «Preguntas». De noche, cada vecino enciende su ventana con una pregunta (con su voz);
+  se acumulan, se encienden todas, silencio, y queda una: «¿Y si nos quedamos?». Amanece mientras
+  la narradora responde. Tiempos de voz en script.json (+ out/vo.json).
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+#stage{background:var(--bgc,var(--ink));color:var(--fgc,var(--paper))}
+.qlab{position:absolute;font:italic 400 21px/1.28 var(--text);width:205px;color:var(--paper)}
+.qlab .w{display:inline-block;opacity:0}
+.last{position:absolute;left:30px;right:30px;top:330px;text-align:center;font:500 44px/1.05 var(--display);letter-spacing:-.025em;color:var(--paper)}
+.last .w{display:inline-block;opacity:0}
+.ppl{position:absolute;width:9px;height:9px;background:var(--ink);margin:-4.5px 0 0 -4.5px}
+.sub{top:700px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="world" style="transform:translateY(150px) scale(1.25);transform-origin:270px 470px">
+    <div class="layer"><svg id="csv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer"><svg id="wsv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="people"></div>
+  </div>
+  <div class="layer"><svg id="chart" viewBox="0 0 540 960"></svg></div>
+  <div class="layer" id="labels"></div>
+  <div class="last" id="last"></div>
+  <div class="layer" id="subs"></div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, eOut, eIO, clamp, stepN, line, wordAt } = S;
+const NS = "http://www.w3.org/2000/svg";
+const G = 470;
+const PAPER = [247, 243, 238], INK = [28, 24, 20];
+const mix = (a, b, k) => `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * k)).join(",")})`;
+
+// ── la ciudad de noche (trazo en papel sobre tinta; al amanecer se invierte)
+const city = S.drawCity($("csv"), { G, color: "var(--fgc,var(--paper))", windows: false });
+ev(.2, "draw0"); ev(2.4, "draw1");
+// ventanas: las de la ciudad y unas cuantas más
+const WIN = S.city(G, "hoy").windows.concat([
+  [226, G - 90, 6, 10], [226, G - 74, 6, 10], [266, G - 50, 6, 8], [280, G - 50, 6, 8], [294, G - 50, 6, 8], [310, G - 40, 6, 8],
+  [348, G - 50, 6, 8], [372, G - 50, 6, 8], [450, G - 40, 6, 8], [462, G - 40, 6, 8], [500, G - 22, 5, 7], [512, G - 22, 5, 7],
+  [252, G - 40, 6, 8], [232, G - 50, 6, 8], [176, G - 12, 5, 7], [338, G - 40, 6, 8],
+]);
+const winEls = WIN.map(([x, y, w, h]) => {
+  const g = document.createElementNS(NS, "g");
+  g.innerHTML = `<path d="${S.box(x, y, w, h)}" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1"/><rect x="${x + .5}" y="${y + .5}" width="${w - 1}" height="${h - 1}" fill="var(--red)" opacity="0"/>`;
+  $("wsv").appendChild(g);
+  return g.querySelector("rect");
+});
+
+// ── preguntas: ventana que se enciende + texto en el cielo
+const Q = [["p1", 3, 36, 120], ["p2", 13, 300, 150], ["p3", 0, 36, 205], ["p4", 7, 300, 235], ["p5", 16, 36, 290], ["p6", 21, 300, 320], ["p7", 9, 36, 375], ["p8", 26, 300, 405]];
+const qs = Q.map(([id, wi, lx, ly]) => {
+  const L = line(id), lab = S.el("div", "qlab", $("labels"));
+  lab.style.left = lx + "px"; lab.style.top = ly + "px";
+  const ws = L.words.map(([w]) => S.el("span", "w", lab, w));
+  ws.forEach((w, i) => i < ws.length - 1 && lab.insertBefore(document.createTextNode(" "), w.nextSibling));
+  ev(L.t, "light", wi);
+  return { L, lab, ws, wi };
+});
+// murmullo: se encienden todas, a saltos; luego apagón
+const MUR0 = 16.3, MUR1 = 18.3, BLACK = 18.4;
+const order = WIN.map((_, i) => i).filter((i) => !Q.some((q) => q[1] === i)).sort((a, b) => ((a * 7919) % 31) - ((b * 7919) % 31));
+const litAt = {};
+order.forEach((i, k) => { litAt[i] = MUR0 + (k / order.length) * (MUR1 - MUR0); });
+for (let k = 0; k < order.length; k += 2) ev(litAt[order[k]], "lightq", k);
+ev(BLACK, "black");
+// la última: sola
+const P9 = line("p9"), LASTWIN = 8;
+const last = $("last");
+const lws = P9.words.map(([w]) => S.el("span", "w", last, w));
+lws.forEach((w, i) => i < lws.length - 1 && last.insertBefore(document.createTextNode(" "), w.nextSibling));
+ev(P9.t - .5, "lone");
+
+// ── amanecer: de tinta a papel en 6 saltos
+const DAWN = line("n1").t, DAWND = .9;
+ev(DAWN, "dawn");
+const dawnK = (t) => clamp(stepN(t, DAWN, 6 / DAWND) / 6);
+
+// ── «con datos, en abierto, para cualquiera»
+const DAT = wordAt("n2", 1), ABI = wordAt("n2", 3), CUAL = wordAt("n2", 5);
+(() => {
+  const pts = []; for (let x = 40; x <= 500; x += 20) pts.push([x, 330 - 40 * Math.sin(x / 70) - (x - 40) * .18 + Math.sin(x * 1.7) * 6]);
+  let grid = ""; for (let x = 40; x <= 500; x += 46) grid += S.hand([[x, 360], [x, 366]]);
+  $("chart").innerHTML = `<path id="cl" d="${S.hand(pts)}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>` +
+    `<path id="cb" d="${S.hand([[40, 366], [500, 366]]) + grid}" fill="none" stroke="var(--ink)" stroke-opacity=".4" stroke-width="1"/>` +
+    `<rect id="cm" width="10" height="10" fill="var(--red)"/>`;
+  window.__pts = pts;
+})();
+const dCl = S.dash($("cl")), dCb = S.dash($("cb"));
+ev(DAT, "chart"); ev(ABI, "open"); ev(CUAL, "people");
+const PPL = [60, 105, 150, 205, 250, 300, 345, 395, 440, 490].map((x, i) => { const d = S.el("div", "ppl", $("people")); return { d, x, at: CUAL + i * .07 }; });
+
+// ── narradora
+const subs = ["n1", "n2"].map((id) => S.sub(id, { parent: $("subs"), hot: id === "n2" ? [5] : [] }));
+
+// ── «debemos saber.» y firma
+const FLIP = line("n3").t - .5, SHRINK = line("n3").t + 2.5;
+const saber = S.saber(FLIP, SHRINK, { a: wordAt("n3", 0), b: wordAt("n3", 1), tag: "Conocimiento en abierto, para cualquiera." });
+const firma = S.firma(SHRINK + .42);
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+window.renderAt = (t) => {
+  const k = dawnK(t);
+  $("stage").style.setProperty("--bgc", mix(INK, PAPER, k));
+  $("stage").style.setProperty("--fgc", k < .5 ? mix(PAPER, INK, k * .6) : mix(PAPER, INK, .7 + .3 * k)); // el trazo salta de claro a oscuro a mitad
+  city.draw(t, .2, 2.2);
+
+  // ventanas
+  winEls.forEach((r, i) => {
+    let on = 0;
+    const q = qs.find((x) => x.wi === i);
+    if (q && t >= q.L.t) on = 1;
+    if (litAt[i] != null && t >= litAt[i]) on = 1;
+    if (t >= BLACK) on = 0;
+    if (i === LASTWIN && t >= P9.t - .5) on = 1;
+    if (t >= DAWN) on = i === LASTWIN || (t >= ABI && i % 3 === 0) ? 1 : 0;
+    r.setAttribute("opacity", on);
+  });
+
+  // textos de las preguntas
+  qs.forEach(({ L, lab, ws }) => {
+    const vis = t >= L.t - .05 && t < BLACK;
+    lab.style.display = vis ? "block" : "none";
+    if (!vis) return;
+    lab.style.opacity = t > L.end + .2 ? .32 : 1;
+    ws.forEach((w, i) => (w.style.opacity = eOut((t - L.t - L.words[i][1] + .04) / .28)));
+  });
+
+  // «¿Y si nos quedamos?»
+  const lv = t >= P9.t - .05 && t < DAWN + .3;
+  last.style.display = lv ? "block" : "none";
+  if (lv) {
+    last.style.opacity = 1 - eIO((t - DAWN + .2) / .5);
+    lws.forEach((w, i) => (w.style.opacity = eOut((t - P9.t - P9.words[i][1] + .04) / .3)));
+  }
+
+  // gráfico en el cielo y gente en la calle
+  dCl(eIO((t - DAT) / 1.1)); dCb(eIO((t - DAT) / .8));
+  const p = eIO((t - DAT) / 1.1), pts = window.__pts, j = Math.min(pts.length - 1, Math.round(p * (pts.length - 1)));
+  $("cm").setAttribute("x", pts[j][0] - 5); $("cm").setAttribute("y", pts[j][1] - 5);
+  $("chart").style.opacity = t >= DAT ? 1 - eIO((t - (FLIP - .4)) / .4) : 0;
+  PPL.forEach(({ d, x, at }) => {
+    const on = t >= at && t < FLIP + .5;
+    d.style.display = on ? "block" : "none";
+    const kk = stepN(t, at, 6);
+    d.style.left = x + Math.min(kk, 12) * 2 + "px"; d.style.top = G - 6 + (kk % 2 && kk < 12 ? -3 : 0) + "px";
+  });
+
+  subs.forEach((f) => f(t));
+  saber(t);
+  firma(t);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>

@@ -246,12 +246,17 @@ class Mix:
         x = np.fft.irfft(spec, self.n, axis=0)
         return x / np.abs(x).max() * level
 
-    def master(self, duck=0.5, vo_level=1.0, fade_out=2.5):
+    def master(self, duck=0.5, vo_level=1.0, fade_out=2.5, mute=()):
         # la música baja bajo la voz (envolvente suavizada ~0,25 s)
         k = int(0.25 * SR)
         env = np.convolve(self.vo_env, np.ones(k) / k, mode="same")
         music = self.mus + 0.55 * self.reverb(self.wet + 0.25 * self.mus)
         music *= (1 - duck * env)[:, None]
+        tm = np.arange(self.n) / SR
+        for a, b in mute:  # silencios: la música se corta en seco y vuelve con un fundido
+            g = np.where((tm >= a) & (tm < b), 0.0, 1.0)
+            g = np.minimum(g, np.clip((tm - b) / 0.8, 0, 1) + (tm < a))
+            music *= g[:, None]
         mix = music + vo_level * self.vo + self.room()
         t = np.arange(self.n) / SR
         mix *= np.clip(t / 0.1, 0, 1)[:, None] * np.clip((self.dur - t) / fade_out, 0, 1)[:, None]

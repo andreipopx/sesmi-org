@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · 250 años</title>
+<!--
+  Versión C · «250 años». La misma ciudad en 1775, dibujada como un grabado: gente de saberes distintos
+  se reúne (boticario, maestra, labrador, comerciante), abren escuelas, premian inventos, traducen
+  libros. El año corre hasta hoy y la ciudad cambia; la idea sigue siendo buena.
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.ppl{position:absolute;width:9px;height:9px;background:var(--ink);margin:-4.5px 0 0 -4.5px}
+.ppl.red{background:var(--red)}
+.year{position:absolute;left:0;right:0;top:118px;text-align:center;font:500 64px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.yl{position:absolute;left:0;right:0;top:96px;text-align:center;color:var(--ink-3)}
+.job{position:absolute;font:italic 400 15px/1 var(--text);color:var(--ink-2);white-space:nowrap;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="world" style="transform:scale(1.25);transform-origin:270px 470px">
+    <div class="layer" id="old"><svg id="osv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="now"><svg id="nsv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="tableL"><svg id="tsv" viewBox="0 0 540 960"></svg></div>
+    <div class="layer" id="people"></div>
+    <div class="layer" id="jobs"></div>
+  </div>
+  <div class="layer" id="crowd"></div>
+  <div class="lbl yl" id="yl">Año</div>
+  <div class="year" id="year">1775</div>
+  <div class="layer" id="subs"></div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, eOut, eIO, clamp, stepN, line, wordAt } = S;
+const T = (id) => line(id).t;
+const NS = "http://www.w3.org/2000/svg";
+const G = 470;
+
+// ── la ciudad de 1775 (grabado) y la de hoy
+const old = S.drawCity($("osv"), { G, era: "1775" });
+const now = S.drawCity($("nsv"), { G, era: "hoy" });
+ev(.3, "draw0"); ev(3.8, "draw1");
+
+// ── gente que se reúne alrededor de una mesa
+const HOME = [[-20, G - 6], [-40, G - 6], [-60, G - 6], [-80, G - 6], [560, G - 6], [580, G - 6], [600, G - 6], [620, G - 6], [-100, G - 6], [640, G - 6]];
+const SEAT = [[176, 392], [214, 392], [252, 392], [290, 392], [328, 392], [366, 392], [195, 438], [252, 438], [309, 438], [347, 438]];
+const W0 = T("n2") + .1, W1 = W0 + 3.0;                // llegan andando desde los dos lados
+const ppl = HOME.map(() => S.el("div", "ppl", $("people")));
+for (let k = 1; k <= Math.round((W1 - W0) * 6); k += 2) ev(W0 + k / 6, "step", k);
+$("tsv").innerHTML = `<path id="table" d="${S.hand([[150, 412], [392, 412]]) + S.hand([[166, 412], [166, 430]]) + S.hand([[376, 412], [376, 430]])}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>`;
+const dTable = S.dash($("table"));
+// oficios, cuando se nombran
+const JOBS = [["boticario", 0, 1, -18], ["maestra", 2, 3, -18], ["labrador", 7, 5, 26], ["comerciante", 9, 7, 26]];
+const jobs = JOBS.map(([w, seat, wi, dy]) => {
+  const at = wordAt("n3", wi), [x, y] = SEAT[seat];
+  const e = S.el("div", "job", $("jobs"), w); e.style.left = x + "px"; e.style.top = y + dy - 8 + "px";
+  ev(at, "job", JOBS.findIndex((j) => j[0] === w));
+  return { e, at, seat };
+});
+// escuelas, inventos, libros
+const ICONS = [["escuela", 118, wordAt("n4", 1)], ["invento", 237, wordAt("n4", 3)], ["libro", 356, wordAt("n4", 5)]];
+const icons = ICONS.map(([k, x, t], i) => {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", S.ICON[k]()); p.setAttribute("fill", "none"); p.setAttribute("stroke", "var(--ink)"); p.setAttribute("stroke-width", "1.1");
+  p.setAttribute("transform", `translate(${x} 262) scale(1.5)`); p.setAttribute("stroke-linecap", "round");
+  $("tsv").appendChild(p); ev(t, "icon", i);
+  return { p, draw: S.dash(p), t };
+});
+const TBL_OUT = T("n5") + .2;
+
+// ── la idea: un cuadrado rojo en la ciudad («mejorarla»)
+const IDEA = wordAt("n5", 9);
+ev(IDEA, "stamp");
+
+// ── el año corre: 1775 → 2026, y la ciudad cambia
+const Y0 = T("n6") - .2, Y1 = Y0 + 2.8;
+const yearAt = (t) => { if (t < Y0) return 1775; const k = clamp(stepN(t, Y0, 12) / ((Y1 - Y0) * 12)); return Math.round(1775 + (2026 - 1775) * eIO(k)); };
+for (let k = 0; k < (Y1 - Y0) * 12; k += 1) ev(Y0 + k / 12, "tick", k);
+ev(Y0 - .3, "time");
+
+// ── hoy: vuelve la gente a la ciudad; luego una sociedad abierta
+const TODAY = [[228, G - 102], [275, G - 62], [289, G - 62], [403, G - 102], [431, G - 62], [130, G - 6], [196, G - 6], [345, G - 6], [415, G - 6], [470, G - 6]];
+const HOY0 = wordAt("n8", 2);
+const today = TODAY.map(([x, y], i) => { const d = S.el("div", "ppl", $("people")); d.style.left = x + "px"; d.style.top = y + "px"; ev(HOY0 + i * .08, "pop"); return { d, at: HOY0 + i * .08 }; });
+const C0 = wordAt("n9", 1), C1 = wordAt("n9", 8) + .3;
+const crowd = [];
+for (let r = 0; r < 12; r++) for (let c = 0; c < 11; c++) {
+  const x = 30 + c * 48 + (r % 2) * 24 + Math.sin(r * 7.1 + c * 3.3) * 6, y = 130 + r * 34 + Math.cos(r * 2.9 + c * 5.1) * 5;
+  if (x > 520) continue;
+  const e = S.el("div", "ppl", $("crowd")); e.style.left = x + "px"; e.style.top = y + "px";
+  if ((r * 11 + c) % 29 === 7) e.classList.add("red");
+  crowd.push([e, C0 + (Math.hypot(x - 270, y - 320) / 330) * (C1 - C0)]);
+}
+for (let k = 0; k < 10; k++) ev(C0 + k * (C1 - C0) / 10, "pop");
+
+const subs = ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"].map((id) =>
+  S.sub(id, { parent: $("subs"), hot: id === "n9" ? [1, 2] : id === "n7" ? [5] : [] }));
+
+const FLIP = T("n10") - .5, SHRINK = T("n10") + 2.5;
+const saber = S.saber(FLIP, SHRINK, { a: wordAt("n10", 0), b: wordAt("n10", 1), tag: "Conocimiento en abierto, para cualquiera." });
+const firma = S.firma(SHRINK + .42);
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+window.renderAt = (t) => {
+  // ciudades: la de 1775 se dibuja; con el año corriendo se borra y se dibuja la de hoy
+  old.draw(t, .3, 3.4);
+  $("old").style.opacity = t < T("n2") ? 1 : t < TBL_OUT ? 1 - .75 * eIO((t - T("n2")) / 1) : t < Y0 ? .25 + .75 * eIO((t - TBL_OUT) / 1) : 1 - eIO((t - Y0) / 1.6);
+  now.draw(t, Y0 + .3, 2.8);
+  $("now").style.display = t >= Y0 ? "block" : "none";
+  const endOp = 1 - eIO((t - (C0 - .2)) / .8);
+  $("world").style.opacity = endOp;
+
+  // año
+  const yOn = t < FLIP;
+  $("year").textContent = yearAt(t);
+  $("year").style.opacity = yOn ? eOut((t - .3) / .8) * endOp : 0;
+  $("yl").style.opacity = yOn ? eOut((t - .3) / .8) * endOp : 0;
+  $("year").style.color = t >= Y1 ? "var(--red)" : "var(--ink)";
+
+  // gente de 1775
+  ppl.forEach((d, i) => {
+    const [hx, hy] = HOME[i], [sx, sy] = SEAT[i];
+    const k = clamp(stepN(t, W0, 6) / ((W1 - W0) * 6)), e = eIO(k);
+    d.style.left = hx + (sx - hx) * e + "px"; d.style.top = hy + (sy - hy) * e + (k < 1 && stepN(t, W0, 6) % 2 ? -3 : 0) + "px";
+    d.style.display = t >= W0 && t < TBL_OUT + .6 ? "block" : "none";
+    d.style.opacity = 1 - eIO((t - TBL_OUT) / .6);
+  });
+  $("tableL").style.opacity = 1 - eIO((t - TBL_OUT) / .6);
+  dTable(eIO((t - W0 - 1.5) / 1.5));
+  jobs.forEach(({ e, at }) => { e.style.opacity = t < TBL_OUT ? eOut((t - at) / .4) : 1 - eIO((t - TBL_OUT) / .6); });
+  icons.forEach((ic) => ic.draw(eIO((t - ic.t + .1) / .7)));
+
+  // la idea (rojo) en mitad de la calle, de 1775 a hoy
+  let sq = $("idea");
+  if (!sq) { sq = S.el("div", "ppl red", $("people")); sq.id = "idea"; sq.style.cssText += ";width:13px;height:13px;margin:-6.5px 0 0 -6.5px;left:270px;top:" + (G - 7) + "px"; }
+  sq.style.display = t >= IDEA ? "block" : "none";
+
+  today.forEach(({ d, at }) => (d.style.display = t >= at ? "block" : "none"));
+  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < FLIP + .5 ? "block" : "none"; e.style.opacity = .55 * (1 - eIO((t - (FLIP - .5)) / .5)) * eOut((t - at) / .3); });
+
+  subs.forEach((f) => f(t));
+  saber(t);
+  firma(t);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>
