@@ -5,7 +5,7 @@
 <title>sesmi · De dónde sale el caballo</title>
 <!--
   Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
-  ../assets/video/anim-derby.mp4  ../assets/archivo/geric-derby-epsom-1821.jpg  ../assets/video/caballo-muybridge.mp4
+  ../assets/archivo/geric-derby-epsom-1821.jpg  ../assets/video/caballo-muybridge.mp4
 -->
 <!--
   Serie «De dónde sale cada figura» · episodio 2/3: el caballo (pata Servicios, «Fuerza aplicada»). 26,6 s.
@@ -78,7 +78,6 @@ const BOX = { left: 32, top: 150, width: 476, height: 476 };
 const T_BOX = .55;                                    // la caja se dibuja a saltos (12 fps), 0 → .55
 const T_CUT_D = N2;                                   // entra el Derby animado (la pregunta se va)
 const T_ZOOM = [[N2, 1.0, .45, .55], [wordAt("n2", 3) - .07, 1.4, .42, .58], [wordAt("n2", 4) + .22, 1.9, .38, .60], [wordAt("n2", 7) + .3, 2.4, .36, .62], [wordAt("n2", 9) + .12, 3.0, .34, .63]];
-const T_STILL = T_ZOOM[1][0];                         // del clip animado al cuadro fijo (primer salto de zoom)
 const T_MUY = wordAt("n3", 3) - .05;                  // «nunca»: corte seco a Muybridge
 const T_FREEZE = wordAt("n3", 6) - .35;               // se detiene en el fotograma de las patas recogidas
 const T_MARK = wordAt("n3", 7) + .05;                 // «demostró»: se subrayan las patas
@@ -87,7 +86,7 @@ const T_CALCO = N4;                                   // vuelve el Derby
 const T_TRACE = wordAt("n4", 1) - .02, T_TRACE_D = 1.45;   // «mirar»: empieza la pluma
 const T_VANISH = wordAt("n4", 3);                     // «Después»: el cuadro se va en tres saltos
 const T_FILL = wordAt("n4", 4);                       // «aplicar»: se rellena
-const T_TURN = T_FILL + 1 / 6;                        // se vuelve hacia donde mira la marca y galopa
+const T_TURN = T_FILL;                                // en «aplicar», corte seco: del calco (trazo espejado sobre el cuadro) a la marca rellena, en su orientación
 const T_ERASE = N5;                                   // la caja se borra
 const W0 = T_ERASE + .85;                             // wordmark
 const T_LAND = W0 + 1.5, T_URL = T_LAND + .45, T_NEXT = T_LAND + 1.0;
@@ -117,8 +116,7 @@ const CALCO = { z: 1.25, fx: .428, fy: .592 };       // encuadre del calco: la f
 
 // ═════ capas de imagen (todas en la caja, grabado)
 const base = { grade: "grabado", box: BOX, parent: $("src"), z: 2, from: [1, 50, 50], to: [1, 50, 50] };
-const dClip = S.clip("anim-derby", { ...base, t0: T_CUT_D, t1: T_STILL, start: 0, rate: .5 });
-const dStillA = S.photo("../assets/archivo/geric-derby-epsom-1821.jpg", { ...base, t0: T_STILL, t1: T_MUY });
+const dStillA = S.photo("../assets/archivo/geric-derby-epsom-1821.jpg", { ...base, t0: T_CUT_D, t1: T_MUY });   // el cuadro, fijo (sin animación)
 const dStillB = S.photo("../assets/archivo/geric-derby-epsom-1821.jpg", { ...base, t0: T_CALCO, t1: T_ERASE });
 const BAND = { left: BOX.left + 1, top: BOX.top + 77, width: 474, height: 322 };   // Muybridge 16:9, a lo ancho de la caja
 const mBase = { ...base, box: BAND };
@@ -138,6 +136,7 @@ ev(T_CALCO, "veil");
 ev(T_TRACE, "trace"); ev(T_TRACE + T_TRACE_D, "traceEnd");
 ev(T_VANISH, "vanish");
 ev(T_FILL, "fill");
+ev(T_TURN, "cut", 3);
 ev(.1, "motif"); ev(W0, "motif");
 
 // ═════ gancho: la pregunta en la caja, palabra a palabra
@@ -245,10 +244,9 @@ window.renderAt = (t) => {
   if (t < T_CUT_D) qw.forEach((w, i) => vis(w, t >= S.wordAt("n1", i) - .02));
 
   // fuentes
-  dClip(t); dStillA(t); dStillB(t); mRun1(t); mHold(t); mRun2(t);
+  dStillA(t); dStillB(t); mRun1(t); mHold(t); mRun2(t);
   const z = zoomAt(t);
-  if (t >= T_CUT_D && t < T_STILL) place(dClip, SRC.dclip, BOX.width, BOX.height, z[1], z[2], z[3]);
-  if (t >= T_STILL && t < T_MUY) place(dStillA, SRC.still, BOX.width, BOX.height, z[1], z[2], z[3]);
+  if (t >= T_CUT_D && t < T_MUY) place(dStillA, SRC.still, BOX.width, BOX.height, z[1], z[2], z[3]);
   if (t >= T_CALCO) place(dStillB, SRC.still, BOX.width, BOX.height, CALCO.z, CALCO.fx, CALCO.fy);
   [mRun1, mHold, mRun2].forEach((l) => place(l, SRC.muy, BAND.width, BAND.height, 1, .5, .5));
   show(plate, t >= T_MUY && t < T_CALCO);
@@ -282,7 +280,8 @@ window.renderAt = (t) => {
   vis(fg, onF);
   if (onF) {
     figAt(t, T_TURN);
-    fg.style.transform = t < T_TURN ? "scaleX(-1)" : "none";
+    // calco espejado (como el caballo del cuadro); tras el corte, la marca en su orientación, centrada y algo mayor
+    fg.style.transform = t < T_TURN ? "scaleX(-1)" : `translate(${(BOX.left + BOX.width / 2 - sx).toFixed(1)}px, ${(BOX.top + BOX.height / 2 - sy).toFixed(1)}px) scale(1.12)`;
     let o = 1;
     if (t >= T_ERASE) o = [.6, .25, 0][Math.min(2, stepN(t, T_ERASE, 6))];
     fg.style.opacity = o;
