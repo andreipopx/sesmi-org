@@ -77,7 +77,7 @@ const N1 = line("n1").t, N2 = line("n2").t, N3 = line("n3").t, N4 = line("n4").t
 const BOX = { left: 32, top: 150, width: 476, height: 476 };
 const T_BOX = .55;                                    // la caja se dibuja a saltos (12 fps), 0 → .55
 const T_CUT_D = N2;                                   // entra el Derby animado (la pregunta se va)
-const T_ZOOM = [[N2, 1.0, .45, .55], [wordAt("n2", 3) - .05, 1.4, .42, .58], [wordAt("n2", 4) + .25, 1.9, .38, .60], [wordAt("n2", 7) - .25, 2.4, .36, .62], [wordAt("n2", 9) - .5, 3.0, .34, .63]];
+const T_ZOOM = [[N2, 1.0, .45, .55], [wordAt("n2", 3) - .07, 1.4, .42, .58], [wordAt("n2", 4) + .22, 1.9, .38, .60], [wordAt("n2", 7) + .3, 2.4, .36, .62], [wordAt("n2", 9) + .12, 3.0, .34, .63]];
 const T_STILL = T_ZOOM[1][0];                         // del clip animado al cuadro fijo (primer salto de zoom)
 const T_MUY = wordAt("n3", 3) - .05;                  // «nunca»: corte seco a Muybridge
 const T_FREEZE = wordAt("n3", 6) - .35;               // se detiene en el fotograma de las patas recogidas
@@ -270,6 +270,7 @@ window.renderAt = (t) => {
   const trace = clamp((Math.floor((t - T_TRACE) * 12 + 1e-6) / 12) / T_TRACE_D);
   const onC = t >= T_TRACE && t < T_FILL;
   vis(calco, onC);
+  if (!onC) pen.style.visibility = "hidden";
   if (onC) {
     dCp(trace);
     const pt = cp.getPointAtLength(CLEN * trace);
