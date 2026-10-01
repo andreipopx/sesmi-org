@@ -4,73 +4,73 @@
    "id": "p1",
    "who": "abuelo",
    "text": "¿Por qué cerró la fábrica?",
-   "t": 2.6
+   "t": 3.7
   },
   {
    "id": "p2",
    "who": "chica",
    "text": "¿Hay trabajo de lo mío aquí?",
-   "t": 4.4
+   "t": 5.5
   },
   {
    "id": "p3",
    "who": "madre",
    "text": "¿Cuánto va a subir el alquiler?",
-   "t": 5.9
+   "t": 7.0
   },
   {
    "id": "p4",
    "who": "tendero",
    "text": "¿Merece la pena abrir una tienda?",
-   "t": 7.9
+   "t": 9.0
   },
   {
    "id": "p5",
    "who": "vecina",
    "text": "¿Adónde va el dinero del ayuntamiento?",
-   "t": 10.2
+   "t": 11.3
   },
   {
    "id": "p6",
    "who": "joven",
    "text": "¿Por qué no llega el tren?",
-   "t": 11.9
+   "t": 13.0
   },
   {
    "id": "p7",
    "who": "abuela",
    "text": "¿Cuántos jóvenes se fueron el año pasado?",
-   "t": 12.9
+   "t": 14.0
   },
   {
    "id": "p8",
    "who": "abuelo",
    "text": "¿Qué deja una gran empresa cuando llega?",
-   "t": 14.6
+   "t": 15.7
   },
   {
    "id": "p9",
    "who": "chica",
    "text": "¿Y si nos quedamos?",
-   "t": 19.6
+   "t": 20.7
   },
   {
    "id": "n1",
    "who": "narradora",
    "text": "Son preguntas de verdad. Merecen respuestas de verdad.",
-   "t": 22.0
+   "t": 23.1
   },
   {
    "id": "n2",
    "who": "narradora",
    "text": "Con datos. En abierto. Para cualquiera.",
-   "t": 27.4
+   "t": 28.5
   },
   {
    "id": "n3",
    "who": "narradora",
    "text": "Debemos saber.",
-   "t": 33.5
+   "t": 34.6
   }
  ]
 }

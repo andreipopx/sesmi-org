@@ -1,5 +1,10 @@
 {
  "lines": [
-  {"id": "n1", "who": "narradora", "text": "Debemos saber.", "t": 0}
+  {
+   "id": "n1",
+   "who": "narradora",
+   "text": "Debemos saber.",
+   "t": 11.0
+  }
  ]
 }
