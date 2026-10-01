@@ -4,31 +4,31 @@
    "id": "n1",
    "who": "narradora",
    "text": "¿Por qué un caballo así?",
-   "t": 0
+   "t": 0.3
   },
   {
    "id": "n2",
    "who": "narradora",
    "text": "Durante siglos se pintó así a los caballos al galope.",
-   "t": 0
+   "t": 3.3
   },
   {
    "id": "n3",
    "who": "narradora",
    "text": "Pero un caballo nunca vuela así. Lo demostró una cámara, en mil ochocientos setenta y ocho.",
-   "t": 0
+   "t": 7.6
   },
   {
    "id": "n4",
    "who": "narradora",
    "text": "Primero, mirar bien. Después, aplicar la fuerza.",
-   "t": 0
+   "t": 15.9
   },
   {
    "id": "n5",
    "who": "narradora",
    "text": "Fuerza aplicada.",
-   "t": 0
+   "t": 22.0
   }
  ]
 }

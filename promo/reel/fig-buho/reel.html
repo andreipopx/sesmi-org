@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · De dónde sale el búho</title>
+<!--
+  Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
+  ../assets/archivo/tetradracma-lechuza-reverso.jpg  ../assets/archivo/atenas-tetradracma-lechuza-a.jpg
+  ../assets/video/anim-buho.mp4
+-->
+<!--
+  Serie «De dónde sale cada figura», episodio 1/3: el búho (Investigación). Rejilla común de la serie:
+  cabecera fija, caja cuadrada de 476 px con la fuente de archivo, pie con la fuente, subtítulos debajo.
+  Gancho: la pregunta, la caja se dibuja a saltos. La fuente: un tetradracma de Atenea (macro, plano medio, la
+  moneda entera, la cara de Atenea) y, para «el que ve en la oscuridad», el búho grabado de 1771 a oscuras.
+  El calco: la figura de marca se dibuja a pluma (trazo, 12 fps) sobre la lechuza de la moneda, la moneda se va en
+  tres saltos y la figura se rellena y se pone viva (búho de marca en bucle). Cierre: la caja se borra a saltos,
+  wordmark, «Siguiente: el caballo». Todo a pocos fps; todo es función de t. Eventos en audio.py.
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.photo img{max-width:none}
+#bx{position:absolute;left:32px;top:150px;width:476px;height:476px;background:var(--paper);z-index:1}
+#src{position:absolute;inset:0;z-index:2}
+#veil{position:absolute;left:32px;top:150px;width:476px;height:476px;background:var(--paper);opacity:.42;z-index:3;display:none}
+#dark{position:absolute;left:32px;top:150px;width:476px;height:476px;z-index:4;display:none;pointer-events:none;
+  background:radial-gradient(ellipse 70% 70% at 50% 42%,rgba(28,24,20,0) 30%,rgba(28,24,20,.55) 100%)}
+#frame{position:absolute;inset:0;width:540px;height:960px;z-index:9;overflow:visible}
+#hdr{position:absolute;inset:0;z-index:10}
+#hdr .lbl{position:absolute;top:64px;color:var(--ink-3);white-space:nowrap}
+#hdr .l{left:32px;display:flex;align-items:center;gap:9px}
+#hdr .l i{display:inline-block;width:7px;height:7px;background:var(--red)}
+#hdr .r{right:32px}
+.pie{position:absolute;left:32px;top:636px;color:var(--ink-3);white-space:nowrap;z-index:10}
+.lema{position:absolute;left:32px;top:638px;font:italic 400 24px/1.3 var(--text);color:var(--red);z-index:10;display:none}
+#q{position:absolute;left:32px;top:150px;width:476px;height:476px;z-index:5;display:flex;align-items:center;justify-content:center;
+  text-align:center;font:700 62px/1.02 var(--strong);letter-spacing:-.04em}
+#q span{visibility:hidden}
+#fig,#calco{position:absolute;z-index:6}
+#calco{overflow:visible}
+.subs .sub{top:690px;display:none}
+.subs .sub .w{opacity:1;visibility:hidden}
+#close{position:absolute;inset:0;z-index:7}
+#close .abs{visibility:hidden}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bx"></div>
+  <div id="src"></div>
+  <div id="veil"></div>
+  <div id="dark"></div>
+  <div id="q"></div>
+  <svg id="calco" viewBox="0 0 100 100"><path id="cp" fill="none" stroke="#1C1814" stroke-width=".42" stroke-linejoin="round" stroke-linecap="butt"/><rect id="pen" width="1.4" height="1.4" fill="#7A1F10"/></svg>
+  <div id="fig" style="color:var(--ink)"></div>
+  <svg id="frame" viewBox="0 0 540 960"><rect id="bd" x="32.5" y="150.5" width="475" height="475" fill="none" stroke="#1C1814" stroke-width="1"/></svg>
+  <div id="hdr"><div class="lbl l"><i></i>De dónde sale · 1/3</div><div class="lbl r">Investigación</div></div>
+  <div class="lbl pie" id="pie"></div>
+  <div class="lema" id="lema">Debemos saber</div>
+  <div id="close"></div>
+  <div class="subs" id="subs"></div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, clamp, stepN, line } = S;
+const B = window.BRAND;
+const AR = "../assets/archivo/";
+const show = (el, on, how = "block") => { const d = on ? how : "none"; if (el.style.display !== d) el.style.display = d; };
+const vis = (el, on) => { const v = on ? "visible" : "hidden"; if (el.style.visibility !== v) el.style.visibility = v; };
+
+// ═════ tiempos (la voz manda; tiempos tipo de la serie)
+const N = { n1: line("n1").t, n2: line("n2").t, n3: line("n3").t, n4: line("n4").t, n5: line("n5").t };
+const BOX = { left: 32, top: 150, width: 476, height: 476 };
+const T_BOX = .55;            // la caja se dibuja a saltos (12 fps), 0 → .55
+const T_COIN = 2.55;          // corte: entra la moneda (la pregunta se va)
+const T_B = 4.95, T_C = 6.75, T_D = 8.75, T_ATE = N.n3 + 1.9, T_DARK = N.n3 + 3.8;
+const T_CALCO = line("n3").end + .12;   // vuelta a la moneda: el calco
+const T_TRACE = T_CALCO + .12, TRACE_D = 1.5, T_TRACE_END = T_TRACE + TRACE_D;
+const T_FILL = N.n4 + 1.1;              // «búho»: el trazo pasa a relleno
+const T_VANISH = T_TRACE_END + .1;      // la moneda se va en tres saltos antes del relleno
+const T_ERASE = N.n5;                   // la caja se borra
+const W0 = T_ERASE + .85;               // wordmark
+const T_LAND = W0 + 1.5, T_URL = T_LAND + .45, T_NEXT = T_LAND + 1.0;
+const DUR = T_NEXT + 2.1;
+window.FIG_DURATION = DUR;
+
+// ═════ la moneda: encuadre. Alineación del calco (coordenadas de la imagen 1920×1994)
+const CW = 1920, CH = 1994;
+const HX = 1090, HY = 668, SC = 18.2;      // la cabeza del búho (unidad 57,27 de la figura) sobre la cabeza de la lechuza; px de imagen por unidad
+const HU = [57.3, 27];
+const K = .27;                              // px de caja por px de imagen en el plano del calco
+const CXY = [HX + (50 - HU[0]) * SC, HY + (50 - HU[1]) * SC]; // centro de la figura en la imagen = centro de la caja
+const FS = SC * K;                          // px de pantalla por unidad de la figura
+const CAL = { z: K, fx: CXY[0] / CW, fy: CXY[1] / CH };
+window.__CAL = { CXY, FS };
+
+// ═════ planos dentro de la caja. k = px de caja por px de imagen; fx, fy = punto de la imagen (0–1) en el centro
+const FPS = 6;
+const SHOTS = [
+  { id: "A", src: AR + "tetradracma-lechuza-reverso.jpg", w: CW, h: CH, t0: T_COIN, t1: T_B, grade: "grabado",
+    from: { z: .62, fx: .575, fy: .33 }, to: { z: .72, fx: .575, fy: .34 } },     // macro: los ojos
+  { id: "B", src: AR + "tetradracma-lechuza-reverso.jpg", w: CW, h: CH, t0: T_B, t1: T_C, grade: "grabado",
+    from: { z: .5, fx: .40, fy: .56 }, to: { z: .46, fx: .44, fy: .54 } },        // plano medio: plumas y ala
+  { id: "C", src: AR + "tetradracma-lechuza-reverso.jpg", w: CW, h: CH, t0: T_C, t1: T_D, grade: "grabado",
+    from: { z: .34, fx: CAL.fx, fy: CAL.fy }, to: { z: K, fx: CAL.fx, fy: CAL.fy } }, // la moneda entera
+  { id: "D", src: AR + "tetradracma-lechuza-reverso.jpg", w: CW, h: CH, t0: T_D, t1: T_ATE, grade: "grabado",
+    from: { z: .75, fx: .26, fy: .30 }, to: { z: .72, fx: .31, fy: .31 } },        // «El animal de Atenea»: el olivo de la diosa
+  { id: "E", src: AR + "atenas-tetradracma-lechuza-a.jpg", w: 1920, h: 1920, t0: T_ATE, t1: T_DARK, grade: "grabado",
+    from: { z: .30, fx: .60, fy: .42 }, to: { z: .35, fx: .64, fy: .42 } },       // la diosa: el anverso
+  { id: "F", clip: "anim-buho", w: 720, h: 1280, t0: T_DARK, t1: T_CALCO, grade: "grabado", start: .5,
+    from: { z: 1.9, fx: .34, fy: .29 }, to: { z: 1.6, fx: .36, fy: .31 } },       // a oscuras: el grabado de 1771
+  { id: "G", src: AR + "tetradracma-lechuza-reverso.jpg", w: CW, h: CH, t0: T_CALCO, t1: T_FILL + .05, grade: "grabado",
+    from: CAL, to: CAL },                                                          // el calco
+];
+const NIGHT = "grayscale(1) sepia(.25) contrast(1.25) brightness(.47)";
+const mkShot = (s, i) => {
+  const o = { t0: s.t0, t1: s.t1, grade: s.id === "F" ? NIGHT : s.grade, fps: FPS, parent: $("src"), z: 2, box: BOX };
+  const base = s.clip ? S.clip(s.clip, { ...o, start: s.start }) : S.photo(s.src, o);
+  const img = base.img;
+  img.style.objectFit = "fill"; img.style.inset = "auto"; img.style.maxWidth = "none";
+  ev(s.t0, "cut", i);
+  const cover = s.clip ? Math.max(BOX.width / s.w, BOX.height / s.h) : 1;
+  return (t) => {
+    base(t);
+    if (t < s.t0 || t >= s.t1) return;
+    const tq = s.t0 + stepN(t, s.t0, FPS) / FPS;
+    const p = clamp((tq - s.t0) / Math.max(.001, s.t1 - s.t0));
+    const L = (a, b) => a + (b - a) * p;
+    const k = s.clip ? cover * L(s.from.z, s.to.z) : L(s.from.z, s.to.z);
+    const W = s.w * k, H = s.h * k;
+    const left = BOX.width / 2 - L(s.from.fx, s.to.fx) * W, top = BOX.height / 2 - L(s.from.fy, s.to.fy) * H;
+    const st = img.style;
+    st.transform = "none"; st.width = W.toFixed(1) + "px"; st.height = H.toFixed(1) + "px"; st.left = left.toFixed(1) + "px"; st.top = top.toFixed(1) + "px";
+  };
+};
+const shots = SHOTS.map(mkShot);
+
+// pie con la fuente (cambia con el plano)
+const PIE_COIN = "Tetradracma de Atenas · s. V a. C.", PIE_ENG = "Grabado, 1771";
+
+// ═════ gancho: la pregunta en la caja, palabra a palabra
+const q = $("q");
+q.innerHTML = `<div><span>¿Por</span> <span>qué</span><br><span>un</span> <span>búho?</span></div>`;
+const qw = [...q.querySelectorAll("span")];
+
+// ═════ subtítulos de la voz (cada palabra aparece cuando se dice, sin fundidos)
+const subs = [];
+const mkSub = (id, groups, hot = [], outMax = 1e9) => {
+  const L = line(id);
+  groups.forEach(([a, b], gi) => {
+    const host = S.el("div", "sub", $("subs"));
+    const ws = [];
+    for (let i = a; i <= b; i++) {
+      const w = S.el("span", "w" + (hot.includes(i) ? " hot" : ""), host, L.words[i][0]);
+      ws.push(w); if (i < b) host.appendChild(document.createTextNode(" "));
+    }
+    const t0 = L.t + L.words[a][1] - .05;
+    const t1 = gi < groups.length - 1 ? L.t + L.words[groups[gi + 1][0]][1] - .05 : Math.min(L.end + .6, outMax);
+    subs.push((t) => {
+      const on = t >= t0 && t < t1;
+      show(host, on);
+      if (on) ws.forEach((w, k) => vis(w, t >= L.t + L.words[a + k][1] - .02));
+    });
+  });
+};
+mkSub("n2", [[0, 4], [5, 11]], [11]);
+mkSub("n3", [[0, 7], [8, 13]], [13]);
+mkSub("n4", [[0, 4]], [3], N.n5 - .05);
+mkSub("n5", [[0, 1]], [1]);
+
+// ═════ cabecera, caja que se dibuja
+const bd = $("bd"), dBd = S.dash(bd);
+const calco = $("calco"), cp = $("cp"), pen = $("pen");
+cp.setAttribute("d", B.figs.buho.mayor);
+const dCp = S.dash(cp);
+const CLEN = cp.getTotalLength();
+const fg = $("fig");
+const figHost = (el) => {
+  const px = 100 * FS, cx = BOX.left + BOX.width / 2, cy = BOX.top + BOX.height / 2;
+  el.style.cssText += `;left:${(cx - px / 2).toFixed(1)}px;top:${(cy - px / 2).toFixed(1)}px;width:${px.toFixed(1)}px;height:${px.toFixed(1)}px`;
+};
+figHost(calco); figHost(fg);
+const figAt = S.fig(fg, "buho", "mayor");
+S.figEvents("buho", T_FILL, T_ERASE);
+ev(T_TRACE, "trace"); ev(T_TRACE_END, "traceEnd"); ev(T_FILL, "fill");
+ev(T_CALCO, "veil");
+// motivo de cuatro notas (74, 78, 81, 86) en el gancho y en el cierre
+ev(.1, "motif"); ev(W0, "motif");
+
+// ═════ cierre: wordmark que se escribe a saltos, punto rojo, sesmi.org, «Siguiente»
+const [sqx, sqy, sqw] = B.wordmark.sq.map(Number);
+const cl = $("close");
+const WORD = S.el("div", "abs", cl); WORD.style.cssText = "left:120px;top:330px;width:300px;visibility:visible";
+WORD.innerHTML = `<svg viewBox="${B.wordmark.vb}" style="display:block;width:100%;overflow:visible"><defs><clipPath id="wc"><rect class="wcr" x="22" y="-702" height="714" width="0"/></clipPath></defs>` +
+  `<path fill="currentColor" d="${B.wordmark.d}" clip-path="url(#wc)"/><rect class="wdot" fill="#7A1F10" x="${sqx}" y="${sqy}" width="${sqw}" height="${sqw}" style="visibility:hidden"/></svg>`;
+const URL_ = S.el("div", "abs", cl, "sesmi.org"); URL_.style.cssText = "left:0;right:0;top:478px;text-align:center;font:500 27px/1 var(--display)";
+const NEXT = S.el("div", "abs", cl, "Siguiente: el caballo"); NEXT.style.cssText = "left:0;right:0;top:548px;text-align:center;font:italic 400 22px/1.3 var(--text);color:var(--red)";
+const END = [447, 949, 1397, 2181, 2382];
+const WS = .2083;
+END.forEach((_, i) => ev(W0 + i * WS, "letter", i));
+ev(T_LAND, "land"); ev(T_URL, "url"); ev(T_NEXT, "sign2");
+const wcr = cl.querySelector(".wcr"), wdot = cl.querySelector(".wdot");
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+// ═════ todo es función de t
+window.renderAt = (t) => {
+  const tq12 = Math.floor(t * 12 + 1e-6) / 12;
+  // cabecera siempre; el borde de la caja se dibuja a saltos y se borra al final
+  const dr = clamp(tq12 / T_BOX), er = clamp((tq12 - (T_ERASE + .15)) / .5);
+  dBd(t < T_ERASE + .15 ? dr : 1 - er);
+  vis(bd, !(t >= T_ERASE + .15 + .5));
+
+  // gancho
+  show(q, t < T_COIN, "flex");
+  if (t < T_COIN) qw.forEach((w, i) => vis(w, t >= S.wordAt("n1", i) - .02));
+
+  // planos de la fuente
+  shots.forEach((f) => f(t));
+  const inBox = t >= T_COIN && t < T_VANISH + .5;
+  show($("dark"), t >= T_DARK && t < T_CALCO);
+  show($("veil"), t >= T_CALCO && t < T_FILL + .05);
+  // la fuente se va en tres saltos (1 → .6 → .25 → 0)
+  let so = 1;
+  if (t >= T_VANISH) so = [.6, .25, 0][Math.min(2, stepN(t, T_VANISH, 6))];
+  if (t >= T_ERASE) so = 0;
+  $("src").style.opacity = so; $("veil").style.opacity = .42 * so;
+
+  // pie y lema
+  const pie = $("pie");
+  const showPie = t >= T_COIN && t < T_VANISH + .1 || false;
+  pie.style.display = showPie ? "block" : "none";
+  if (showPie) { const s = t >= T_DARK && t < T_CALCO ? PIE_ENG : PIE_COIN; if (pie.textContent !== s) pie.textContent = s; }
+  show($("lema"), t >= T_FILL && t < T_ERASE);
+
+  // calco (trazo a 12 fps) y figura viva
+  const trace = clamp((Math.floor((t - T_TRACE) * 12 + 1e-6) / 12) / TRACE_D);
+  const onC = t >= T_TRACE && t < T_FILL;
+  calco.style.visibility = onC ? "visible" : "hidden";
+  if (!onC) pen.style.visibility = "hidden";
+  if (onC) {
+    dCp(trace);
+    const pt = cp.getPointAtLength(CLEN * trace);
+    pen.setAttribute("x", (pt.x - .7).toFixed(2)); pen.setAttribute("y", (pt.y - .7).toFixed(2));
+    pen.style.visibility = trace < 1 ? "visible" : "hidden";
+  }
+  const onF = t >= T_FILL && t < T_ERASE + .5;
+  fg.style.visibility = onF ? "visible" : "hidden";
+  if (onF) {
+    figAt(t, T_FILL);
+    let o = 1;
+    if (t >= T_ERASE) o = [.6, .25, 0][Math.min(2, stepN(t, T_ERASE, 6))];
+    fg.style.opacity = o;
+  }
+
+  subs.forEach((f) => f(t));
+
+  // cierre
+  const on = t >= W0;
+  const n = t < W0 ? 0 : Math.min(5, Math.floor((t - W0) / WS + 1e-6) + 1);
+  wcr.setAttribute("width", n ? END[n - 1] - 22 + 6 : 0);
+  vis(wdot, t >= T_LAND);
+  vis(URL_, t >= T_URL); vis(NEXT, t >= T_NEXT);
+  vis(WORD, on);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>

@@ -4,31 +4,31 @@
    "id": "n1",
    "who": "narradora",
    "text": "¿Por qué una paloma?",
-   "t": 0
+   "t": 0.2
   },
   {
    "id": "n2",
    "who": "narradora",
    "text": "En mil setecientos setenta y cinco, una sociedad de Madrid eligió un lema:",
-   "t": 0
+   "t": 2.5
   },
   {
    "id": "n3",
    "who": "narradora",
    "text": "Socorre enseñando.",
-   "t": 0
+   "t": 9.3
   },
   {
    "id": "n4",
    "who": "narradora",
    "text": "Enseñar es la mejor manera de ayudar. La paloma lleva el mensaje.",
-   "t": 0
+   "t": 12.05
   },
   {
    "id": "n5",
    "who": "narradora",
    "text": "Conocimiento en abierto, para cualquiera.",
-   "t": 0
+   "t": 18.15
   }
  ]
 }
