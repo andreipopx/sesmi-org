@@ -69,6 +69,7 @@ of the Vite build. One folder per version, shared pieces in `shared/`:
 | `250/` | `sesmi-250.mp4` (57 s) | The same city in 1775 (engraving + harpsichord), the year runs to 2026, «la idea sigue siendo buena» |
 | `sesmi001/` | `sesmi-sesmi001.mp4` (36 s) | Trailer of SESMI-001: drawn homage to «Bienvenido, Mister Marshall» (the town decks itself out, the convoy passes by), the data-centre shed, 750 M€, «¿cuánto se queda en la ciudad?», chapters |
 | `sesmi002/` | `sesmi-sesmi002.mp4` (26 s) | Trailer of SESMI-002: the site's «stall» curve, attempt after attempt with a hand crank that stalls, «¿Por qué?» |
+| `fig-buho/`, `fig-caballo/`, `fig-paloma/` | `sesmi-fig-*.mp4` (25–27 s) | Series «De dónde sale cada figura» (1/3–3/3): the archive source (Athens tetradrachm; Géricault's Derby vs Muybridge 1878; the Matritense motto, 1775 + doves 1895), the brand figure traced over it, comes alive with its lema. Shared layout spec: square source box, `mkSub` stepped subtitles, same sign-off |
 | `teaser/` | `sesmi-teaser.mp4` (18 s) | Launch-film style: 14 macro shots cut on the beat, «debemos saber.», wordmark |
 | `vuelta/` | `sesmi-vuelta.mp4` (51 s) | Earlier text-only version (red square leaves and comes back) |
 
