@@ -67,6 +67,8 @@ of the Vite build. One folder per version, shared pieces in `shared/`:
 | `sociedad/` | `sesmi-sociedad.mp4` (64 s) | Neighbours' questions (own voices), answers underground, the 18th-c. Sociedades Económicas, «una sociedad abierta» |
 | `preguntas/` | `sesmi-preguntas.mp4` (43 s) | Night city, each window lights with a question, «¿Y si nos quedamos?», dawn |
 | `250/` | `sesmi-250.mp4` (57 s) | The same city in 1775 (engraving + harpsichord), the year runs to 2026, «la idea sigue siendo buena» |
+| `sesmi001/` | `sesmi-sesmi001.mp4` (36 s) | Trailer of SESMI-001: drawn homage to «Bienvenido, Mister Marshall» (the town decks itself out, the convoy passes by), the data-centre shed, 750 M€, «¿cuánto se queda en la ciudad?», chapters |
+| `sesmi002/` | `sesmi-sesmi002.mp4` (26 s) | Trailer of SESMI-002: the site's «stall» curve, attempt after attempt with a hand crank that stalls, «¿Por qué?» |
 | `teaser/` | `sesmi-teaser.mp4` (18 s) | Launch-film style: 14 macro shots cut on the beat, «debemos saber.», wordmark |
 | `vuelta/` | `sesmi-vuelta.mp4` (51 s) | Earlier text-only version (red square leaves and comes back) |
 
