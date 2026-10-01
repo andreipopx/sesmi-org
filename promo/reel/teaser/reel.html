@@ -40,34 +40,39 @@ const GRADE = S.GRADE.calido;
 
 // ── planos: [archivo, ancho, alto, desde [zoom, x, y], hasta [zoom, x, y], tiempos]
 // x, y = punto de la imagen (0–1) que queda en el centro del encuadre; zoom 1 = «cubrir» la pantalla.
-const A = "../assets/archivo/";
+const AR = "../assets/archivo/", FO = "../assets/foto/";
+const P = (src, w, h, from, to, n) => ({ src, w, h, from, to, n });
+const V = (slug, w, h, from, to, n, start = 0) => ({ clip: slug, w, h, from, to, n, start });
 const SHOTS = [
-  ["enc-escritura-pluma", 1228, 2000, [1.7, .5, .165], [2.1, .5, .235], 2],   // escribir: la mano y la plumilla
-  ["enc-reloj-c", 1354, 2000, [1.5, .46, .86], [1.95, .52, .80], 2],           // medir: el mecanismo
-  ["enc-imprenta-pl1", 1286, 2000, [1.7, .5, .78], [2.0, .56, .78], 1],        // imprimir: los tipos (al revés)
-  ["enc-imprenta-taille-douce", 1296, 2000, [1.7, .30, .78], [2.1, .30, .72], 1], // la prensa
-  ["matriz-sello-bronce-impronta", 1280, 1839, [1.5, .5, .42], [1.9, .5, .5], 2], // sellar
-  ["armilar-wellcome", 1920, 1524, [1.9, .5, .52], [2.3, .5, .47], 2],         // medir: la esfera armilar
-  ["enc-reloj-b", 1228, 2000, [1.7, .5, .55], [2.0, .5, .5], 1],               // el torno del relojero
-  ["plantin-escudo-drukkersmerk", 1442, 2000, [1.3, .5, .36], [1.65, .52, .42], 1], // el compás de Plantin
-  ["atenas-tetradracma-lechuza-a", 1920, 1920, [1.5, .52, .42], [1.9, .56, .42], 2], // la lechuza de Atenas (búho)
-  ["geric-derby-epsom-1821", 1920, 1402, [1.9, .30, .62], [1.9, .66, .62], 1], // el caballo
-  ["paloma-grabado-coloreado-wellcome", 1920, 1218, [1.5, .30, .40], [1.8, .35, .42], 1], // la paloma
-  ["enc-imprenta-pl1", 1286, 2000, [2.0, .5, .13], [2.3, .5, .15], 1],         // enseñar: el taller de la Encyclopédie
-].map(([f, w, h, from, to, n]) => ({ src: A + f + ".jpg", w, h, from, to, n }));
-const HOLD = { src: A + "lacre-sombrereros-1842.jpg", w: 1280, h: 1222, from: [1.0, .5, .5], to: [1.14, .5, .5] };
+  P(FO + "pluma-tinta-carta.jpg", 1920, 1280, [2.2, .46, .42], [2.8, .45, .45], 2),             // escribir: la pluma y la tinta
+  V("reloj-bolsillo-waltham", 1920, 1080, [1.0, .62, .50], [1.22, .62, .50], 2, 1.2),            // medir: el reloj (macro)
+  P(FO + "tipos-plomo-componedor.jpg", 1920, 1276, [2.4, .36, .72], [2.9, .30, .74], 1),         // imprimir: los tipos
+  V("imprenta-tipografica-roja", 854, 480, [1.0, .18, .52], [1.15, .20, .54], 1, 0),           // la prensa en marcha
+  P(FO + "lacre-sellos-cartas.jpg", 1920, 956, [1.5, .72, .55], [1.85, .66, .55], 1),            // sellar
+  P(FO + "balanza-boticario.jpg", 1920, 1278, [1.6, .36, .40], [2.0, .46, .42], 2),              // medir: la balanza
+  V("metronome", 1920, 1080, [1.15, .44, .45], [1.4, .45, .42], 1, .3),                          // medir el tiempo
+  P(AR + "armilar-wellcome.jpg", 1920, 1524, [1.9, .5, .52], [2.3, .5, .47], 2),                 // la esfera armilar
+  P(AR + "plantin-escudo-drukkersmerk.jpg", 1442, 2000, [1.3, .5, .36], [1.65, .52, .42], 1),    // el compás de Plantin
+  V("buho-cornudo-otono", 1920, 1080, [1.5, .54, .36], [1.65, .54, .40], 2, 1.5),                 // el búho
+  P(FO + "caballo-bronce-galopando.jpg", 1920, 1280, [1.5, .56, .40], [1.8, .56, .40], 1),       // el caballo
+  P(FO + "palomas-cielo-melocoton.jpg", 1280, 1706, [1.15, .5, .62], [1.45, .5, .45], 1),        // la paloma
+];
+const HOLD = P(AR + "lacre-sombrereros-1842.jpg", 1280, 1222, [1.0, .5, .5], [1.14, .5, .5], 0);
 
 let tc = 0;
 SHOTS.forEach((s, i) => { s.t0 = tc; tc += s.n * BEAT; s.t1 = tc; ev(s.t0, "cut", i); });
 HOLD.t0 = tc; ev(tc, "cut", SHOTS.length);   // el plano que se queda
 const VT = line("n1").t;                      // la voz entra sobre el plano que se queda
 const CLOSE = 13.7;                           // corte a papel
-HOLD.t1 = CLOSE;
+HOLD.t1 = CLOSE; ev(CLOSE, "cut", SHOTS.length + 1);   // corte a papel
 
 // ── imagen con foco (zoom + paneo lento) y profundidad de campo falsa: borde desenfocado, centro nítido
 const mk = (s) => {
   const box = S.el("div", "shot", $("shots"));
-  const mkimg = (cls) => { const im = S.el("img", cls, box); im.src = s.src; im.style.filter = cls === "bl" ? GRADE + " blur(3.2px)" : GRADE; return im; };
+  const meta = s.clip ? (window.CLIPS || {})[s.clip] : null;
+  if (s.clip && !meta) throw new Error("clip sin fotogramas: " + s.clip + " (ejecuta shared/frames.sh)");
+  const dir = s.clip ? `../assets/video/.frames/${s.clip}/` : "";
+  const mkimg = (cls) => { const im = S.el("img", cls, box); im.src = s.clip ? dir + "0001.jpg" : s.src; im.style.filter = cls === "bl" ? GRADE + " blur(3.2px)" : GRADE; return im; };
   const bl = mkimg("bl"), sh = mkimg("sh");
   S.el("div", "shade", box);
   const dim = S.el("div", "dim", box);
@@ -80,6 +85,10 @@ const mk = (s) => {
     const [z, fx, fy] = s.from.map((v, i) => v + (s.to[i] - v) * p);
     const k = cover * z, W = s.w * k, H = s.h * k;
     const L = clamp(270 - fx * W, 540 - W, 0), T = clamp(480 - fy * H, 960 - H, 0);
+    if (meta) {
+      const name = String(Math.min(meta.n, Math.max(1, 1 + Math.floor((s.start + (t - s.t0)) * meta.fps + 1e-6)))).padStart(4, "0") + ".jpg";
+      if (!sh.src.endsWith("/" + name)) bl.src = sh.src = dir + name;
+    }
     [bl, sh].forEach((im) => { im.style.width = W + "px"; im.style.height = H + "px"; im.style.left = L + "px"; im.style.top = T + "px"; });
     return p;
   };

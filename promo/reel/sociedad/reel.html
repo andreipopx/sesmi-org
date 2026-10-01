@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <title>sesmi · Una sociedad abierta</title>
 <!--
+  Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
+  ../assets/foto/pluma-tinta-carta.jpg  ../assets/video/metronome.mp4  ../assets/foto/tipos-plomo-componedor.jpg
+  ../assets/foto/lacre-sellos-cartas.jpg  ../assets/foto/plaza-mayor-medinaceli-soportales.jpg  ../assets/foto/talavera-tajo-puente-atardecer.jpg
+  ../assets/video/estorninos-murmuracion.mp4
+-->
+<!--
   Versión A · «Una sociedad abierta». En cada ciudad hay preguntas (cuatro vecinos, con su voz);
   las respuestas están debajo y hay que ir a buscarlas; hace dos siglos la gente se juntaba para
   eso; hoy queremos recuperar esa idea. Tiempos de voz en script.json (+ out/vo.json).
@@ -14,12 +20,16 @@
 .ppl.red{background:var(--red)}
 .qlab{position:absolute;font:italic 400 18px/1.28 var(--text);color:var(--ink);width:170px}
 .qlab .w{display:inline-block;opacity:0}
-.era{position:absolute;left:0;right:0;top:110px;text-align:center;color:var(--ink-3);font-size:12px}
+.era{position:absolute;left:0;right:0;top:104px;text-align:center;color:var(--ink-3);font-size:12px}
 .fl{position:absolute;top:410px;width:150px;text-align:center;color:var(--ink-3)}
+.cap{position:absolute;left:30px;width:480px;top:567px;color:var(--ink-3);font-size:10px;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pframe{position:absolute;left:30px;top:130px;width:480px;height:430px;border:1px solid var(--ink);display:none}
+.photo img{max-width:none}
 .fl i{display:inline-block;width:7px;height:7px;background:var(--red);margin-right:8px;vertical-align:1px}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute"><filter id="chroma" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".52 0 0 0 0  0 .6 0 0 0  0 0 .6 0 0  4 -2 -2 0 -.3"/></filter></svg>
 <div id="stage">
   <div class="layer" id="world" style="transform:scale(1.25);transform-origin:270px 470px">
     <div class="layer" id="cityL"><svg id="csv" viewBox="0 0 540 960"></svg></div>
@@ -31,6 +41,9 @@
   </div>
   <div class="layer" id="crowd"></div>
   <div class="layer" id="figs"></div>
+  <div class="layer" id="plates"></div>
+  <div class="pframe" id="pframe"></div>
+  <div class="lbl cap" id="cap"></div>
   <div class="lbl era" id="era"></div>
   <div class="layer" id="subs"></div>
   <div id="vig"></div>
@@ -43,13 +56,65 @@ const T = (id) => line(id).t;
 const NS = "http://www.w3.org/2000/svg";
 const G = 470;
 
+// ── imagen real: plano de foto/grabado con foco y zoom lentos (función pura de t).
+// f = [x, y] punto de la imagen (0–1) que queda en el centro; to = adónde se desplaza; z = [zoom inicial, final].
+const DIM = { // anchura × altura de cada imagen
+  "mapa-castilla-nueva-1785": [1280, 1054], "mapa-toledo-1768": [1920, 1868], "enc-patata": [1204, 2000], "enc-escritura-ronda": [1424, 2000],
+  "enc-reloj-c": [1354, 2000], "enc-imprenta-pl1": [1286, 2000], "campomanes-1777": [960, 1273], "estatutos-asturias": [1236, 2000],
+  "buho-great-white-owl-1771": [1234, 2000], "geric-derby-epsom-1821": [1920, 1402], "paloma-grabado-coloreado-wellcome": [1920, 1218],
+  "lacre-sombrereros-1842": [1280, 1222], "pluma-tinta-carta": [1920, 1280], "tipos-plomo-componedor": [1920, 1276],
+  "lacre-sellos-cartas": [1920, 956], "plaza-mayor-medinaceli-soportales": [1920, 1228], "talavera-tajo-puente-atardecer": [1920, 1460],
+};
+const FULL = { left: 0, top: 0, width: 540, height: 960 }, PB = { left: 30, top: 130, width: 480, height: 430 };
+const GR = { // etalonajes: grabado = blanco y negro cálido sobre papel; calido = color apagado y cálido
+  grabado: "grayscale(1) sepia(.3) contrast(1.1) brightness(.98)",
+  calido: "saturate(.7) sepia(.2) contrast(1.08) brightness(.97)",
+  lacre: "url(#chroma)",
+};
+const macro = (src, o) => {
+  const name = src.replace(/^.*\//, "").replace(/\.jpg$/, ""), [iw, ih] = DIM[name];
+  const b = o.box || FULL;
+  const box = S.el("div", "photo", $("plates"));
+  box.style.cssText = `position:absolute;overflow:hidden;display:none;left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px;background:${o.bg || "var(--paper-2)"}` + (o.blend ? ";mix-blend-mode:multiply;background:none" : "");
+  const c = Math.max(b.width / iw, b.height / ih), W0 = iw * c, H0 = ih * c;
+  const img = S.el("img", "", box);
+  img.src = src;
+  img.style.cssText = `position:absolute;left:0;top:0;width:${W0}px;height:${H0}px;transform-origin:0 0;filter:${GR[o.grade || "grabado"] || o.grade}` + (o.mult ? ";mix-blend-mode:multiply" : "");
+  const to = o.to || o.f;
+  const upd = (t) => {
+    const on = t >= o.t0 && t < o.t1;
+    box.style.display = on ? "block" : "none";
+    if (!on) return;
+    const p = clamp((t - o.t0) / (o.t1 - o.t0));
+    const z = o.zf ? o.zf(t) : o.z[0] + (o.z[1] - o.z[0]) * p;
+    const fx = o.f[0] + (to[0] - o.f[0]) * p, fy = o.f[1] + (to[1] - o.f[1]) * p;
+    const tx = Math.min(0, Math.max(b.width - W0 * z, b.width / 2 - fx * W0 * z)), ty = Math.min(0, Math.max(b.height - H0 * z, b.height / 2 - fy * H0 * z));
+    img.style.transform = `translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${z.toFixed(4)})`;
+    box.style.opacity = o.fadeOut ? 1 - eIO((t - (o.t1 - o.fadeOut)) / o.fadeOut) : 1;
+  };
+  return upd;
+};
+const CUTS = []; // cortes secos → un «clac» en audio.py
+const cut = (t, v = 0) => { CUTS.push(t); ev(t, "cut", v); };
+const shots = []; // todo lo que se pinta en #plates
+
+// ── 0 · arranque en frío: cuatro planos macro, cortes secos (0–3 s)
+const CO = 3.0;
+shots.push(macro("../assets/foto/pluma-tinta-carta.jpg", { t0: 0, t1: .8, f: [.45, .41], to: [.52, .43], z: [1.9, 2.15], grade: "calido", bg: "var(--ink)" }));
+const met = S.clip("metronome", { t0: .8, t1: 1.6, start: 1.0, from: [1.55, 50, 34], to: [1.75, 50, 36], grade: "calido", parent: $("plates"), z: 0 });
+shots.push(met);
+shots.push(macro("../assets/foto/tipos-plomo-componedor.jpg", { t0: 1.6, t1: 2.3, f: [.47, .79], to: [.40, .73], z: [1.7, 1.95], grade: "calido", bg: "var(--ink)" }));
+shots.push(macro("../assets/foto/lacre-sellos-cartas.jpg", { t0: 2.3, t1: CO, f: [.29, .465], to: [.28, .455], z: [2.45, 2.7], grade: "calido", bg: "var(--ink)" }));
+[.8, 1.6, 2.3, CO].forEach((t, i) => cut(t, i));
+
 // ── ciudad
 const city = S.drawCity($("csv"), { G });
-ev(.2, "draw0"); ev(3.4, "draw1");
+ev(CO + .2, "draw0"); ev(CO + 3.4, "draw1");
 
 // ── la gente: cuadraditos en ventanas y en la calle
+const D1 = T("n1") - 1.2;
 const HOME = [[228, G - 102], [275, G - 62], [289, G - 62], [309, G - 52], [403, G - 102], [431, G - 62], [130, G - 6], [196, G - 6], [345, G - 6], [505, G - 6]];
-const ppl = HOME.map(([x, y], i) => { const d = S.el("div", "ppl", $("people")); return { d, x, y, at: 4.3 + i * .09 }; });
+const ppl = HOME.map(([x, y], i) => { const d = S.el("div", "ppl", $("people")); return { d, x, y, at: 4.3 + D1 + i * .09 }; });
 ppl.forEach((p) => ev(p.at, "pop"));
 // quién pregunta (índice en HOME), dónde va su pregunta y desde dónde sale la guía
 const ASK = [["q1", 0, 70, 226], ["q2", 5, 300, 196], ["q3", 8, 282, 300], ["q4", 7, 62, 316]];
@@ -63,7 +128,12 @@ const qfx = ASK.map(([id, who, lx, ly]) => {
   ev(L.t, "ask", who);
   return { L, lab, ws, ln, who, lx, ly };
 });
-const QOUT = T("n2") + 1.1; // las preguntas se quedan flotando hasta que llega la respuesta
+
+// ── respiro: una plaza vacía, nadie contesta (la música se calla)
+const PZ0 = line("q4").end + .25, PZ1 = T("n2");
+shots.push(macro("../assets/foto/plaza-mayor-medinaceli-soportales.jpg", { t0: PZ0, t1: PZ1, f: [.34, .5], to: [.58, .5], z: [1.12, 1.2], grade: "calido", bg: "var(--ink)" }));
+cut(PZ0, 4); cut(PZ1, 5);
+const QOUT = PZ0; // las preguntas se quedan flotando hasta el respiro
 
 // ── debajo del suelo: estratos de datos (las respuestas existen)
 const U0 = wordAt("n2", 2), DIG = wordAt("n2", 8);
@@ -81,31 +151,54 @@ const dStrata = S.dash($("strata")), dBars = S.dash($("bars"));
 ev(U0, "dig0");
 for (let k = 0; k < 6; k++) ev(DIG + k / 6, "dig", k);
 
-// ── siglo XVIII: la gente se junta alrededor de una mesa
+// ── siglo XVIII: la gente se junta alrededor de una mesa… y aparece el archivo
 const M0 = wordAt("n3", 5), M1 = M0 + 2.6;          // empiezan a andar con «gente»
 const SEAT = [[176, 392], [214, 392], [252, 392], [290, 392], [328, 392], [366, 392], [195, 438], [252, 438], [309, 438], [347, 438]];
 $("tsv").innerHTML = `<path id="table" d="${S.hand([[150, 412], [392, 412]]) + S.hand([[166, 412], [166, 430]]) + S.hand([[376, 412], [376, 430]])}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>`;
 const dTable = S.dash($("table"));
 for (let k = 1; k <= Math.round((M1 - M0) * 6); k += 2) ev(M0 + k / 6, "step", k);
-const ICONS = [["escuela", 118, wordAt("n4", 1)], ["invento", 237, wordAt("n4", 3)], ["libro", 356, wordAt("n4", 5)]];
-const icons = ICONS.map(([k, x, t]) => {
-  const p = document.createElementNS(NS, "path");
-  p.setAttribute("d", S.ICON[k]()); p.setAttribute("fill", "none"); p.setAttribute("stroke", "var(--ink)"); p.setAttribute("stroke-width", "1.1");
-  p.setAttribute("transform", `translate(${x} 250) scale(1.5)`); p.setAttribute("stroke-linecap", "round");
-  $("tsv").appendChild(p); ev(t, "icon", ICONS.findIndex((i) => i[0] === k));
-  return { draw: S.dash(p), t };
+const A = "../assets/archivo/";
+const PLATES = [ // [archivo, desde, hasta, foco, destino, zoom, pie]
+  [A + "mapa-castilla-nueva-1785.jpg", wordAt("n3", 12), wordAt("n3", 14), [.5, .5], [.5, .5], [1.02, 1.1], "Mapa de Castilla la Nueva · Tomás López, 1785"],
+  [A + "mapa-toledo-1768.jpg", wordAt("n3", 14), wordAt("n3", 14) + 1.4, [.4, .55], [.3, .6], [1.05, 1.35], "Mapa de la provincia de Toledo · Tomás López, 1768"],
+  [A + "enc-patata.jpg", wordAt("n3", 14) + 1.4, wordAt("n4", 1), [.5, .3], [.5, .45], [1.1, 1.25], "Encyclopédie · Agricultura"],
+  [A + "enc-escritura-ronda.jpg", wordAt("n4", 1), wordAt("n4", 3), [.5, .3], [.5, .4], [1.15, 1.35], "Encyclopédie · Escritura"],
+  [A + "enc-reloj-c.jpg", wordAt("n4", 3), wordAt("n4", 5), [.5, .26], [.5, .32], [1.2, 1.5], "Encyclopédie · Relojería"],
+  [A + "enc-imprenta-pl1.jpg", wordAt("n4", 5), T("n5"), [.5, .18], [.5, .24], [1.15, 1.4], "Encyclopédie · Imprenta"],
+  [A + "campomanes-1777.jpg", T("n5"), wordAt("n5", 2), [.52, .38], [.52, .34], [1.0, 1.12], "Pedro Rodríguez de Campomanes · 1777"],
+  [A + "estatutos-asturias.jpg", wordAt("n5", 2), T("n6"), [.5, .4], [.5, .44], [1.0, 1.1], "Estatutos de la Sociedad Económica de Asturias · 1781"],
+];
+const plates = PLATES.map(([src, t0, t1, f, to, z, cap], i) => {
+  if (i) cut(t0, 6 + i);
+  return { t0, t1, cap, frame: true, upd: macro(src, { t0, t1, f, to, z, box: PB, mult: true, grade: "grabado" }) };
 });
-const BACK0 = wordAt("n6", 0) + .2, BACK1 = BACK0 + 1.8;  // hoy: vuelven a la ciudad
+const P0 = PLATES[0][1];
+// el lacre se estampa en «económicas»
+const SEAL = wordAt("n5", 3);
+ev(SEAL, "seal");
+const seal = macro(A + "lacre-sombrereros-1842.jpg", { t0: SEAL, t1: T("n6"), f: [.5, .5], z: [1, 1], zf: (t) => 1 + .45 * (1 - eOut((t - SEAL) / .14)) + .02 * Math.sin(Math.min(1, (t - SEAL) / .5) * Math.PI) * 0,
+  box: { left: 328, top: 398, width: 150, height: 143 }, grade: "lacre", blend: true, mult: false });
+
+// ── hoy: el Tajo de verdad, que se funde en la ciudad dibujada
+const WY0 = T("n6"), WY1 = WY0 + 2.0;
+const hoyPlate = { t0: WY0, t1: WY1, cap: "", frame: false, upd: macro("../assets/foto/talavera-tajo-puente-atardecer.jpg", { t0: WY0, t1: WY1, f: [.28, .5], to: [.52, .5], z: [1.1, 1.25], box: PB, grade: "calido", bg: "var(--ink)", fadeOut: .9 }) };
+plates.push(hoyPlate);
+cut(WY0, 16);
+const BACK0 = WY0 + .7, BACK1 = BACK0 + 1.8;         // la gente vuelve a la ciudad
 const SESMI = wordAt("n6", 4);                         // «idea»: aparece el cuadrado rojo
 ev(SESMI, "stamp");
 
-// ── las tres figuras: entender, hacer, compartir
-const FIG = [["buho", "Investigación", 30, "n7"], ["caballo", "Servicios", 195, "n8"], ["paloma", "Divulgación", 360, "n9"]];
-const FIG_OUT = line("n9").end + .5;
-const figs = FIG.map(([n, lbl, x, id]) => {
+// ── las tres figuras: entender, hacer, compartir (cada una, antes, medio segundo de su archivo)
+const FIG = [["buho", "Investigación", 30, "n7", A + "buho-great-white-owl-1771.jpg", [.5, .4], [.5, .36], [1.05, 1.28], "grabado"],
+  ["caballo", "Servicios", 195, "n8", A + "geric-derby-epsom-1821.jpg", [.84, .6], [.56, .6], [1.05, 1.12], "calido"],
+  ["paloma", "Divulgación", 360, "n9", A + "paloma-grabado-coloreado-wellcome.jpg", [.30, .5], [.62, .5], [1.0, 1.08], "calido"]];
+const FIG_OUT = line("n9").end + .5, FIGIN = T("n7") - .5;
+const figs = FIG.map(([n, lbl, x, id, arch, f, to, z, grade], i) => {
   const h = S.el("div", "abs", $("figs")); h.style.cssText = `left:${x}px;top:250px;width:150px;height:150px`;
   const l = S.el("div", "fl lbl", $("figs"), `<i></i>${lbl}`); l.style.left = x + "px";
-  const t0 = line(id).t; ev(t0, "fig", FIG.findIndex((f) => f[0] === n)); S.figEvents(n, t0 + .2, FIG_OUT);
+  const t0 = line(id).t; ev(t0, "fig", i); S.figEvents(n, t0 + .2, FIG_OUT);
+  shots.push(macro(arch, { t0: t0 - .5, t1: t0, f, to, z, grade, mult: true }));
+  cut(t0 - .5, 20 + i); cut(t0, 30 + i);
   return { h, l, t0, play: S.fig(h, n) };
 });
 
@@ -122,22 +215,27 @@ for (let r = 0; r < 12; r++) for (let c = 0; c < 11; c++) {
 }
 for (let k = 0; k < 10; k++) ev(C0 + k * (C1 - C0) / 10, "pop");
 
+// ── la bandada: una sociedad abierta se mueve junta (estorninos, en blanco y negro cálido)
+const MU0 = wordAt("n10", 7) , MU1 = T("n11") - .5;
+plates.push({ t0: MU0, t1: MU1, cap: "", frame: true, upd: S.clip("estorninos-murmuracion", { t0: MU0, t1: MU1, start: 2.2, from: [1.0, 62, 40], to: [1.12, 68, 38], grade: "grayscale(1) sepia(.3) contrast(1.25) brightness(1.02)", box: PB, parent: $("plates"), z: 0 }) });
+cut(MU0, 40);
+
 // ── subtítulos de la narradora
+const outAt = { n6: FIGIN, n7: line("n8").t - .5, n8: line("n9").t - .5, n9: T("n10") - .05 };
 const subs = ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10"].map((id) =>
-  S.sub(id, { parent: $("subs"), hot: id === "n10" ? [1, 2] : id === "n2" ? [8] : [] }));
+  S.sub(id, { parent: $("subs"), hot: id === "n10" ? [1, 2] : id === "n2" ? [8] : [], ...(outAt[id] ? { out: outAt[id] } : {}) }));
 
 // ── «debemos saber.» y firma
-const FLIP = 50.0, SHRINK = 53.0;
+const FLIP = T("n11") - .5, SHRINK = FLIP + 3.0;
 const saber = S.saber(FLIP, SHRINK, { a: wordAt("n11", 0), b: wordAt("n11", 1), tag: "Conocimiento en abierto, para cualquiera." });
 const firma = S.firma(SHRINK + .42);
 
 window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
 
 window.renderAt = (t) => {
-  // ciudad: se dibuja, se apaga para la historia, vuelve hoy, se va para las figuras
-  city.draw(t, .2, 3.2);
-  const FIGIN = T("n7") - .4;
-  const cityOp = t >= FIGIN ? 1 - eIO((t - FIGIN) / .6) : t < T("n3") ? 1 : t < BACK0 ? 1 - .82 * eIO((t - T("n3")) / 1.2) : .18 + .82 * eIO((t - BACK0) / 1.2);
+  // ciudad: se dibuja, se apaga para la historia, vuelve hoy, se va (corte) para las figuras
+  city.draw(t, CO + .2, 3.2);
+  const cityOp = t >= FIGIN ? 0 : t < T("n3") ? 1 : t < BACK0 ? 1 - .82 * eIO((t - T("n3")) / 1.2) : .18 + .82 * eIO((t - BACK0) / 1.2);
   $("cityL").style.opacity = cityOp;
 
   // gente
@@ -148,7 +246,7 @@ window.renderAt = (t) => {
     const k = clamp(stepN(t, BACK0, 6) / ((BACK1 - BACK0) * 6)), e = eIO(k);
     return [sx + (p.x - sx) * e, sy + (p.y - sy) * e];
   };
-  const pplOp = t < T("n7") - .4 ? 1 : 1 - eIO((t - T("n7") + .4) / .6);
+  const pplOp = t < FIGIN ? 1 : 0;
   ppl.forEach((p, i) => {
     const [x, y] = toTable(p, i);
     p.d.style.left = x + "px"; p.d.style.top = y + "px";
@@ -163,8 +261,7 @@ window.renderAt = (t) => {
     const on = t >= L.t - .05 && t < QOUT;
     lab.style.display = on ? "block" : "none"; ln.style.display = on ? "block" : "none";
     if (!on) return;
-    const dim = t > L.end + .3 ? .45 : 1;
-    const op = dim * (1 - eIO((t - (QOUT - .6)) / .6));
+    const op = t > L.end + .3 ? .45 : 1;
     lab.style.opacity = op; ln.style.opacity = op * .8;
     ws.forEach((w, i) => { const x = eOut((t - L.t - L.words[i][1] + .04) / .28); w.style.opacity = x; });
     const [px, py] = HOME[who], ax = lx > 270 ? lx + lab.offsetWidth - 14 : lx + 10, ay = ly + lab.offsetHeight + 6;
@@ -174,33 +271,39 @@ window.renderAt = (t) => {
 
   // debajo del suelo
   const uOp = t < T("n3") ? 1 : 1 - .85 * eIO((t - T("n3")) / 1.2);
-  $("under").style.opacity = t < T("n7") - .4 ? uOp : 0;
+  $("under").style.opacity = t < FIGIN ? uOp : 0;
   dStrata(eIO((t - U0) / 1.4)); dBars(eIO((t - U0 - .7) / 1.4));
   const dg = $("digger"), dk = Math.min(6, Math.max(0, stepN(t, DIG, 6)));
   dg.setAttribute("x", 265); dg.setAttribute("y", G - 10 + dk * 9);
   dg.style.display = t >= DIG - .3 && t < T("n3") + 1 ? "block" : "none";
 
-  // mesa e iconos
+  // mesa
   $("tableL").style.opacity = t < BACK0 ? 1 : 1 - eIO((t - BACK0) / .8);
   dTable(eIO((t - M0 - 1) / 1.6));
-  icons.forEach((ic) => ic.draw(eIO((t - ic.t + .1) / .7)));
-  $("tsv").querySelectorAll("path:not(#table)").forEach((p) => (p.style.opacity = 1 - eIO((t - wordAt("n5", 2)) / .8)));
   const era = $("era");
-  if (t >= T("n3") && t < BACK0) { era.textContent = "Siglo XVIII"; era.style.opacity = fade(t, T("n3") + .3, BACK0, .8, .5); }
-  else if (t >= BACK0 && t < T("n7") - .4) { era.textContent = "Hoy"; era.style.opacity = fade(t, BACK0 + .2, T("n7") - .4, .8, .5); }
+  if (t >= T("n3") && t < WY0) { era.textContent = "Siglo XVIII"; era.style.opacity = fade(t, T("n3") + .3, WY0, .8, .05); }
+  else if (t >= WY0 && t < FIGIN) { era.textContent = "Hoy"; era.style.opacity = fade(t, WY0, FIGIN, .3, .05); }
   else era.style.opacity = 0;
 
   // el cuadrado rojo de sesmi, hoy, en mitad de la calle
   let sq = $("sesmiSq");
   if (!sq) { sq = S.el("div", "ppl red", $("people")); sq.id = "sesmiSq"; sq.style.cssText += ";width:13px;height:13px;margin:-6.5px 0 0 -6.5px;left:270px;top:" + (G - 7) + "px"; }
-  sq.style.display = t >= SESMI && t < T("n7") - .4 + .6 ? "block" : "none";
+  sq.style.display = t >= SESMI && t < FIGIN ? "block" : "none";
   sq.style.opacity = pplOp;
 
-  // figuras
+  // imagen real (planos macro, láminas, lacre, flashes de archivo)
+  shots.forEach((s) => s(t));
+  plates.forEach((p) => p.upd(t));
+  seal(t);
+  const ap = plates.find((p) => t >= p.t0 && t < p.t1);
+  $("pframe").style.display = ap && ap.frame ? "block" : "none";
+  $("cap").textContent = ap ? ap.cap : "";
+  $("cap").style.opacity = ap ? 1 : 0;
+
+  // figuras (entran de golpe, con el corte desde su archivo)
   figs.forEach(({ h, l, t0, play }) => {
-    const x = t >= t0 - .05 && t < FIG_OUT + .1 ? eOut((t - t0) / .45) * (1 - eIO((t - (FIG_OUT - .4)) / .4)) : 0;
+    const x = t >= t0 && t < FIG_OUT + .1 ? 1 - eIO((t - (FIG_OUT - .4)) / .4) : 0;
     h.style.opacity = x; l.style.opacity = x;
-    h.style.transform = `translateY(${(1 - eOut((t - t0) / .55)) * 10}px)`;
     play(t, t0 + .2);
   });
 

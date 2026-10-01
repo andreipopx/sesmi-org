@@ -13,19 +13,20 @@
 <link rel="stylesheet" href="../shared/base.css">
 <style>
 #stage{background:var(--bgc,var(--ink));color:var(--fgc,var(--paper))}
-.qlab{position:absolute;font:italic 400 21px/1.28 var(--text);width:205px;color:var(--paper)}
+.qlab{text-shadow:0 0 7px rgba(28,24,20,.85);position:absolute;font:italic 400 21px/1.28 var(--text);width:205px;color:var(--paper)}
 .qlab .w{display:inline-block;opacity:0}
 .last{position:absolute;left:30px;right:30px;top:330px;text-align:center;font:500 44px/1.05 var(--display);letter-spacing:-.025em;color:var(--paper)}
 .last .w{display:inline-block;opacity:0}
 .ppl{position:absolute;width:9px;height:9px;background:var(--ink);margin:-4.5px 0 0 -4.5px}
 .sub{top:700px}
-#flash,#dawnph{z-index:0}
+#under,#flash,#dawnph{z-index:0}
 #cold{z-index:50}
 .shade{position:absolute;inset:0;pointer-events:none}
 </style>
 </head>
 <body>
 <div id="stage">
+  <div class="layer" id="under"></div>
   <div class="layer" id="world" style="transform:translateY(150px) scale(1.25);transform-origin:270px 470px">
     <div class="layer"><svg id="csv" viewBox="0 0 540 960"></svg></div>
     <div class="layer"><svg id="wsv" viewBox="0 0 540 960"></svg></div>
@@ -109,48 +110,60 @@ const dCl = S.dash($("cl")), dCb = S.dash($("cb"));
 ev(DAT, "chart"); ev(ABI, "open"); ev(CUAL, "people");
 const PPL = [60, 105, 150, 205, 250, 300, 345, 395, 440, 490].map((x, i) => { const d = S.el("div", "ppl", $("people")); return { d, x, at: CUAL + i * .07 }; });
 
-// ── arranque en frío: tres planos de noche, cortes secos (ventana de taller, ventana de tintorería, palomas)
-const cold = $("cold"), cold_ = [
-  [0.0, 0.6, "reliure-atelier", NOCHE + " contrast(1.2)", [1.45, 6, 50], [1.8, 20, 50], "50% 50%"],
-  [0.6, 1.2, "enc-recueil-1772", NOCHE + " contrast(1.25)", [2.4, 50, 50], [3.0, 50, 50], "14% 9%"],
-  [1.2, 1.75, "aves-1895-structure", NOCHE, [1.15, 38, 50], [1.4, 40, 50], "45% 45%"],
-].map(([t0, t1, f, grade, from, to, org]) => {
-  const p = S.photo(`../assets/archivo/${f}.jpg`, { t0, t1, from, to, grade, parent: cold, z: 1 });
-  p.img.style.transformOrigin = org;
-  return p;
-});
-S.ev(0.0, "cut", 0); S.ev(0.6, "cut", 1); S.ev(1.2, "cut", 2); S.ev(CITY0 - .05, "cut", 3);
+// ── imagen real. Etalonaje 'noche' de noche, 'calido' de día (S.GRADE, shared/common.js)
+const HAS = (slug) => !!(window.CLIPS || {})[slug];
+const veil = (p, a) => { const v = S.el("div", "shade", p.box); v.style.background = `rgba(28,24,20,${a})`; return p; };
+/** Plano: ["foto"|"archivo"|"clip", nombre, from, to, opciones] → update(t) (o null si el clip aún no tiene fotogramas). */
+const shot = ([kind, name, from, to, o]) => {
+  if (kind === "clip") return HAS(name) ? S.clip(name, { from, to, ...o }) : null;
+  return S.photo(`../assets/${kind === "foto" ? "foto" : "archivo"}/${name}.jpg`, { from, to, ...o });
+};
+
+// ── arranque en frío: tres planos de noche, cortes secos, antes de que se dibuje la ciudad
+const C = { grade: NOCHE, parent: $("cold"), z: 1 };
+const COLD_SHOTS = [
+  HAS("burgos-plaza-noche") ? ["clip", "burgos-plaza-noche", [1.5, 62, 35], [1.7, 62, 35], { ...C, t0: 0, t1: .6, start: 0 }]
+    : ["foto", "reloj-torre-engranajes", [1.25, 60, 40], [1.5, 60, 40], { ...C, t0: 0, t1: .6 }],
+  ["foto", "talavera-puente-ceramica-noche", [1.3, 62, 55], [1.55, 62, 55], { ...C, t0: .6, t1: 1.15 }],
+  ["foto", "caballo-bronce-galopando", [1.15, 50, 50], [1.3, 50, 50], { ...C, t0: 1.15, t1: 1.7 }],
+].map(shot).filter(Boolean);
+S.ev(0.0, "cut", 0); S.ev(0.6, "cut", 1); S.ev(1.15, "cut", 2); S.ev(CITY0 - .02, "cut", 3);
+
+// ── murmullo (estorninos): se enciende todo el vecindario y el cielo se llena de pájaros (murmuración = murmullo)
+const murm = shot(["clip", "estorninos-murmuracion", [1.15, 40, 50], [1.35, 45, 50],
+  { t0: MUR0 - .1, t1: BLACK, start: .8, grade: NOCHE + " brightness(.9)", parent: $("under"), z: 1, fadeIn: .35, box: { left: 0, top: 80, width: 540, height: 340 } }]);
+if (murm) veil(murm, .25);
 
 // ── destellos: junto a la pregunta, un detalle real del oficio de que se habla (0,7 s, detrás del texto)
 const FLASH_D = .7;
 const FL = {
-  p1: ["enc-reloj-a", [1.2, 30, 60], [1.0, 40, 60]],            // fábrica (manufactura de lunas)
-  p2: ["imprenta-taller-1769", [1.35, 50, 36], [1.15, 50, 40]],  // trabajo de un oficio
-  p3: ["enc-patata", [1.5, 50, 44], [1.15, 50, 46]],             // una casa, en corte
-  p4: ["lacre-sombrereros-1842", [1.25, 50, 40], [1.0, 50, 42]], // tienda: sello de los sombrereros
-  p5: ["matriz-sello-bronce-impronta", [1.3, 50, 35], [1.0, 50, 40]], // el sello del ayuntamiento
-  p7: ["mapa-toledo-1768", [1.3, 40, 60], [1.0, 55, 55]],        // adónde se fueron
-  p8: ["reliure-atelier", [1.25, 25, 50], [1.0, 60, 50]],        // el taller grande
+  p1: ["archivo", "enc-glaces-san-ildefonso", [1.3, 30, 55], [1.05, 40, 55], {}],        // fábrica (manufactura real de lunas)
+  p2: ["clip", "imprenta-tipografica-roja", [1.0, 50, 50], [1.0, 50, 50], { start: 1.2 }], // trabajo: la prensa en marcha
+  p3: ["foto", "plaza-mayor-medinaceli-soportales", [1.25, 50, 50], [1.0, 50, 50], {}],  // casas, soportales
+  p4: ["foto", "balanza-boticario", [1.35, 50, 50], [1.1, 50, 50], {}],                  // tienda: la balanza
+  p5: ["foto", "abaco-madera", [1.5, 50, 50], [1.15, 50, 50], {}],                       // adónde va el dinero: las cuentas
+  p7: ["foto", "paloma-vuelo-atardecer", [1.3, 50, 40], [1.05, 50, 40], {}],             // los jóvenes se fueron: vuelo
+  p8: ["foto", "reloj-torre-engranajes", [1.4, 40, 40], [1.1, 50, 45], {}],              // la gran maquinaria
 };
 const flashes = qs.filter((q) => FL[q.L.id]).map((q) => {
-  const [f, from, to] = FL[q.L.id], [lx, ly] = [parseFloat(q.lab.style.left), parseFloat(q.lab.style.top)];
-  const p = S.photo(`../assets/archivo/${f}.jpg`, { t0: q.L.t - .02, t1: q.L.t + FLASH_D, from, to, grade: NOCHE, parent: $("flash"), z: 1,
-    box: { left: lx - 10, top: ly - 8, width: 225, height: 104 }, fadeOut: .18 });
-  const veil = S.el("div", "shade", p.box); veil.style.background = "rgba(28,24,20,.42)";
+  const [lx, ly] = [parseFloat(q.lab.style.left), parseFloat(q.lab.style.top)], [kind, name, from, to, o] = FL[q.L.id];
+  const p = shot([kind, name, from, to, { ...o, t0: q.L.t - .02, t1: q.L.t + FLASH_D, grade: NOCHE, parent: $("flash"), z: 1, fadeOut: .18,
+    box: { left: lx - 10, top: ly - 8, width: 225, height: 104 } }]);
+  if (!p) return null;
+  veil(p, .4);
   S.ev(q.L.t - .02, "flash", qs.indexOf(q));
   return p;
-});
+}).filter(Boolean);
 
-// ── amanecer: vista de Talavera de 1567, palomas, otra vez la vista (cortes secos en el cielo vacío)
-const DB = { left: 0, top: 140, width: 540, height: 200 };
-const dawnShots = [
-  [DAWN + .8, DAWN + 1.95, "talavera-wyngaerde-1567", CALIDO, [1.0, 8, 50], [1.12, 40, 50]],
-  [DAWN + 1.95, DAWN + 3.3, "aves-1895-structure", CALIDO, [1.1, 35, 42], [1.3, 45, 40]],
-  [DAWN + 3.3, DAWN + 4.6, "talavera-wyngaerde-1567", CALIDO, [1.15, 60, 50], [1.0, 92, 50]],
-].map(([t0, t1, f, grade, from, to], i) => {
-  S.ev(t0, "dcut", i);
-  return S.photo(`../assets/archivo/${f}.jpg`, { t0, t1, from, to, grade, parent: $("dawnph"), z: 1, box: DB });
-});
+// ── amanecer: el Tajo con luz de alba, palomas, estorninos (cortes secos en el cielo vacío, al ritmo de la frase)
+const DB = { left: 0, top: 110, width: 540, height: 300 };
+const D = { grade: CALIDO, parent: $("dawnph"), z: 1, box: DB };
+const dawnDefs = [
+  [DAWN + .4, DAWN + 2.0, ["foto", "talavera-tajo-puente-atardecer", [1.05, 30, 50], [1.2, 55, 50], {}]],
+  [DAWN + 2.0, DAWN + 3.0, ["foto", "palomas-cielo-melocoton", [1.0, 50, 70], [1.2, 50, 35], {}]],
+  [DAWN + 3.0, DAWN + 4.6, ["clip", "estorninos-murmuracion", [1.1, 50, 50], [1.3, 50, 50], { start: 2.4 }]],
+];
+const dawnShots = dawnDefs.map(([t0, t1, [k, n, f, to, o]], i) => { S.ev(t0, "dcut", i); return shot([k, n, f, to, { ...o, ...D, t0, t1 }]); }).filter(Boolean);
 
 // ── narradora
 const subs = ["n1", "n2"].map((id) => S.sub(id, { parent: $("subs"), hot: id === "n2" ? [5] : [] }));
@@ -210,7 +223,7 @@ window.renderAt = (t) => {
     d.style.left = x + Math.min(kk, 12) * 2 + "px"; d.style.top = G - 6 + (kk % 2 && kk < 12 ? -3 : 0) + "px";
   });
 
-  cold_.forEach((f) => f(t)); flashes.forEach((f) => f(t)); dawnShots.forEach((f) => f(t));
+  COLD_SHOTS.forEach((f) => f(t)); murm?.(t); flashes.forEach((f) => f(t)); dawnShots.forEach((f) => f(t));
   subs.forEach((f) => f(t));
   saber(t);
   firma(t);

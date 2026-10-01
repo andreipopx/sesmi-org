@@ -4,21 +4,29 @@
 <meta charset="utf-8">
 <title>sesmi · 250 años</title>
 <!--
-  Versión C · «250 años». La misma ciudad en 1775, dibujada como un grabado: gente de saberes distintos
-  se reúne (boticario, maestra, labrador, comerciante), abren escuelas, premian inventos, traducen
-  libros. El año corre hasta hoy y la ciudad cambia; la idea sigue siendo buena.
+  Versión C · «250 años». Macro de archivo (compás de Plantin, lacre) → «Año 1775» sobre la vista real de
+  Wyngaerde, que se calca a pluma y se desvanece → gente de saberes distintos se reúne (cada oficio, un plano
+  de láminas de la Encyclopédie) → escuelas, inventos, libros (cortes secos, una palabra por plano) → el año
+  corre y la ciudad CRECE a saltos (bloques que suben piso a piso, grúas, chimenea, viaducto, tren, tendido)
+  → la idea sigue siendo buena → sociedad abierta → «debemos saber.» → firma.
 -->
 <link rel="stylesheet" href="../shared/base.css">
 <style>
 .ppl{position:absolute;width:9px;height:9px;background:var(--ink);margin:-4.5px 0 0 -4.5px}
 .ppl.red{background:var(--red)}
-.year{position:absolute;left:0;right:0;top:118px;text-align:center;font:500 64px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--ink)}
-.yl{position:absolute;left:0;right:0;top:96px;text-align:center;color:var(--ink-3)}
+.year{position:absolute;left:0;right:0;top:118px;text-align:center;font:500 64px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--ink);z-index:3}
+.yl{position:absolute;left:0;right:0;top:96px;text-align:center;color:var(--ink-3);z-index:3}
 .job{position:absolute;font:italic 400 15px/1 var(--text);color:var(--ink-2);white-space:nowrap;transform:translateX(-50%)}
+.tile{position:absolute;z-index:3;background:var(--paper);border:1px solid var(--ink);display:none}
+.tag{left:16px;top:533px;padding:8px 13px 9px;font:italic 400 17px/1 var(--text);color:var(--ink)}
+.ico{left:456px;top:496px;width:68px;height:68px}
+.ico svg{display:block}
+.band{box-shadow:0 -1px 0 var(--ink),0 1px 0 var(--ink)}
 </style>
 </head>
 <body>
 <div id="stage">
+  <div class="layer" id="pre" style="z-index:0"></div>
   <div class="layer" id="world" style="transform:scale(1.25);transform-origin:270px 470px">
     <div class="layer" id="old"><svg id="osv" viewBox="0 0 540 960"></svg></div>
     <div class="layer" id="now"><svg id="nsv" viewBox="0 0 540 960"></svg></div>
@@ -26,10 +34,12 @@
     <div class="layer" id="people"></div>
     <div class="layer" id="jobs"></div>
   </div>
+  <div class="layer" id="mont"></div>
   <div class="layer" id="crowd"></div>
   <div class="lbl yl" id="yl">Año</div>
   <div class="year" id="year">1775</div>
-  <div class="layer" id="subs"></div>
+  <div class="layer" id="subs" style="z-index:5"></div>
+  <div class="layer" id="intro" style="z-index:10"></div>
   <div id="vig"></div>
 </div>
 <script src="../shared/common.js"></script>
@@ -39,11 +49,55 @@ const { $, ev, eOut, eIO, clamp, stepN, line, wordAt } = S;
 const T = (id) => line(id).t;
 const NS = "http://www.w3.org/2000/svg";
 const G = 470;
+const A = "../assets/archivo/";
+const GRAB = "grayscale(1) sepia(.34) contrast(1.32) brightness(1.03)"; // etalonaje «grabado»
+
+// ───────────────────────── plano de archivo con foco libre (paneo + zoom lentos) ─────────────────────────
+// src, nat [ancho, alto] en px de la imagen. o: t0, t1, box {l,t,w,h}, f0/f1 [fx,fy] (foco, fracción de la imagen),
+// z0/z1 (zoom sobre «cubrir»), grade, fadeOut, rule (filetes de tinta arriba y abajo), parent.
+const shot = (src, nat, o) => {
+  o = { z0: 1, z1: 1.1, f0: [.5, .5], grade: "grabado", fadeOut: 0, ...o };
+  o.f1 = o.f1 || o.f0;
+  const b = o.box || { l: 0, t: 0, w: 540, h: 960 };
+  const box = S.el("div", o.rule ? "band" : "", o.parent || $("mont"));
+  box.style.cssText += `;position:absolute;overflow:hidden;left:${b.l}px;top:${b.t}px;width:${b.w}px;height:${b.h}px;display:none;z-index:${o.z ?? 1}`;
+  const base = Math.max(b.w / nat[0], b.h / nat[1]);
+  const img = S.el("img", "", box);
+  img.src = src;
+  if (o.grade === GRAB) { box.style.background = "var(--paper)"; img.style.mixBlendMode = "multiply"; }
+  img.style.cssText += `;position:absolute;left:0;top:0;max-width:none;width:${nat[0] * base}px;height:${nat[1] * base}px;transform-origin:0 0;filter:${S.GRADE[o.grade] || o.grade}`;
+  const upd = (t) => {
+    const on = t >= o.t0 && t < o.t1;
+    box.style.display = on ? "block" : "none";
+    if (!on) return;
+    const p = clamp((t - o.t0) / (o.t1 - o.t0));
+    const z = o.z0 + (o.z1 - o.z0) * p, fx = o.f0[0] + (o.f1[0] - o.f0[0]) * p, fy = o.f0[1] + (o.f1[1] - o.f0[1]) * p;
+    const iw = nat[0] * base * z, ih = nat[1] * base * z;
+    const x = Math.min(0, Math.max(b.w - iw, b.w / 2 - fx * iw)), y = Math.min(0, Math.max(b.h - ih, b.h / 2 - fy * ih));
+    img.style.transform = `translate(${x}px,${y}px) scale(${z})`;
+    box.style.opacity = o.fadeOut ? 1 - eIO((t - (o.t1 - o.fadeOut)) / o.fadeOut) : 1;
+  };
+  upd.o = o;
+  return upd;
+};
+const BAND = { l: 0, t: 190, w: 540, h: 390 };                          // ventana de los planos de oficios y montaje
+
+// ───────────────────────── 0 · arranque: dos macros de objetos reales ─────────────────────────
+const SHOTS = [];
+SHOTS.push(shot(A + "plantin-relieve-museo.jpg", [1920, 1440], { parent: $("intro"), t0: 0, t1: 1.0, z0: 1.05, z1: 1.3, f0: [.5, .5], grade: "calido", z: 1 }));
+SHOTS.push(shot(A + "matriz-sello-bronce-impronta.jpg", [1280, 1839], { parent: $("intro"), t0: 1.0, t1: 1.8, z0: 1.12, z1: 1.32, f0: [.42, .38], grade: "calido", z: 1 }));
+ev(.02, "open"); ev(1.0, "seal");
+
+// ───────────────────────── 1 · «Año 1775» sobre la vista real; se calca a pluma y se desvanece ─────────────────────────
+const DR0 = T("n1") + 2.85;                     // la pluma empieza con «en ciudades como esta»
+const WYN1 = DR0 + 5.0;
+const wyn = shot(A + "talavera-wyngaerde-1567.jpg", [1280, 216], { parent: $("pre"), t0: T("n1"), t1: WYN1, box: { l: 0, t: 250, w: 540, h: 280 }, rule: true,
+  z0: 1.0, z1: 1.12, f0: [.2, .5], f1: [.6, .5], grade: GRAB, fadeOut: 2.4 });
+ev(T("n1"), "cut", 0);
 
 // ── la ciudad de 1775 (grabado) y la de hoy
 const old = S.drawCity($("osv"), { G, era: "1775" });
-const now = S.drawCity($("nsv"), { G, era: "hoy" });
-ev(.3, "draw0"); ev(3.8, "draw1");
+ev(DR0, "draw0");
 
 // ── gente que se reúne alrededor de una mesa
 const HOME = [[-20, G - 6], [-40, G - 6], [-60, G - 6], [-80, G - 6], [560, G - 6], [580, G - 6], [600, G - 6], [620, G - 6], [-100, G - 6], [640, G - 6]];
@@ -53,22 +107,56 @@ const ppl = HOME.map(() => S.el("div", "ppl", $("people")));
 for (let k = 1; k <= Math.round((W1 - W0) * 6); k += 2) ev(W0 + k / 6, "step", k);
 $("tsv").innerHTML = `<path id="table" d="${S.hand([[150, 412], [392, 412]]) + S.hand([[166, 412], [166, 430]]) + S.hand([[376, 412], [376, 430]])}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>`;
 const dTable = S.dash($("table"));
-// oficios, cuando se nombran
+
+// ── oficios: al nombrar a cada uno, un plano de láminas de la Encyclopédie (y una moneda) con corte seco
 const JOBS = [["boticario", 0, 1, -18], ["maestra", 2, 3, -18], ["labrador", 7, 5, 26], ["comerciante", 9, 7, 26]];
+const tags = [];
+const mkTag = (txt, t0, t1) => { const e = S.el("div", "tile tag", $("mont"), txt); tags.push((t) => (e.style.display = t >= t0 && t < t1 ? "block" : "none")); };
+const nameT = (i) => wordAt("n3", [1, 3, 5, 7][i]);
+const endT = (i) => (i < 3 ? wordAt("n3", [2, 4, 6][i]) - .08 : wordAt("n3", 7) + 1.65);
+const OFSH = [
+  { w: 0, a: nameT(0), b: endT(0), src: "enc-recueil-1772.jpg", nat: [1196, 2000], z0: 1.55, z1: 1.8, f0: [.4, .3], f1: [.45, .32] },           // boticario: taller de tintes y hornillo
+  { w: 1, a: nameT(1), b: endT(1), src: "enc-escritura-pluma.jpg", nat: [1228, 2000], z0: 1.7, z1: 2.0, f0: [.5, .15], f1: [.5, .21] },     // maestra: la mano y la pluma
+  { w: 2, a: nameT(2), b: endT(2), src: "enc-labourage.jpg", nat: [1390, 2000], z0: 1.9, z1: 2.1, f0: [.62, .6], f1: [.74, .6] },          // labrador: el arado
+  { w: 3, a: nameT(3), b: nameT(3) + .85, src: "atenas-tetradracma-lechuza-a.jpg", nat: [1920, 1920], z0: 1.3, z1: 1.5, f0: [.58, .4], grade: "grabado" }, // comerciante: la moneda
+  { w: 3, a: nameT(3) + .85, b: endT(3), src: "lacre-sombrereros-1842.jpg", nat: [1280, 1222], z0: 1.15, z1: 1.35, f0: [.5, .45], grade: "calido" }, // …y el sello de un gremio
+];
+OFSH.forEach((s, i) => {
+  SHOTS.push(shot(A + s.src, s.nat, { t0: s.a, t1: s.b, box: BAND, rule: true, z0: s.z0, z1: s.z1, f0: s.f0, f1: s.f1, grade: s.grade === "calido" ? "calido" : GRAB }));
+  ev(s.a, "cut", i + 1);
+});
+[0, 1, 2, 3].forEach((w) => mkTag(JOBS[w][0], nameT(w), endT(w)));
 const jobs = JOBS.map(([w, seat, wi, dy]) => {
   const at = wordAt("n3", wi), [x, y] = SEAT[seat];
   const e = S.el("div", "job", $("jobs"), w); e.style.left = x + "px"; e.style.top = y + dy - 8 + "px";
   ev(at, "job", JOBS.findIndex((j) => j[0] === w));
   return { e, at, seat };
 });
-// escuelas, inventos, libros
-const ICONS = [["escuela", 118, wordAt("n4", 1)], ["invento", 237, wordAt("n4", 3)], ["libro", 356, wordAt("n4", 5)]];
-const icons = ICONS.map(([k, x, t], i) => {
-  const p = document.createElementNS(NS, "path");
-  p.setAttribute("d", S.ICON[k]()); p.setAttribute("fill", "none"); p.setAttribute("stroke", "var(--ink)"); p.setAttribute("stroke-width", "1.1");
-  p.setAttribute("transform", `translate(${x} 262) scale(1.5)`); p.setAttribute("stroke-linecap", "round");
-  $("tsv").appendChild(p); ev(t, "icon", i);
-  return { p, draw: S.dash(p), t };
+
+// ── escuelas, inventos, libros: seis planos, un corte por palabra (verbo y nombre)
+const N4 = (i) => wordAt("n4", i);
+const N4END = N4(5) + 1.3;
+const MONT = [
+  // [palabra i, hasta, archivo, nat, z0, z1, f0, f1, grade]
+  [0, N4(1), "enc-escritura-batarda.jpg", [1276, 2000], 2.0, 2.2, [.5, .57], [.5, .6]],
+  [1, N4(2), "enc-escritura-ronda.jpg", [1424, 2000], 1.9, 2.1, [.45, .89], [.55, .89]],
+  [2, N4(3), "enc-reloj-c.jpg", [1354, 2000], 2.0, 2.3, [.52, .61], [.5, .64]],
+  [3, N4(4), "armilar-bowen-1747.jpg", [1920, 1216], 2.0, 2.2, [.76, .42], [.76, .4]],
+  [4, N4(5), "badius-vineta-1523.jpg", [1320, 2000], 2.3, 2.6, [.5, .44], [.5, .42]],
+  [5, N4END, "enc-imprenta-pl1.jpg", [1286, 2000], 1.7, 1.9, [.45, .77], [.55, .77]],
+];
+MONT.forEach(([i, b, f, nat, z0, z1, f0, f1], k) => {
+  SHOTS.push(shot(A + f, nat, { t0: N4(i), t1: b, box: BAND, rule: true, z0, z1, f0, f1, grade: GRAB }));
+  ev(N4(i), "cut", 6 + k);
+});
+// iconos (pictograma en una ficha) sobre los planos de cada nombre
+const ICONS = [["escuela", N4(1), N4(2)], ["invento", N4(3), N4(4)], ["libro", N4(5), N4END]];
+const icons = ICONS.map(([k, t0, t1], i) => {
+  const tile = S.el("div", "tile ico", $("mont"));
+  tile.innerHTML = `<svg width="66" height="66" viewBox="0 0 66 66"><path d="${S.ICON[k]()}" transform="translate(10 12) scale(1.1)" fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+  const draw = S.dash(tile.querySelector("path"));
+  ev(t0, "icon", i);
+  return (t) => { const on = t >= t0 && t < t1; tile.style.display = on ? "block" : "none"; if (on) draw(eIO((t - t0 + .05) / .45)); };
 });
 const TBL_OUT = T("n5") + .2;
 
@@ -76,14 +164,132 @@ const TBL_OUT = T("n5") + .2;
 const IDEA = wordAt("n5", 9);
 ev(IDEA, "stamp");
 
-// ── el año corre: 1775 → 2026, y la ciudad cambia
-const Y0 = T("n6") - .2, Y1 = Y0 + 2.8;
-const yearAt = (t) => { if (t < Y0) return 1775; const k = clamp(stepN(t, Y0, 12) / ((Y1 - Y0) * 12)); return Math.round(1775 + (2026 - 1775) * eIO(k)); };
+// ───────────────────────── el año corre: 1775 → 2026 y la ciudad CRECE a saltos ─────────────────────────
+const Y0 = T("n6") - .4, Y1 = Y0 + 3.4;
+const yearAt = (t) => { if (t < Y0) return 1775; const k = clamp(stepN(t, Y0, 12) / ((Y1 - Y0) * 12)); return Math.round(1775 + (2026 - 1775) * (.7 * k + .3 * eIO(k))); };
 for (let k = 0; k < (Y1 - Y0) * 12; k += 1) ev(Y0 + k / 12, "tick", k);
 ev(Y0 - .3, "time");
+const tickYear = []; for (let k = 0; k <= Math.ceil((Y1 - Y0) * 12) + 1; k++) tickYear.push([Y0 + k / 12, yearAt(Y0 + k / 12)]);
+const timeOf = (y) => { for (const [t, v] of tickYear) if (v >= y) return t; return Y1; };
+
+// ── 2026: bloques de pisos, naves, chimenea, grúas, antenas, viaducto de hormigón, tendido y tren
+const NSV = $("nsv");
+const mk = (parent, tag, at) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const eYear = (x) => 1790 + ((x - 36) / 480) * 185;      // el frente de derribo: borra 1775 de izquierda a derecha
+const FH = 11;
+const gFar = mk(NSV, "g", { "stroke-opacity": ".62" }), gMid = mk(NSV, "g", {}), gNear = mk(NSV, "g", {});
+const gInfra = mk(NSV, "g", {}), gFront = mk(NSV, "g", {});
+const STK = { fill: "var(--paper)", stroke: "var(--ink)", "stroke-linejoin": "round", "stroke-linecap": "round" };
+const born = []; // [año, evento]  → sonido de obra
+const blocks = [];
+const mkBlock = (g, x, w, F, row, i) => {
+  const xc = x + w / 2, b0 = eYear(xc) + 8 + rnd(i + 3) * 6, rise = 20 + F * 1.2;
+  const fl = [];
+  for (let j = 0; j < F; j++) {
+    const y = G - (j + 1) * FH;
+    let d = S.box(x, y, w, FH);
+    const n = Math.floor((w - 6) / 8), sx = x + (w - (n * 8 - 4)) / 2;
+    for (let k = 0; k < n; k++) d += `M${(sx + k * 8).toFixed(1)} ${y + 3}h4v5h-4z`;
+    if (j === F - 1) { d += S.box(x + 3, y - 4, Math.min(11, w - 8), 4); if (w > 30) d += S.box(x + w - 12, y - 7, 8, 7); }
+    fl.push(mk(g, "path", { ...STK, d, "stroke-width": row === 0 ? 1.1 : row === 1 ? 1.4 : 1.7, style: "display:none" }));
+  }
+  const bl = { x, w, F, b0, rise, fl, nv: -1, mast: null };
+  if (row === 0 && F >= 12 && rnd(i + 21) > .45) {
+    const top = G - F * FH - 11, cx = x + w / 2;
+    let d = S.hand([[cx, top], [cx, top - 26]]) + S.hand([[cx - 5, top - 10], [cx + 5, top - 10]]) + S.hand([[cx - 3, top - 18], [cx + 3, top - 18]]) + S.hand([[cx - 6, top - 22], [cx - 1, top - 26]]);
+    bl.mast = mk(g, "path", { d, fill: "none", stroke: "var(--ink)", "stroke-width": 1, "stroke-linecap": "round", display: "none" });
+    bl.light = mk(g, "rect", { x: cx - 1.8, y: top - 29.5, width: 3.6, height: 3.6, fill: "var(--red)", display: "none" });
+  }
+  blocks.push(bl);
+  born.push([b0 + rise * .4, i]);
+};
+{
+  let x = 138, i = 0;
+  while (x < 505) { const w = 24 + Math.round(rnd(i) * 8), F = 10 + Math.round(rnd(i + 50) * 6); mkBlock(gFar, x, w, F, 0, i); x += w + 4 + Math.round(rnd(i + 9) * 5); i++; }
+  x = 144;
+  while (x < 505) { const w = 28 + Math.round(rnd(i) * 10), F = 6 + Math.round(rnd(i + 50) * 6); mkBlock(gMid, x, w, F, 1, i); x += w + 7 + Math.round(rnd(i + 9) * 8); i++; }
+  x = 134;
+  while (x < 505) { const w = 34 + Math.round(rnd(i) * 22), F = 3 + Math.round(rnd(i + 50) * 3); mkBlock(gNear, x, w, F, 2, i); x += w + 9 + Math.round(rnd(i + 9) * 10); i++; }
+}
+// elementos que se dibujan (trazo) cuando llega su año
+const drawn = [];
+const place = (g, d, year, dur, at = {}) => {
+  const p = mk(g, "path", { fill: "none", stroke: "var(--ink)", "stroke-width": 1.5, "stroke-linecap": "round", "stroke-linejoin": "round", ...at, d });
+  const dash = S.dash(p); const o = { p, dash, year, dur }; drawn.push(o); return o;
+};
+mk(gInfra, "path", { d: S.hand([[-20, G], [560, G]]), fill: "none", stroke: "var(--ink)", "stroke-width": 1.6, "stroke-linecap": "round" });
+// industria: nave de dientes de sierra y chimenea
+{
+  let d = S.hand([[54, G], [54, G - 24]]);
+  const pts = [[54, G - 24]]; for (let k = 0; k < 3; k++) { const x0 = 54 + k * 19; pts.push([x0, G - 38], [x0 + 19, G - 24]); } pts.push([111, G]);
+  d = S.hand(pts) + S.hand([[54, G - 24], [111, G - 24]]) + S.box(62, G - 16, 12, 16) + S.box(86, G - 14, 16, 8);
+  const nave = place(gInfra, d, eYear(54) + 12, 14, { fill: "var(--paper)", "stroke-width": 1.6 });
+  born.push([nave.year + 4, 91]);
+  const ch = place(gInfra, S.hand([[115, G], [118, G - 128], [128, G - 128], [131, G]]) + S.hand([[117, G - 100], [129, G - 100]]) + S.hand([[117, G - 112], [129, G - 112]]) + S.hand([[116, G - 124], [130, G - 124]]) + S.hand([[117.5, G - 128], [117.5, G - 133], [128.5, G - 133], [128.5, G - 128]]), 1895, 10, { fill: "var(--paper)", "stroke-width": 1.7 });
+  ch.red = mk(gInfra, "rect", { x: 118, y: G - 112, width: 10, height: 3, fill: "var(--red)", display: "none" });
+  born.push([1897, 92]);
+}
+const puffs = [0, 1, 2, 3].map(() => mk(gInfra, "circle", { r: 4, fill: "none", stroke: "var(--ink)", "stroke-width": 1, display: "none" }));
+// viaducto de hormigón: tramos que se suman
+const via = [];
+for (let i = 0; i < 9; i++) {
+  const x0 = -5 + 61 * i;
+  const d = S.box(x0 + 26, G + 24, 9, 44) + S.box(x0 + 22, G + 24, 17, 4) + S.box(x0, G + 18, 61, 6) + S.hand([[x0, G + 13], [x0 + 61, G + 13]]) + [0, 1, 2, 3, 4, 5].map((k) => S.hand([[x0 + 4 + k * 10.5, G + 13], [x0 + 4 + k * 10.5, G + 18]])).join("");
+  const o = place(gInfra, d, 1944 + i * 5, 6, { fill: "var(--paper)", "stroke-width": 1.5 }); via.push(o); born.push([o.year + 2, 40 + i]);
+}
+// vía y tren
+const rail = place(gInfra, S.hand([[-20, G + 62], [560, G + 62]]) + S.hand([[-20, G + 65], [560, G + 65]]), 1950, 12, { "stroke-width": 1.2 });
+{ let d = ""; for (let x = -16; x < 560; x += 12) d += `M${x} ${G + 62}v3`; mk(gInfra, "path", { d, stroke: "var(--ink)", "stroke-opacity": ".5", "stroke-width": 1, id: "ties", display: "none" }); }
+const TRAIN_Y = 1992, TR0 = timeOf(TRAIN_Y);
+born.push([TRAIN_Y, 95]);
+const train = mk(gInfra, "g", { display: "none" });
+{
+  const car = (x, loco) => {
+    let d = loco ? S.hand([[x, G + 62], [x, G + 49], [x + 26, G + 49], [x + 35, G + 56], [x + 35, G + 62], [x, G + 62]]) : S.box(x, G + 48, 38, 14);
+    const n = loco ? 2 : 4; for (let k = 0; k < n; k++) d += `M${x + 4 + k * 8} ${G + 52}h5v4h-5z`;
+    mk(train, "path", { ...STK, d, "stroke-width": 1.5 });
+    if (!loco) mk(train, "rect", { x: x + 1, y: G + 58, width: 36, height: 2.2, fill: "var(--red)" });
+  };
+  car(0, true); [38, 79, 120].forEach((x) => car(x, false));
+}
+// coches sobre el viaducto
+const cars = [[40, 1, 0], [250, 1, 1], [430, 1, 0], [120, -1, 0], [330, -1, 1], [500, -1, 0]].map(([x0, dir, red]) => {
+  const g = mk(gInfra, "g", { display: "none" });
+  mk(g, "path", { d: "M0 6h14v-4h-3l-2-3h-5l-2 3h-2z", fill: red ? "var(--red)" : "var(--ink)" });
+  return { g, x0, dir };
+});
+// tendido eléctrico: dos torres y cables
+const pyl = (x, h) => S.hand([[x - 11, G], [x - 3, G - h]]) + S.hand([[x + 11, G], [x + 3, G - h]]) + S.hand([[x - 3, G - h], [x, G - h - 9], [x + 3, G - h]]) +
+  [0.25, .5, .75].map((u) => S.hand([[x - 11 + 8 * u, G - h * u], [x + 11 - 8 * u, G - h * u - h * .25 * 0 - 0.001]])).join("") +
+  [0.2, .45, .7].map((u) => S.hand([[x - 11 + 8 * u, G - h * u], [x + 11 - 8 * u, G - h * (u + .22)]])).join("") +
+  S.hand([[x - 19, G - h + 13], [x + 19, G - h + 13]]) + S.hand([[x - 15, G - h + 31], [x + 15, G - h + 31]]) +
+  S.hand([[x - 19, G - h + 13], [x - 19, G - h + 18]]) + S.hand([[x + 19, G - h + 13], [x + 19, G - h + 18]]) + S.hand([[x - 15, G - h + 31], [x - 15, G - h + 36]]) + S.hand([[x + 15, G - h + 31], [x + 15, G - h + 36]]);
+const PA = [132, 160], PB = [488, 146];
+place(gFront, pyl(PA[0], PA[1]), 1950, 8, { "stroke-width": 1.4 }); place(gFront, pyl(PB[0], PB[1]), 1957, 8, { "stroke-width": 1.4 });
+const wire = (x0, y0, x1, y1, sag) => { const p = []; for (let k = 0; k <= 16; k++) { const u = k / 16; p.push([x0 + (x1 - x0) * u, y0 + (y1 - y0) * u + sag * 4 * u * (1 - u)]); } return S.hand(p); };
+const WD = wire(PA[0] + 19, G - PA[1] + 18, PB[0] - 19, G - PB[1] + 18, 22) + wire(PA[0] + 15, G - PA[1] + 36, PB[0] - 15, G - PB[1] + 36, 18) +
+  wire(PA[0] - 19, G - PA[1] + 18, 20, G - PA[1] + 44, 6) + wire(PB[0] + 19, G - PB[1] + 18, 560, G - PB[1] + 40, 6);
+place(gFront, WD, 1962, 10, { "stroke-width": .9, "stroke-opacity": ".75" });
+// grúas torre
+const cranes = [[196, 190, 62, 1998], [330, 168, 56, 2004], [440, 196, 64, 2010]].map(([x, h, jr, yr0], i) => {
+  const jl = 26; let d = S.hand([[x - 3, G], [x - 3, G - h]]) + S.hand([[x + 3, G], [x + 3, G - h]]);
+  for (let y = G; y > G - h + 10; y -= 12) d += S.hand([[x - 3, y], [x + 3, y - 12]]) + S.hand([[x + 3, y], [x - 3, y - 12]]);
+  d += S.hand([[x - jl, G - h], [x + jr, G - h]]) + S.hand([[x - jl, G - h - 4], [x + jr, G - h - 4]]);
+  for (let u = x - jl + 4; u < x + jr - 2; u += 9) d += S.hand([[u, G - h], [u + 4.5, G - h - 4]]) + S.hand([[u + 4.5, G - h - 4], [u + 9, G - h]]);
+  d += S.hand([[x - 3, G - h - 4], [x, G - h - 18], [x + 3, G - h - 4]]) + S.hand([[x, G - h - 18], [x + jr, G - h - 4]]) + S.hand([[x, G - h - 18], [x - jl, G - h - 4]]);
+  d += S.box(x - jl - 1, G - h, 9, 10) + S.box(x + 5, G - h + 1, 8, 7);
+  const o = place(gFront, d, yr0, 7, { "stroke-width": 1.2 });
+  const load = mk(gFront, "g", { display: "none" });
+  mk(load, "path", { d: "M0 0V12", stroke: "var(--ink)", "stroke-width": .9, fill: "none" });
+  mk(load, "rect", { x: -4, y: 12, width: 8, height: 5, fill: "var(--ink)" });
+  const light = mk(gFront, "rect", { x: x - 1.8, y: G - h - 22, width: 3.6, height: 3.6, fill: "var(--red)", display: "none" });
+  born.push([yr0 + 2, 70 + i]);
+  return { x, h, jr, yr0, load, light };
+});
 
 // ── hoy: vuelve la gente a la ciudad; luego una sociedad abierta
-const TODAY = [[228, G - 102], [275, G - 62], [289, G - 62], [403, G - 102], [431, G - 62], [130, G - 6], [196, G - 6], [345, G - 6], [415, G - 6], [470, G - 6]];
+const TODAY = [[150, G - 6], [196, G - 6], [232, G - 6], [262, G - 6], [296, G - 6], [330, G - 6], [372, G - 6], [404, G - 6], [440, G - 6], [470, G - 6]];
 const HOY0 = wordAt("n8", 2);
 const today = TODAY.map(([x, y], i) => { const d = S.el("div", "ppl", $("people")); d.style.left = x + "px"; d.style.top = y + "px"; ev(HOY0 + i * .08, "pop"); return { d, at: HOY0 + i * .08 }; });
 const C0 = wordAt("n9", 1), C1 = wordAt("n9", 8) + .3;
@@ -97,6 +303,19 @@ for (let r = 0; r < 12; r++) for (let c = 0; c < 11; c++) {
 }
 for (let k = 0; k < 10; k++) ev(C0 + k * (C1 - C0) / 10, "pop");
 
+// sonidos de obra: un golpe por bloque (espaciados), grúas, viaducto, tren
+{
+  let last = -1;
+  born.sort((a, b) => a[0] - b[0]).forEach(([yr, id]) => {
+    const t = timeOf(yr);
+    if (id >= 70 && id < 80) { ev(t, "crane", id - 70); last = t; }
+    else if (id >= 40 && id < 50) { ev(t, "via", id - 40); last = t; }
+    else if (id === 95) ev(t, "train");
+    else if (id === 92) ev(t, "chimney");
+    else if (t - last >= .1) { ev(t, "build", id); last = t; }
+  });
+}
+
 const subs = ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"].map((id) =>
   S.sub(id, { parent: $("subs"), hot: id === "n9" ? [1, 2] : id === "n7" ? [5] : [] }));
 
@@ -106,21 +325,62 @@ const firma = S.firma(SHRINK + .42);
 
 window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
 
+const setD = (e, on) => { const v = on ? "" : "none"; if (e._d !== v) { e._d = v; e.setAttribute("display", v || "inline"); } };
+const renderNow = (t, yr) => {
+  const on = t >= Y0;
+  $("now").style.display = on ? "block" : "none";
+  if (!on) return;
+  // el frente de derribo borra el 1775 de izquierda a derecha
+  const f = yr >= 1980 ? 600 : 36 + 480 * clamp((yr - 1790) / 185);
+  $("old").style.clipPath = `inset(0 0 0 ${f}px)`;
+  blocks.forEach((b) => {
+    const nv = yr < b.b0 ? 0 : Math.min(b.F, Math.ceil(((yr - b.b0) / b.rise) * b.F));
+    if (nv !== b.nv) { b.fl.forEach((e, j) => (e.style.display = j < nv ? "" : "none")); b.nv = nv; }
+    if (b.mast) { const v = nv >= b.F && yr >= 2006; setD(b.mast, v); setD(b.light, v && stepN(t, 0, 3) % 2 === 0); }
+  });
+  drawn.forEach((o) => { const p = clamp((yr - o.year) / o.dur); o.p.style.display = yr >= o.year ? "" : "none"; o.dash(p); if (o.red) setD(o.red, p >= 1); });
+  const tq = Math.floor(t * 12) / 12;
+  // humo de la chimenea (6 fps)
+  const sm = yr >= 1897;
+  puffs.forEach((c, j) => {
+    const a = ((stepN(t, 0, 6) + j * 3) % 12) / 12;
+    setD(c, sm);
+    c.setAttribute("cx", 123 + a * 34 + Math.sin(a * 6 + j) * 2); c.setAttribute("cy", G - 138 - a * 62); c.setAttribute("r", 3 + a * 9); c.setAttribute("stroke-opacity", (.8 * (1 - a)).toFixed(2));
+  });
+  // tren, coches, grúas
+  const rel = tq - TR0, tOn = yr >= TRAIN_Y && rel >= 0;
+  setD(train, tOn); if (tOn) train.setAttribute("transform", `translate(${(-170 + ((rel * 150) % 900)).toFixed(1)} 0)`);
+  const ties = $("nsv").querySelector("#ties"); setD(ties, yr >= 1962);
+  cars.forEach(({ g, x0, dir }) => { setD(g, yr >= 1990); const x = (((x0 + dir * 70 * tq) % 620) + 620) % 620 - 40; g.setAttribute("transform", `translate(${x.toFixed(1)} ${G + 18 - 7})`); });
+  cranes.forEach((c) => {
+    const ok = yr >= c.yr0 + 7; setD(c.load, ok); setD(c.light, ok && stepN(t, 0, 3) % 2 === 1);
+    if (!ok) return;
+    const k = stepN(t, 0, 6), u = (Math.sin(k * .5 + c.x) + 1) / 2;
+    c.load.setAttribute("transform", `translate(${c.x + 14 + (c.jr - 22) * u} ${G - c.h + 1 - 6 * Math.abs(Math.sin(k * .37 + c.x))})`);
+  });
+};
+
 window.renderAt = (t) => {
-  // ciudades: la de 1775 se dibuja; con el año corriendo se borra y se dibuja la de hoy
-  old.draw(t, .3, 3.4);
-  $("old").style.opacity = t < T("n2") ? 1 : t < TBL_OUT ? 1 - .75 * eIO((t - T("n2")) / 1) : t < Y0 ? .25 + .75 * eIO((t - TBL_OUT) / 1) : 1 - eIO((t - Y0) / 1.6);
-  now.draw(t, Y0 + .3, 2.8);
-  $("now").style.display = t >= Y0 ? "block" : "none";
+  const yr = yearAt(t);
+  // arranque, vista de Wyngaerde y planos de archivo
+  SHOTS.forEach((s) => s(t));
+  wyn(t); tags.forEach((f) => f(t)); icons.forEach((f) => f(t));
+  $("pre").style.display = t >= T("n1") && t < WYN1 ? "block" : "none";
+  $("intro").style.display = t < T("n1") ? "block" : "none";
+
+  // ciudades: la de 1775 se calca a pluma sobre el grabado; luego crece la de hoy
+  old.draw(t, DR0, 3.4);
+  $("old").style.opacity = t < T("n2") ? 1 : t < TBL_OUT ? 1 - .75 * eIO((t - T("n2")) / 1) : t < Y0 ? .25 + .75 * eIO((t - TBL_OUT) / 1) : 1;
   const endOp = 1 - eIO((t - (C0 - .2)) / .8);
   $("world").style.opacity = endOp;
+  renderNow(t, yr);
 
   // año
-  const yOn = t < FLIP;
-  $("year").textContent = yearAt(t);
-  $("year").style.opacity = yOn ? eOut((t - .3) / .8) * endOp : 0;
-  $("yl").style.opacity = yOn ? eOut((t - .3) / .8) * endOp : 0;
-  $("year").style.color = t >= Y1 ? "var(--red)" : "var(--ink)";
+  const yOn = t < FLIP, yA = eOut((t - T("n1") - .1) / .8);
+  $("year").textContent = yr;
+  $("year").style.opacity = yOn ? yA * endOp : 0;
+  $("yl").style.opacity = yOn ? yA * endOp : 0;
+  $("year").style.color = yr >= 2026 ? "var(--red)" : "var(--ink)";
 
   // gente de 1775
   ppl.forEach((d, i) => {
@@ -133,7 +393,6 @@ window.renderAt = (t) => {
   $("tableL").style.opacity = 1 - eIO((t - TBL_OUT) / .6);
   dTable(eIO((t - W0 - 1.5) / 1.5));
   jobs.forEach(({ e, at }) => { e.style.opacity = t < TBL_OUT ? eOut((t - at) / .4) : 1 - eIO((t - TBL_OUT) / .6); });
-  icons.forEach((ic) => ic.draw(eIO((t - ic.t + .1) / .7)));
 
   // la idea (rojo) en mitad de la calle, de 1775 a hoy
   let sq = $("idea");

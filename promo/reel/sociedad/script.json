@@ -4,91 +4,91 @@
    "id": "n1",
    "who": "narradora",
    "text": "En cada ciudad hay preguntas que nadie contesta.",
-   "t": 1.2
+   "t": 4.0
   },
   {
    "id": "q1",
    "who": "abuela",
    "text": "¿Por qué cerró la fábrica?",
-   "t": 5.4
+   "t": 8.2
   },
   {
    "id": "q2",
    "who": "joven",
    "text": "¿Podré pagar el alquiler el año que viene?",
-   "t": 7.3
+   "t": 10.1
   },
   {
    "id": "q3",
    "who": "madre",
    "text": "¿Se quedará aquí mi hija?",
-   "t": 9.6
+   "t": 12.4
   },
   {
    "id": "q4",
    "who": "tendero",
    "text": "¿Merece la pena abrir aquí?",
-   "t": 11.3
+   "t": 14.1
   },
   {
    "id": "n2",
    "who": "narradora",
    "text": "Las respuestas existen. Pero hay que ir a buscarlas.",
-   "t": 13.6
+   "t": 16.9
   },
   {
    "id": "n3",
    "who": "narradora",
    "text": "Hace más de doscientos años, gente de saberes distintos se juntaba para mejorar su tierra.",
-   "t": 19.3
+   "t": 22.6
   },
   {
    "id": "n4",
    "who": "narradora",
    "text": "Abrían escuelas, premiaban inventos, traducían libros.",
-   "t": 27.8
+   "t": 31.1
   },
   {
    "id": "n5",
    "who": "narradora",
    "text": "Se llamaban sociedades económicas.",
-   "t": 32.8
+   "t": 36.1
   },
   {
    "id": "n6",
    "who": "narradora",
    "text": "Hoy queremos recuperar esa idea.",
-   "t": 36.4
+   "t": 39.7
   },
   {
    "id": "n7",
    "who": "narradora",
    "text": "Para entender.",
-   "t": 39.6
+   "t": 43.3
   },
   {
    "id": "n8",
    "who": "narradora",
    "text": "Para hacer.",
-   "t": 41.0
+   "t": 45.2
   },
   {
    "id": "n9",
    "who": "narradora",
    "text": "Y para compartirlo.",
-   "t": 42.3
+   "t": 47.0
   },
   {
    "id": "n10",
    "who": "narradora",
    "text": "Una sociedad abierta, a quien quiera aprender o aportar.",
-   "t": 44.9
+   "t": 49.6
   },
   {
    "id": "n11",
    "who": "narradora",
    "text": "Debemos saber.",
-   "t": 50.5
+   "t": 55.2
   }
  ]
 }
