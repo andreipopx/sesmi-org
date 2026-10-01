@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · De dónde sale el caballo</title>
+<!--
+  Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
+  ../assets/video/anim-derby.mp4  ../assets/archivo/geric-derby-epsom-1821.jpg  ../assets/video/caballo-muybridge.mp4
+-->
+<!--
+  Serie «De dónde sale cada figura» · episodio 2/3: el caballo (pata Servicios, «Fuerza aplicada»). 26,6 s.
+  Rejilla común a los tres episodios (540×960): cabecera (left/right 32, top 64), caja de la fuente (32,150, 476×476),
+  pie (top 636), subtítulos (top 690). Gancho: la pregunta en la caja vacía. n2: el «Derby de Epsom» de Géricault (1821),
+  primero animado y luego en el cuadro fijo con zoom a saltos hacia un caballo. n3: en «nunca vuela así» corte seco a
+  Muybridge (1878): el clip se detiene en un fotograma con las patas recogidas y se subrayan en rojo. n4: vuelve el Derby
+  y se hace el calco: la figura de marca (galope volador, espejada para encajar con el caballo del cuadro) se dibuja a pluma
+  encima del caballo negro; el cuadro se apaga en tres saltos; la figura se rellena, se vuelve a mirar hacia donde mira la
+  marca y galopa con su ciclo de marca. Cierre: la caja se borra a saltos y queda la cartela con «Siguiente: la paloma».
+  Pocos fps: fuentes a 6, pluma y borrado a 12. Todo es función de t. Eventos para audio.py: cut, zoom, trace, fill, mark…
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.photo img{max-width:none}
+#bx{position:absolute;left:32px;top:150px;width:476px;height:476px;background:var(--paper);z-index:1}
+#src{position:absolute;inset:0;z-index:2}
+#veil{position:absolute;left:32px;top:150px;width:476px;height:476px;background:var(--paper);opacity:.42;z-index:3;display:none}
+#frame{position:absolute;inset:0;width:540px;height:960px;z-index:9;overflow:visible}
+#hdr{position:absolute;inset:0;z-index:10}
+#hdr .lbl{position:absolute;top:64px;color:var(--ink-3);white-space:nowrap}
+#hdr .l{left:32px;display:flex;align-items:center;gap:9px}
+#hdr .l i{display:inline-block;width:7px;height:7px;background:var(--red)}
+#hdr .r{right:32px}
+.pie{position:absolute;left:32px;top:636px;color:var(--ink-3);white-space:nowrap;z-index:10}
+.lema{position:absolute;left:32px;top:638px;font:italic 400 24px/1.3 var(--text);color:var(--red);z-index:10;display:none}
+#q{position:absolute;left:32px;top:150px;width:476px;height:476px;z-index:5;display:flex;align-items:center;justify-content:center;
+  text-align:center;font:700 62px/1.02 var(--strong);letter-spacing:-.04em}
+#q span{visibility:hidden}
+#calco,#marks{position:absolute;inset:0;width:540px;height:960px;overflow:visible}
+#calco{z-index:6}
+#marks{z-index:5}
+#fig{position:absolute;z-index:6;color:var(--ink)}
+.subs .sub{top:690px;display:none}
+.subs .sub .w{opacity:1;visibility:hidden}
+#close{position:absolute;inset:0;z-index:7}
+#close .abs{visibility:hidden}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bx"></div>
+  <div id="src"></div>
+  <div id="veil"></div>
+  <div id="q"></div>
+  <svg id="marks" viewBox="0 0 540 960"></svg>
+  <svg id="calco" viewBox="0 0 540 960"></svg>
+  <div id="fig"></div>
+  <svg id="frame" viewBox="0 0 540 960"><rect id="bd" x="32.5" y="150.5" width="475" height="475" fill="none" stroke="#1C1814" stroke-width="1"/></svg>
+  <div id="hdr"><div class="lbl l"><i></i>De dónde sale · 2/3</div><div class="lbl r">Servicios</div></div>
+  <div class="lbl pie" id="pie"></div>
+  <div class="lema" id="lema">Fuerza aplicada</div>
+  <div id="close"></div>
+  <div class="subs" id="subs"></div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, clamp, stepN, line, wordAt } = S;
+const B = window.BRAND;
+const show = (el, on, how = "block") => { const d = on ? how : "none"; if (el.style.display !== d) el.style.display = d; };
+const vis = (el, on) => { const v = on ? "visible" : "hidden"; if (el.style.visibility !== v) el.style.visibility = v; };
+const NS = "http://www.w3.org/2000/svg";
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+
+// ═════ tiempos (la voz manda; tiempos tipo de la serie)
+const N1 = line("n1").t, N2 = line("n2").t, N3 = line("n3").t, N4 = line("n4").t, N5 = line("n5").t;
+const BOX = { left: 32, top: 150, width: 476, height: 476 };
+const T_BOX = .55;                                    // la caja se dibuja a saltos (12 fps), 0 → .55
+const T_CUT_D = N2;                                   // entra el Derby animado (la pregunta se va)
+const T_ZOOM = [[N2, 1.0, .45, .55], [wordAt("n2", 3) - .05, 1.4, .42, .58], [wordAt("n2", 4) + .25, 1.9, .38, .60], [wordAt("n2", 7) - .25, 2.4, .36, .62], [wordAt("n2", 9) - .5, 3.0, .34, .63]];
+const T_STILL = T_ZOOM[1][0];                         // del clip animado al cuadro fijo (primer salto de zoom)
+const T_MUY = wordAt("n3", 3) - .05;                  // «nunca»: corte seco a Muybridge
+const T_FREEZE = wordAt("n3", 6) - .35;               // se detiene en el fotograma de las patas recogidas
+const T_MARK = wordAt("n3", 7) + .05;                 // «demostró»: se subrayan las patas
+const T_RESUME = wordAt("n3", 10) - .06;              // «en»: vuelve a correr
+const T_CALCO = N4;                                   // vuelve el Derby
+const T_TRACE = wordAt("n4", 1) - .02, T_TRACE_D = 1.45;   // «mirar»: empieza la pluma
+const T_VANISH = wordAt("n4", 3);                     // «Después»: el cuadro se va en tres saltos
+const T_FILL = wordAt("n4", 4);                       // «aplicar»: se rellena
+const T_TURN = T_FILL + 1 / 6;                        // se vuelve hacia donde mira la marca y galopa
+const T_ERASE = N5;                                   // la caja se borra
+const W0 = T_ERASE + .85;                             // wordmark
+const T_LAND = W0 + 1.5, T_URL = T_LAND + .45, T_NEXT = T_LAND + 1.0;
+const DUR = T_NEXT + 1.6;
+window.FIG_DURATION = DUR;
+
+// ═════ vistas de la imagen en la caja (zoom y encuadre; t llega a saltos porque S.photo/S.clip ya van a 6 fps)
+const SRC = {
+  still: { sw: 1920, sh: 1402, rx: 0, ry: 0, rw: 1920, rh: 1402 },
+  dclip: { sw: 608, sh: 1080, rx: 0, ry: 316, rw: 608, rh: 445 },      // el cuadro dentro del fotograma 9:16 (sin las barras negras)
+  muy: { sw: 1920, sh: 1080, rx: 0, ry: 5, rw: 1920, rh: 1070 },
+};
+const view = (s, bw, bh, z, fx, fy) => {
+  const sc = Math.max(bw / s.rw, bh / s.rh) * z;
+  const left = clamp(bw / 2 - (s.rx + fx * s.rw) * sc, bw - (s.rx + s.rw) * sc, -s.rx * sc);
+  const top = clamp(bh / 2 - (s.ry + fy * s.rh) * sc, bh - (s.ry + s.rh) * sc, -s.ry * sc);
+  return { sc, left, top };
+};
+const place = (layer, s, bw, bh, z, fx, fy) => {
+  const v = view(s, bw, bh, z, fx, fy), st = layer.img.style;
+  st.objectFit = "fill"; st.inset = "auto"; st.transform = "none";
+  st.width = (s.sw * v.sc).toFixed(2) + "px"; st.height = (s.sh * v.sc).toFixed(2) + "px";
+  st.left = v.left.toFixed(2) + "px"; st.top = v.top.toFixed(2) + "px";
+};
+const zoomAt = (t) => { let k = 0; T_ZOOM.forEach((z, i) => { if (t >= z[0]) k = i; }); return T_ZOOM[k]; };
+const CALCO = { z: 1.25, fx: .428, fy: .592 };       // encuadre del calco: la figura (≈300 px) cae en el centro de la caja
+
+// ═════ capas de imagen (todas en la caja, grabado)
+const base = { grade: "grabado", box: BOX, parent: $("src"), z: 2, from: [1, 50, 50], to: [1, 50, 50] };
+const dClip = S.clip("anim-derby", { ...base, t0: T_CUT_D, t1: T_STILL, start: 0, rate: .5 });
+const dStillA = S.photo("../assets/archivo/geric-derby-epsom-1821.jpg", { ...base, t0: T_STILL, t1: T_MUY });
+const dStillB = S.photo("../assets/archivo/geric-derby-epsom-1821.jpg", { ...base, t0: T_CALCO, t1: T_ERASE });
+const BAND = { left: BOX.left + 1, top: BOX.top + 77, width: 474, height: 322 };   // Muybridge 16:9, a lo ancho de la caja
+const mBase = { ...base, box: BAND };
+const mRun1 = S.clip("caballo-muybridge", { ...mBase, t0: T_MUY, t1: T_FREEZE, start: 0, rate: 1.27 });
+const mHold = S.clip("caballo-muybridge", { ...mBase, t0: T_FREEZE, t1: T_RESUME, start: 1.5, rate: 0 });
+const mRun2 = S.clip("caballo-muybridge", { ...mBase, t0: T_RESUME, t1: T_CALCO, start: 1.5, rate: 1 });
+const plate = S.el("div", "", $("src"));              // fondo de placa tras la franja de Muybridge
+plate.style.cssText = `position:absolute;z-index:1;left:${BOX.left + 1}px;top:${BOX.top + 1}px;width:474px;height:474px;background:var(--paper-2);display:none`;
+
+// ═════ cortes y eventos (suenan en audio.py)
+ev(T_CUT_D, "cut", 0);
+T_ZOOM.slice(1).forEach((z, i) => ev(z[0], "zoom", i));
+ev(T_MUY, "cut", 1);
+ev(T_CALCO, "cut", 2);
+ev(T_RESUME, "resume");
+ev(T_CALCO, "veil");
+ev(T_TRACE, "trace"); ev(T_TRACE + T_TRACE_D, "traceEnd");
+ev(T_VANISH, "vanish");
+ev(T_FILL, "fill");
+ev(.1, "motif"); ev(W0, "motif");
+
+// ═════ gancho: la pregunta en la caja, palabra a palabra
+const q = $("q");
+q.innerHTML = `<div><span>¿Por</span> <span>qué</span> <span>un</span><br><span>caballo</span> <span>así?</span></div>`;
+const qw = [...q.querySelectorAll("span")];
+
+// ═════ subtítulos de la voz (cada palabra aparece cuando se dice, sin fundidos)
+const subs = [];
+const mkSub = (id, groups, hot = [], outMax = 1e9) => {
+  const L = line(id);
+  groups.forEach(([a, b], gi) => {
+    const host = S.el("div", "sub", $("subs"));
+    const ws = [];
+    for (let i = a; i <= b; i++) {
+      const w = S.el("span", "w" + (hot.includes(i) ? " hot" : ""), host, L.words[i][0]);
+      ws.push(w); if (i < b) host.appendChild(document.createTextNode(" "));
+    }
+    const t0 = L.t + L.words[a][1] - .05;
+    const t1 = gi < groups.length - 1 ? L.t + L.words[groups[gi + 1][0]][1] - .05 : Math.min(L.end + .6, outMax);
+    subs.push((t) => {
+      const on = t >= t0 && t < t1;
+      show(host, on);
+      if (on) ws.forEach((w, k) => vis(w, t >= L.t + L.words[a + k][1] - .02));
+    });
+  });
+};
+mkSub("n2", [[0, 4], [5, 9]], [4], N3 - .05);
+mkSub("n3", [[0, 5], [6, 9], [10, 15]], [3], N4 - .05);
+mkSub("n4", [[0, 2], [3, 6]], [1, 6], N5 - .05);
+mkSub("n5", [[0, 1]], [1]);
+
+// ═════ caja que se dibuja
+const bd = $("bd"), dBd = S.dash(bd);
+
+// ═════ calco: la figura de marca a pluma sobre el caballo negro del cuadro (espejada: el cuadro mira a la izquierda)
+const UNIT = 7.2;                                    // px de la fuente por unidad de la figura (100×100)
+const FC = [50.2, 49.1];                             // centro de la figura (bbox)
+const SRCC = [822, 830];                             // centro del caballo negro en el cuadro (px de la fuente)
+const vC = view(SRC.still, BOX.width, BOX.height, CALCO.z, CALCO.fx, CALCO.fy);
+const sx = BOX.left + vC.left + SRCC[0] * vC.sc, sy = BOX.top + vC.top + SRCC[1] * vC.sc;
+const U = UNIT * vC.sc;                              // px de pantalla por unidad de la figura
+const calco = $("calco");
+const cg = svgEl("g", { transform: `translate(${sx.toFixed(2)} ${sy.toFixed(2)}) scale(${-U.toFixed(4)} ${U.toFixed(4)}) translate(${-FC[0]} ${-FC[1]})` }, calco);
+const cp = svgEl("path", { d: B.figs.caballo.mayor, fill: "none", stroke: "#1C1814", "stroke-width": (2 / U).toFixed(3), "stroke-linejoin": "round", "stroke-linecap": "butt" }, cg);
+const pen = svgEl("rect", { width: (7 / U).toFixed(3), height: (7 / U).toFixed(3), fill: "#7A1F10" }, cg);
+const dCp = S.dash(cp), CLEN = cp.getTotalLength();
+// figura viva (rellena)
+const fg = $("fig");
+fg.style.cssText += `;width:${(100 * U).toFixed(1)}px;height:${(100 * U).toFixed(1)}px;left:${(sx - FC[0] * U).toFixed(1)}px;top:${(sy - FC[1] * U).toFixed(1)}px`;
+const figAt = S.fig(fg, "caballo", "mayor");
+S.figEvents("caballo", T_TURN, T_ERASE);
+
+// ═════ marcas rojas sobre las patas recogidas (Muybridge, fotograma de las patas recogidas)
+const mk = $("marks");
+const MSC = view(SRC.muy, BAND.width, BAND.height, 1, .5, .5).sc;
+const mx = (xn) => BAND.left + BAND.width / 2 + (xn - .5) * 1920 * MSC;
+const my = (yn) => BAND.top + BAND.height / 2 + (yn - .5) * 1080 * MSC;
+const RED = { fill: "none", stroke: "#7A1F10", "stroke-width": 2.6, "stroke-linecap": "round", "stroke-linejoin": "round" };
+const under = svgEl("path", { ...RED, d: S.hand([[mx(.27), my(.865)], [mx(.47), my(.875)], [mx(.69), my(.865)]]) }, mk);
+const arrow = (xn) => S.hand([[mx(xn), my(.95)], [mx(xn), my(.885)]]) + S.hand([[mx(xn) - 8, my(.912)], [mx(xn), my(.885)], [mx(xn) + 8, my(.912)]]);
+const arrA = svgEl("path", { ...RED, d: arrow(.38) }, mk), arrB = svgEl("path", { ...RED, d: arrow(.58) }, mk);
+const dU = S.dash(under), dA = S.dash(arrA), dB = S.dash(arrB);
+const TA = [T_MARK, wordAt("n3", 8) + .05, wordAt("n3", 8) + .35];
+TA.forEach((t) => ev(t, "mark"));
+const q12 = (t, t0) => Math.max(0, stepN(t, t0, 12));
+const drawMarks = (t) => {
+  const on = t >= TA[0] && t < T_RESUME;
+  show(mk, on);
+  if (!on) return;
+  dU(clamp(q12(t, TA[0]) / 12 / .45));
+  dA(clamp(q12(t, TA[1]) / 12 / .25));
+  dB(clamp(q12(t, TA[2]) / 12 / .25));
+};
+
+// ═════ pie con la fuente (cambia con el plano)
+const PIES = [[T_CUT_D, "Géricault, Derby de Epsom · 1821"], [T_MUY, "Eadweard Muybridge · 1878"], [T_CALCO, "Géricault, Derby de Epsom · 1821"]];
+
+// ═════ cierre: wordmark que se escribe a saltos, punto rojo, sesmi.org, «Siguiente»
+const [sqx, sqy, sqw] = B.wordmark.sq.map(Number);
+const cl = $("close");
+const WORD = S.el("div", "abs", cl); WORD.style.cssText = "left:120px;top:330px;width:300px;visibility:visible";
+WORD.innerHTML = `<svg viewBox="${B.wordmark.vb}" style="display:block;width:100%;overflow:visible"><defs><clipPath id="wc"><rect class="wcr" x="22" y="-702" height="714" width="0"/></clipPath></defs>` +
+  `<path fill="currentColor" d="${B.wordmark.d}" clip-path="url(#wc)"/><rect class="wdot" fill="#7A1F10" x="${sqx}" y="${sqy}" width="${sqw}" height="${sqw}" style="visibility:hidden"/></svg>`;
+const URL_ = S.el("div", "abs", cl, "sesmi.org"); URL_.style.cssText = "left:0;right:0;top:478px;text-align:center;font:500 27px/1 var(--display)";
+const NEXT = S.el("div", "abs", cl, "Siguiente: la paloma"); NEXT.style.cssText = "left:0;right:0;top:548px;text-align:center;font:italic 400 22px/1.3 var(--text);color:var(--red)";
+const END = [447, 949, 1397, 2181, 2382];
+const WS = .2083;
+END.forEach((_, i) => ev(W0 + i * WS, "letter", i));
+ev(T_LAND, "land"); ev(T_URL, "url"); ev(T_NEXT, "sign2");
+const wcr = cl.querySelector(".wcr"), wdot = cl.querySelector(".wdot");
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+// ═════ todo es función de t
+window.renderAt = (t) => {
+  const tq12 = Math.floor(t * 12 + 1e-6) / 12;
+  // el borde de la caja se dibuja a saltos y se borra al final
+  const dr = clamp(tq12 / T_BOX), er = clamp((tq12 - (T_ERASE + .15)) / .5);
+  dBd(t < T_ERASE + .15 ? dr : 1 - er);
+  vis(bd, !(t >= T_ERASE + .15 + .5));
+
+  // gancho
+  show(q, t < T_CUT_D, "flex");
+  if (t < T_CUT_D) qw.forEach((w, i) => vis(w, t >= S.wordAt("n1", i) - .02));
+
+  // fuentes
+  dClip(t); dStillA(t); dStillB(t); mRun1(t); mHold(t); mRun2(t);
+  const z = zoomAt(t);
+  if (t >= T_CUT_D && t < T_STILL) place(dClip, SRC.dclip, BOX.width, BOX.height, z[1], z[2], z[3]);
+  if (t >= T_STILL && t < T_MUY) place(dStillA, SRC.still, BOX.width, BOX.height, z[1], z[2], z[3]);
+  if (t >= T_CALCO) place(dStillB, SRC.still, BOX.width, BOX.height, CALCO.z, CALCO.fx, CALCO.fy);
+  [mRun1, mHold, mRun2].forEach((l) => place(l, SRC.muy, BAND.width, BAND.height, 1, .5, .5));
+  show(plate, t >= T_MUY && t < T_CALCO);
+  show($("veil"), t >= T_CALCO && t < T_FILL);
+  // el cuadro se va en tres saltos (1 → .6 → .25 → 0)
+  let so = 1;
+  if (t >= T_VANISH) so = [.6, .25, 0][Math.min(2, stepN(t, T_VANISH, 6))];
+  if (t >= T_ERASE) so = 0;
+  $("src").style.opacity = so; $("veil").style.opacity = .42 * so;
+
+  // pie y lema
+  const pie = $("pie");
+  const showPie = t >= T_CUT_D && t < T_VANISH + .1;
+  show(pie, showPie);
+  if (showPie) { let s = ""; PIES.forEach(([a, x]) => { if (t >= a) s = x; }); if (pie.textContent !== s) pie.textContent = s; }
+  show($("lema"), t >= T_FILL && t < T_ERASE);
+
+  // calco (trazo a 12 fps) y figura viva
+  const trace = clamp((Math.floor((t - T_TRACE) * 12 + 1e-6) / 12) / T_TRACE_D);
+  const onC = t >= T_TRACE && t < T_FILL;
+  vis(calco, onC);
+  if (onC) {
+    dCp(trace);
+    const pt = cp.getPointAtLength(CLEN * trace);
+    pen.setAttribute("x", (pt.x - 3.5 / U).toFixed(3)); pen.setAttribute("y", (pt.y - 3.5 / U).toFixed(3));
+    vis(pen, trace < 1);
+  }
+  drawMarks(t);
+  const onF = t >= T_FILL && t < T_ERASE + .5;
+  vis(fg, onF);
+  if (onF) {
+    figAt(t, T_TURN);
+    fg.style.transform = t < T_TURN ? "scaleX(-1)" : "none";
+    let o = 1;
+    if (t >= T_ERASE) o = [.6, .25, 0][Math.min(2, stepN(t, T_ERASE, 6))];
+    fg.style.opacity = o;
+  }
+
+  subs.forEach((f) => f(t));
+
+  // cierre
+  const n = t < W0 ? 0 : Math.min(5, Math.floor((t - W0) / WS + 1e-6) + 1);
+  wcr.setAttribute("width", n ? END[n - 1] - 22 + 6 : 0);
+  vis(wdot, t >= T_LAND);
+  vis(URL_, t >= T_URL); vis(NEXT, t >= T_NEXT);
+  vis(WORD, t >= W0);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>

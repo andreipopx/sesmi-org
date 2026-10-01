@@ -5,7 +5,7 @@
 <title>sesmi · De dónde sale la paloma</title>
 <!--
   Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
-  ../assets/archivo/enc-escritura-ronda.jpg  ../assets/archivo/enc-escritura-pluma.jpg
+  ../assets/archivo/enc-escritura-ronda.jpg
   ../assets/video/ia-plumilla.mp4  ../assets/video/anim-palomas.mp4
 -->
 <!--
@@ -23,9 +23,10 @@
 <style>
 .photo img{max-width:none}
 #bx{position:absolute;left:32px;top:150px;width:476px;height:476px;background:var(--paper);z-index:1;overflow:hidden}
-#bx.dk{background:var(--ink)}
+#blk{position:absolute;inset:0;background:var(--ink);display:none}
 .plate{position:absolute;inset:0;overflow:hidden;opacity:.16}
 #src{position:absolute;inset:0;z-index:2}
+#veil{position:absolute;inset:0;background:var(--paper);opacity:.42;z-index:3;display:none}
 #ov{position:absolute;left:32px;top:150px;width:476px;height:476px;z-index:5;overflow:hidden;pointer-events:none}
 #calco{position:absolute;left:0;top:0;width:476px;height:476px;overflow:visible}
 #fig{position:absolute;left:0;top:0;width:100px;height:100px;transform-origin:50px 50px;color:var(--ink);visibility:hidden}
@@ -63,7 +64,7 @@
 </head>
 <body>
 <div id="stage">
-  <div id="bx"><div class="plate" id="plate"></div><div id="src"></div></div>
+  <div id="bx"><div class="plate" id="plate"></div><div id="src"><div id="blk"></div></div><div id="veil"></div></div>
   <div id="q"></div>
   <div id="card">
     <div class="rl" style="top:102px"></div>
@@ -76,7 +77,7 @@
   <div id="lemaBig"><div class="ln" id="ln1" style="top:150px"><span>Socorre</span></div><div class="ln" id="ln2" style="top:238px"><span>enseñando.</span></div></div>
   <svg id="nib" viewBox="0 0 64 84"><path d="M30 48 L58 8" stroke="#1C1814" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M22 54 L32 40 L38 46 L28 58 Z" fill="#1C1814"/><path d="M2 82 L12 56 L22 52 L28 58 L24 64 L8 78 Z" fill="#1C1814"/><path d="M3 81 L14 58" stroke="#F7F3EE" stroke-width="1.1" fill="none"/></svg>
   <div id="ov">
-    <svg id="calco" viewBox="0 0 476 476"><g id="cg"><path id="ch" fill="none" stroke="#F7F3EE" stroke-linejoin="round"/><path id="cp" fill="none" stroke="#1C1814" stroke-linejoin="round"/><rect id="pen" fill="#7A1F10"/></g></svg>
+    <svg id="calco" viewBox="0 0 476 476"><g id="cg"><path id="cp" fill="none" stroke="#1C1814" stroke-linejoin="round"/><rect id="pen" fill="#7A1F10"/></g></svg>
     <div id="fig"></div>
   </div>
   <svg id="frame" viewBox="0 0 540 960"><rect id="bd" x="32.5" y="150.5" width="475" height="475" fill="none" stroke="#1C1814" stroke-width="1"/></svg>
@@ -112,10 +113,10 @@ const T_FILL = T_VANISH + 2 / 6;            // el trazo pasa a relleno
 const T_MOVE = T_FILL + .3, MOVE_D = 4 / 12; // la figura pasa al centro de la caja
 const T_LIVE = T_MOVE + MOVE_D;             // y aletea
 const T_ERASE = line("n5").end + .12;        // la caja se borra
-const W0 = T_ERASE + .5, WS = .2083;       // wordmark, a saltos
+const W0 = T_ERASE + .35, WS = .2083;       // wordmark, a saltos
 const T_LAND = W0 + 5 * WS + .1, T_URL = T_LAND + .3;
-const T_FIGS = T_LAND + .3, T_LINE = T_FIGS + .7;
-const DUR = T_LINE + 1.6;
+const T_LINE = T_LAND + .6, T_FIGS = T_LAND + .9, FST = .18;
+const DUR = T_FIGS + 2 * FST + 1.5;
 window.FIG_DURATION = DUR;
 const ERASE_END = T_ERASE + .15 + .5;
 
@@ -125,7 +126,7 @@ const KZ = 1.0;                             // px de caja por px de imagen·(476
 const K = (BOX.width / IW) * 1.4;          // px de caja por px de imagen
 const DOVE = { fx: .5, fy: .5 };
 // el calco: centro de la figura en la caja, px por unidad, giro (grados)
-const CAL = { cx: 252, cy: 250, s: 3.5, r: -8 };
+const CAL = { cx: 318, cy: 262, s: 2.4, r: -20 };
 const FINAL = { cx: 238, cy: 238, s: 3.0, r: 0 };
 window.__CAL = CAL;
 
@@ -154,7 +155,7 @@ const plate = $("plate");
 const plA = S.photo(AR + "enc-escritura-ronda.jpg", { t0: T_CARD, t1: T_PEN, grade: "grabado", fps: FPS, parent: plate, box: BOX, from: [1.0, 50, 4], to: [1.0, 50, 4] });
 const plB = S.photo(AR + "enc-escritura-ronda.jpg", { t0: T_WRITE, t1: T_DOVES, grade: "grabado", fps: FPS, parent: plate, box: BOX, from: [1.08, 50, 96], to: [1.0, 50, 90] });
 [T_CARD, T_PEN, T_WRITE, T_DOVES].forEach((t, i) => ev(t, "cut", i));
-S.ev(T_FREEZE, "freeze");
+ev(T_FREEZE, "veil");
 
 // ═════ gancho: la pregunta en la caja, palabra a palabra
 const q = $("q");
@@ -187,7 +188,7 @@ const mkSub = (id, groups, hot = []) => {
       ws.push(w); if (i < b) host.appendChild(document.createTextNode(" "));
     }
     const t0 = L.t + L.words[a][1] - .05;
-    const t1 = gi < groups.length - 1 ? L.t + L.words[groups[gi + 1][0]][1] - .05 : (id === "n5" ? L.end + .25 : L.end + .6);
+    const t1 = gi < groups.length - 1 ? L.t + L.words[groups[gi + 1][0]][1] - .05 : (id === "n5" || id === "n4" ? L.end + .25 : L.end + .6);
     subs.push((t) => {
       const on = t >= t0 && t < t1;
       show(host, on);
@@ -201,12 +202,12 @@ mkSub("n5", [[0, 4]], [2]);
 
 // ═════ caja que se dibuja, calco, figura viva
 const bd = $("bd"), dBd = S.dash(bd);
-const cg = $("cg"), cp = $("cp"), ch = $("ch"), pen = $("pen");
-cp.setAttribute("d", B.figs.paloma.mayor); ch.setAttribute("d", B.figs.paloma.mayor);
-cp.setAttribute("stroke-width", (1.6 / CAL.s).toFixed(3)); ch.setAttribute("stroke-width", (4.2 / CAL.s).toFixed(3));
+const cg = $("cg"), cp = $("cp"), pen = $("pen");
+cp.setAttribute("d", B.figs.paloma.mayor);
+cp.setAttribute("stroke-width", (2.2 / CAL.s).toFixed(3));
 cg.setAttribute("transform", `translate(${CAL.cx} ${CAL.cy}) rotate(${CAL.r}) scale(${CAL.s}) translate(-50 -50)`);
 const PW = 1.5; pen.setAttribute("width", PW); pen.setAttribute("height", PW);
-const dCp = S.dash(cp), dCh = S.dash(ch);
+const dCp = S.dash(cp);
 const CLEN = cp.getTotalLength();
 const fg = $("fig");
 const figAt = S.fig(fg, "paloma", "mayor");
@@ -218,19 +219,18 @@ ev(.1, "motif"); ev(W0, "motif");           // motivo de cuatro notas (74, 78, 8
 // ═════ cierre: wordmark, sesmi.org, las tres figuras en fila y «Las tres patas de sesmi»
 const [sqx, sqy, sqw] = B.wordmark.sq.map(Number);
 const cl = $("close");
-const WORD = S.el("div", "abs", cl); WORD.style.cssText = "left:120px;top:262px;width:300px;visibility:hidden";
+const WORD = S.el("div", "abs", cl); WORD.style.cssText = "left:120px;top:330px;width:300px;visibility:hidden";
 WORD.innerHTML = `<svg viewBox="${B.wordmark.vb}" style="display:block;width:100%;overflow:visible"><defs><clipPath id="wc"><rect class="wcr" x="22" y="-702" height="714" width="0"/></clipPath></defs>` +
   `<path fill="currentColor" d="${B.wordmark.d}" clip-path="url(#wc)"/><rect class="wdot" fill="#7A1F10" x="${sqx}" y="${sqy}" width="${sqw}" height="${sqw}" style="visibility:hidden"/></svg>`;
-const URL_ = S.el("div", "abs", cl, "sesmi.org"); URL_.style.cssText = "left:0;right:0;top:386px;text-align:center;font:500 27px/1 var(--display)";
-const RULE = S.el("div", "abs", cl); RULE.style.cssText = "left:32px;right:32px;top:470px;height:1px;background:var(--ink)";
-const LINE = S.el("div", "abs", cl, `Las tres patas de <span style="font:500 24px/1 var(--display);font-style:normal;letter-spacing:-.01em">sesmi</span>`);
-LINE.style.cssText = "left:0;right:0;top:488px;text-align:center;font:italic 400 24px/1.3 var(--text);color:var(--ink)";
-const PATAS = [["buho", "Investigación", 90, T_FIGS], ["caballo", "Servicios", 270, T_FIGS + .22], ["paloma", "Divulgación", 450, T_FIGS + .44]];
-const figs = PATAS.map(([name, label, cx, t0]) => {
-  const h = S.el("div", "fg", cl); h.style.cssText = `left:${cx - 44}px;top:548px`;
-  const l = S.el("div", "fl lbl", cl, label); l.style.cssText = `left:${cx - 88}px;top:648px`;
+const URL_ = S.el("div", "abs", cl, "sesmi.org"); URL_.style.cssText = "left:0;right:0;top:478px;text-align:center;font:500 27px/1 var(--display)";
+const LINE = S.el("div", "abs", cl, `Las tres patas de <span style="font:500 22px/1 var(--display);font-style:normal;letter-spacing:-.01em">sesmi</span>`);
+LINE.style.cssText = "left:0;right:0;top:548px;text-align:center;font:italic 400 22px/1.3 var(--text);color:var(--red)";
+const PATAS = [["buho", "Investigación", 90, T_FIGS], ["caballo", "Servicios", 270, T_FIGS + FST], ["paloma", "Divulgación", 450, T_FIGS + 2 * FST]];
+const figs = PATAS.map(([name, label, cx, t0], k) => {
+  const h = S.el("div", "fg", cl); h.style.cssText = `left:${cx - 44}px;top:604px`;
+  const l = S.el("div", "fl lbl", cl, label); l.style.cssText = `left:${cx - 88}px;top:708px`;
   S.figEvents(name, t0, t0 + 2);
-  ev(t0, "fig", PATAS.findIndex((p) => p[0] === name));
+  ev(t0, "fig", k);
   return { h, l, t0, f: S.fig(h, name, "mayor") };
 });
 const END = [447, 949, 1397, 2181, 2382];
@@ -254,7 +254,7 @@ window.renderAt = (t) => {
 
   // fondo: papel; negro mientras vuelan las palomas
   const dark = t >= T_DOVES && t < T_VANISH + .5;
-  $("bx").classList.toggle("dk", dark);
+  show($("blk"), dark);
   show($("bx"), t < ERASE_END);
   const so = t < T_VANISH ? 1 : t < T_FILL ? [.6, .25, 0][Math.min(2, stepN(t, T_VANISH, 6))] : 0;
 
@@ -262,6 +262,8 @@ window.renderAt = (t) => {
   plA(t); plB(t);
   penClip(t); dovesPlay(t); dovesFreeze(t);
   srcEl.style.opacity = so;
+  show($("veil"), t >= T_FREEZE && t < T_FILL);
+  $("veil").style.opacity = (.42 * so).toFixed(3);
   $("plate").style.display = t >= T_CARD && t < T_DOVES ? "block" : "none";
 
   // cartela de 1775
@@ -303,9 +305,9 @@ window.renderAt = (t) => {
   // calco (trazo a 12 fps, con la pluma) y figura viva
   const trace = clamp((Math.floor((t - T_TRACE) * 12 + 1e-6) / 12) / TRACE_D);
   const onC = t >= T_TRACE && t < T_FILL;
-  vis($("calco"), onC);
+  show($("calco"), onC);
   if (onC) {
-    dCp(trace); dCh(trace);
+    dCp(trace);
     const pt = cp.getPointAtLength(CLEN * trace);
     pen.setAttribute("x", (pt.x - PW / 2).toFixed(2)); pen.setAttribute("y", (pt.y - PW / 2).toFixed(2));
     vis(pen, trace < 1);
@@ -327,7 +329,7 @@ window.renderAt = (t) => {
   const n = t < W0 ? 0 : Math.min(5, Math.floor((t - W0) / WS + 1e-6) + 1);
   wcr.setAttribute("width", n ? END[n - 1] - 22 + 6 : 0);
   vis(WORD, t >= W0); vis(wdot, t >= T_LAND);
-  vis(URL_, t >= T_URL); vis(RULE, t >= T_FIGS); vis(LINE, t >= T_LINE);
+  vis(URL_, t >= T_URL); vis(LINE, t >= T_LINE);
   figs.forEach((g) => { vis(g.h, t >= g.t0); vis(g.l, t >= g.t0); g.f(t, g.t0); });
 };
 window.renderAt(0);
