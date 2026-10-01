@@ -249,7 +249,10 @@ class Mix:
     def master(self, duck=0.5, vo_level=1.0, fade_out=2.5, mute=()):
         # la música baja bajo la voz (envolvente suavizada ~0,25 s)
         k = int(0.25 * SR)
-        env = np.convolve(self.vo_env, np.ones(k) / k, mode="same")
+        c = np.concatenate([[0.0], np.cumsum(self.vo_env)])  # media móvil por suma acumulada (instantánea)
+        lo = np.clip(np.arange(self.n) - k // 2, 0, self.n)
+        hi = np.clip(np.arange(self.n) + k - k // 2, 0, self.n)
+        env = (c[hi] - c[lo]) / k
         music = self.mus + 0.55 * self.reverb(self.wet + 0.25 * self.mus)
         music *= (1 - duck * env)[:, None]
         tm = np.arange(self.n) / SR

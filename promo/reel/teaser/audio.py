@@ -10,6 +10,24 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "shared"))
 from synth import SR, Mix, band_noise, bell, piano, thud, tt  # noqa: E402
 
+# np.convolve directo (ventana de 0,25 s sobre toda la pista) tarda decenas de minutos en master(): lo hacemos por FFT
+_conv = np.convolve
+
+
+def _fast_conv(a, v, mode="full"):
+    if len(v) < 512:
+        return _conv(a, v, mode)
+    n = len(a) + len(v) - 1
+    nf = 1 << (n - 1).bit_length()
+    y = np.fft.irfft(np.fft.rfft(a, nf) * np.fft.rfft(v, nf), nf)[:n]
+    if mode == "same":
+        o = (len(v) - 1) // 2
+        return y[o : o + len(a)]
+    return y
+
+
+np.convolve = _fast_conv
+
 TL = json.loads((HERE / "timeline.json").read_text())
 L = {l["id"]: l["t"] for l in json.loads((HERE / "script.json").read_text())["lines"]}
 m = Mix(HERE, TL["duration"])

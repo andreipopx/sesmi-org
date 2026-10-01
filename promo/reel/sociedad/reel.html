@@ -158,7 +158,7 @@ const n3 = (i) => wordAt("n3", i), n4 = (i) => wordAt("n4", i);
   [arch("enc-glaces-san-ildefonso", { t0: n4(3), t1: n4(5), from: [1.05, 50, 50], to: [1.3, 50, 50] }), n4(3), n4(5), "Encyclopédie · Real Fábrica de Cristales de San Ildefonso"],
   [animPlate("anim-imprenta", { t0: n4(5), t1: T("n5"), from: [1.15, 50, 48], to: [1.3, 50, 48] }), n4(5), T("n5"), "Encyclopédie · Imprenta"],
   [arch("estatutos-asturias", { t0: T("n5"), t1: wordAt("n5", 2), from: [1.0, 50, 40], to: [1.1, 50, 46] }), T("n5"), wordAt("n5", 2), "Estatutos de la Sociedad Económica de Asturias · 1781"],
-].forEach(([u, t0, t1, cap], i) => { plate(u, t0, t1, cap); if (i) cut(t0, 6 + i); });
+].forEach(([u, t0, t1, cap], i) => { plate(u, t0, t1, cap); cut(t0, 6 + i); });
 // «Se llamaban sociedades económicas»: el sello baja al lacre (el clip, al revés) y, al decir «económicas», se estampa
 const SEAL = wordAt("n5", 3) + .1, SL0 = wordAt("n5", 2);
 const LAC = { box: PB, from: [1.0, 50, 33], to: [1.0, 50, 33], grade: "calido", parent: $("plates"), z: 0 };
