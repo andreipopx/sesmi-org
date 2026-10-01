@@ -8,7 +8,7 @@
   se acumulan, se encienden todas, silencio, y queda una: «¿Y si nos quedamos?». Amanece mientras
   la narradora responde. Tiempos de voz en script.json (+ out/vo.json).
   Material usado (rutas literales para shared/credits.py):
-    ../assets/archivo/enc-glaces-san-ildefonso.jpg
+    ../assets/foto/cazalegas-fuente-ceramica.jpg  ../assets/video/telar-jacquard-cintas.mp4  ../assets/foto/plaza-mayor-trujillo.jpg
     ../assets/foto/abaco-madera.jpg  ../assets/foto/balanza-boticario.jpg  ../assets/foto/plaza-mayor-medinaceli-soportales.jpg
     ../assets/foto/paloma-vuelo-atardecer.jpg  ../assets/foto/reloj-torre-engranajes.jpg  ../assets/foto/palomas-cielo-melocoton.jpg
     ../assets/foto/talavera-tajo-puente-atardecer.jpg  ../assets/foto/talavera-puente-ceramica-noche.jpg
@@ -104,6 +104,7 @@ ev(DAWN, "dawn");
 const dawnK = (t) => clamp(stepN(t, DAWN, 6 / DAWND) / 6);
 
 // ── «con datos, en abierto, para cualquiera»
+const FLIP_T = line("n3").t - .5;
 const DAT = wordAt("n2", 1), ABI = wordAt("n2", 3), CUAL = wordAt("n2", 5);
 (() => {
   const pts = []; for (let x = 40; x <= 500; x += 20) pts.push([x, 330 - 40 * Math.sin(x / 70) - (x - 40) * .18 + Math.sin(x * 1.7) * 6]);
@@ -138,15 +139,15 @@ S.ev(0.0, "cut", 0); S.ev(0.6, "cut", 1); S.ev(1.15, "cut", 2); S.ev(CITY0 - .02
 
 // ── murmullo (estorninos): se enciende todo el vecindario y el cielo se llena de pájaros (murmuración = murmullo)
 const murm = shot(["clip", "estorninos-murmuracion", [1.15, 40, 50], [1.35, 45, 50],
-  { t0: MUR0 - .1, t1: BLACK, start: .8, grade: NOCHE + " brightness(.9)", parent: $("under"), z: 1, fadeIn: .35, box: { left: 0, top: 80, width: 540, height: 340 } }]);
+  { t0: MUR0 - .1, t1: BLACK, start: .8, grade: NOCHE + " brightness(.9)", parent: $("under"), z: 1, box: { left: 0, top: 60, width: 540, height: 380 } }]);
 if (murm) veil(murm, .25);
 
 // ── destellos: junto a la pregunta, un detalle real del oficio de que se habla (0,7 s, detrás del texto)
 const FLASH_D = .7;
 const FL = {
-  p1: ["archivo", "enc-glaces-san-ildefonso", [1.3, 30, 55], [1.05, 40, 55], {}],        // fábrica (manufactura real de lunas)
+  p1: ["clip", "telar-jacquard-cintas", [1.15, 50, 50], [1.3, 50, 50], { start: 1.0 }],  // fábrica: el telar en marcha
   p2: ["clip", "imprenta-tipografica-roja", [1.0, 50, 50], [1.0, 50, 50], { start: 1.2 }], // trabajo: la prensa en marcha
-  p3: ["foto", "plaza-mayor-medinaceli-soportales", [1.25, 50, 50], [1.0, 50, 50], {}],  // casas, soportales
+  p3: ["foto", "cazalegas-fuente-ceramica", [1.35, 40, 50], [1.1, 50, 50], {}],          // casas de la plaza del pueblo
   p4: ["foto", "balanza-boticario", [1.35, 50, 50], [1.1, 50, 50], {}],                  // tienda: la balanza
   p5: ["foto", "abaco-madera", [1.5, 50, 50], [1.15, 50, 50], {}],                       // adónde va el dinero: las cuentas
   p7: ["foto", "paloma-vuelo-atardecer", [1.3, 50, 40], [1.05, 50, 40], {}],             // los jóvenes se fueron: vuelo
@@ -154,23 +155,27 @@ const FL = {
 };
 const flashes = qs.filter((q) => FL[q.L.id]).map((q) => {
   const [lx, ly] = [parseFloat(q.lab.style.left), parseFloat(q.lab.style.top)], [kind, name, from, to, o] = FL[q.L.id];
-  const p = shot([kind, name, from, to, { ...o, t0: q.L.t - .02, t1: q.L.t + FLASH_D, grade: NOCHE, parent: $("flash"), z: 1, fadeOut: .18,
-    box: { left: lx - 10, top: ly - 8, width: 225, height: 104 } }]);
+  const p = shot([kind, name, from, to, { ...o, t0: q.L.t - .02, t1: q.L.t + FLASH_D, grade: NOCHE, parent: $("flash"), z: 1,
+    box: { left: 0, top: ly - 30, width: 540, height: 128 } }]);
   if (!p) return null;
-  veil(p, .4);
+  veil(p, .45);
   S.ev(q.L.t - .02, "flash", qs.indexOf(q));
   return p;
 }).filter(Boolean);
 
-// ── amanecer: estorninos sobre los tejados, palomas, el Tajo (cortes secos en el cielo vacío, al ritmo de la frase)
-const DB = { left: 0, top: 110, width: 540, height: 300 };
+// ── amanecer: estorninos sobre tejados y campanario, palomas, el Tajo y, en «Para cualquiera», plazas reales.
+// Cortes secos en la franja de cielo (0–420 px, sobre la ciudad dibujada), todo a 6 fps.
+const DB = { left: 0, top: 0, width: 540, height: 420 };
 const D = { grade: CALIDO, parent: $("dawnph"), z: 1, box: DB };
+const CUAL0 = CUAL - .05;
 const dawnDefs = [
-  [DAWN + .4, DAWN + 2.0, ["clip", "ia-estorninos", [1.0, 50, 40], [1.1, 50, 58], { start: .4 }]],
-  [DAWN + 2.0, DAWN + 3.0, ["foto", "palomas-cielo-melocoton", [1.0, 50, 70], [1.2, 50, 35], {}]],
-  [DAWN + 3.0, DAWN + 4.6, ["foto", "talavera-tajo-puente-atardecer", [1.05, 30, 50], [1.2, 65, 50], {}]],
+  [DAWN + .4, DAWN + 2.2, ["clip", "ia-estorninos", [1.0, 50, 42], [1.12, 50, 60], { start: .3 }]],
+  [DAWN + 2.2, DAWN + 3.1, ["foto", "palomas-cielo-melocoton", [1.0, 50, 70], [1.2, 50, 35], {}]],
+  [DAWN + 3.1, DAWN + 4.7, ["foto", "talavera-tajo-puente-atardecer", [1.05, 30, 50], [1.2, 65, 50], {}]],
+  [CUAL0, CUAL0 + 1.1, ["foto", "plaza-mayor-trujillo", [1.1, 62, 50], [1.3, 55, 50], {}]],
+  [CUAL0 + 1.1, FLIP_T - .1, ["foto", "plaza-mayor-medinaceli-soportales", [1.15, 35, 50], [1.35, 60, 50], {}]],
 ];
-const dawnShots = dawnDefs.map(([t0, t1, [k, n, f, to, o]], i) => { S.ev(t0, "dcut", i); return shot([k, n, f, to, { ...o, ...D, t0, t1 }]); }).filter(Boolean);
+const dawnShots = dawnDefs.map(([t0, t1, [k, n, f, to, o]], i) => { S.ev(t0, "dcut", i % 3); return shot([k, n, f, to, { ...o, ...D, t0, t1 }]); }).filter(Boolean);
 
 // ── narradora
 const subs = ["n1", "n2"].map((id) => S.sub(id, { parent: $("subs"), hot: id === "n2" ? [5] : [] }));
@@ -222,7 +227,7 @@ window.renderAt = (t) => {
   dCl(eIO((t - DAT) / 1.1)); dCb(eIO((t - DAT) / .8));
   const p = eIO((t - DAT) / 1.1), pts = window.__pts, j = Math.min(pts.length - 1, Math.round(p * (pts.length - 1)));
   $("cm").setAttribute("x", pts[j][0] - 5); $("cm").setAttribute("y", pts[j][1] - 5);
-  $("chart").style.opacity = t >= DAT ? 1 - eIO((t - (FLIP - .4)) / .4) : 0;
+  $("chart").style.opacity = t >= DAT && t < CUAL - .05 ? 1 : 0;
   PPL.forEach(({ d, x, at }) => {
     const on = t >= at && t < FLIP + .5;
     d.style.display = on ? "block" : "none";

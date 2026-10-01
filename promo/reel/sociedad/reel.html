@@ -5,9 +5,14 @@
 <title>sesmi · Una sociedad abierta</title>
 <!--
   Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
-  ../assets/video/ia-plumilla.mp4  ../assets/video/metronome.mp4  ../assets/foto/tipos-plomo-componedor.jpg
-  ../assets/video/ia-lacre.mp4  ../assets/foto/plaza-mayor-medinaceli-soportales.jpg  ../assets/foto/talavera-tajo-puente-atardecer.jpg
-  ../assets/video/estorninos-murmuracion.mp4
+  ../assets/video/ia-plumilla.mp4  ../assets/video/reloj-bolsillo-waltham.mp4  ../assets/video/maquina-escribir-tipos-macro.mp4
+  ../assets/video/pascalina-laton.mp4  ../assets/foto/plaza-mayor-medinaceli-soportales.jpg
+  ../assets/archivo/mapa-castilla-nueva-1785.jpg  ../assets/archivo/mapa-toledo-1768.jpg  ../assets/archivo/enc-patata.jpg
+  ../assets/archivo/enc-escritura-pluma.jpg  ../assets/archivo/enc-glaces-san-ildefonso.jpg  ../assets/archivo/imprenta-taller-1769.jpg
+  ../assets/archivo/estatutos-asturias.jpg  ../assets/video/ia-lacre.mp4
+  ../assets/foto/talavera-puente-viejo-02.jpg  ../assets/foto/talavera-tajo-puente-atardecer.jpg
+  ../assets/archivo/buho-great-white-owl-1771.jpg  ../assets/archivo/geric-derby-epsom-1821.jpg  ../assets/archivo/aves-1895-structure.jpg
+  ../assets/video/ia-estorninos.mp4
 -->
 <!--
   Versión A · «Una sociedad abierta». En cada ciudad hay preguntas (cuatro vecinos, con su voz);
@@ -56,55 +61,33 @@ const T = (id) => line(id).t;
 const NS = "http://www.w3.org/2000/svg";
 const G = 470;
 
-// ── imagen real: plano de foto/grabado con foco y zoom lentos (función pura de t).
-// f = [x, y] punto de la imagen (0–1) que queda en el centro; to = adónde se desplaza; z = [zoom inicial, final].
-const DIM = { // anchura × altura de cada imagen
-  "mapa-castilla-nueva-1785": [1280, 1054], "mapa-toledo-1768": [1920, 1868], "enc-patata": [1204, 2000], "enc-escritura-ronda": [1424, 2000],
-  "enc-reloj-c": [1354, 2000], "enc-imprenta-pl1": [1286, 2000], "campomanes-1777": [960, 1273], "estatutos-asturias": [1236, 2000],
-  "buho-great-white-owl-1771": [1234, 2000], "geric-derby-epsom-1821": [1920, 1402], "paloma-grabado-coloreado-wellcome": [1920, 1218],
-  "lacre-sombrereros-1842": [1280, 1222], "tipos-plomo-componedor": [1920, 1276],
-  "plaza-mayor-medinaceli-soportales": [1920, 1228], "talavera-tajo-puente-atardecer": [1920, 1460],
-};
+// ── imagen real: todo va a pocos fps (S.photo / S.clip: 6 fps, a saltos) y con cortes secos.
+const A = "../assets/archivo/", F = "../assets/foto/";
 const FULL = { left: 0, top: 0, width: 540, height: 960 }, PB = { left: 30, top: 130, width: 480, height: 430 };
-const GR = { // etalonajes: grabado = blanco y negro cálido sobre papel; calido = color apagado y cálido
-  grabado: "grayscale(1) sepia(.3) contrast(1.1) brightness(.98)",
-  calido: "saturate(.7) sepia(.2) contrast(1.08) brightness(.97)",
-  lacre: "url(#chroma)",
+const Q12 = (t) => Math.floor(t * 12 + 1e-6) / 12;   // lo continuo (trazo, fundidos) se redondea a 12 fps
+const qf = (x, n = 6) => Math.round(clamp(x) * n) / n; // fundidos en n escalones
+/** Grabado/lámina: blanco y negro cálido, multiplicado sobre el papel. */
+const arch = (name, o) => {
+  const u = S.photo(A + name + ".jpg", { grade: "grabado", parent: $("plates"), z: 0, box: PB, ...o });
+  u.img.style.mixBlendMode = "multiply"; u.box.style.background = "var(--paper-2)";
+  return u;
 };
-const macro = (src, o) => {
-  const name = src.replace(/^.*\//, "").replace(/\.jpg$/, ""), [iw, ih] = DIM[name];
-  const b = o.box || FULL;
-  const box = S.el("div", "photo", $("plates"));
-  box.style.cssText = `position:absolute;overflow:hidden;display:none;left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px;background:${o.bg || "var(--paper-2)"}` + (o.blend ? ";mix-blend-mode:multiply;background:none" : "");
-  const c = Math.max(b.width / iw, b.height / ih), W0 = iw * c, H0 = ih * c;
-  const img = S.el("img", "", box);
-  img.src = src;
-  img.style.cssText = `position:absolute;left:0;top:0;width:${W0}px;height:${H0}px;transform-origin:0 0;filter:${GR[o.grade || "grabado"] || o.grade}` + (o.mult ? ";mix-blend-mode:multiply" : "");
-  const to = o.to || o.f;
-  const upd = (t) => {
-    const on = t >= o.t0 && t < o.t1;
-    box.style.display = on ? "block" : "none";
-    if (!on) return;
-    const p = clamp((t - o.t0) / (o.t1 - o.t0));
-    const z = o.zf ? o.zf(t) : o.z[0] + (o.z[1] - o.z[0]) * p;
-    const fx = o.f[0] + (to[0] - o.f[0]) * p, fy = o.f[1] + (to[1] - o.f[1]) * p;
-    const tx = Math.min(0, Math.max(b.width - W0 * z, b.width / 2 - fx * W0 * z)), ty = Math.min(0, Math.max(b.height - H0 * z, b.height / 2 - fy * H0 * z));
-    img.style.transform = `translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${z.toFixed(4)})`;
-    box.style.opacity = o.fadeOut ? 1 - eIO((t - (o.t1 - o.fadeOut)) / o.fadeOut) : 1;
-  };
-  return upd;
+/** Foto real o fotograma de vídeo sobre fondo de tinta. */
+const real = (o, src) => {
+  const u = src.endsWith(".jpg") ? S.photo(src, { parent: $("plates"), z: 0, ...o }) : S.clip(src, { parent: $("plates"), z: 0, ...o });
+  u.box.style.background = "var(--ink)";
+  return u;
 };
 const CUTS = []; // cortes secos → un «clac» en audio.py
 const cut = (t, v = 0) => { CUTS.push(t); ev(t, "cut", v); };
-const shots = []; // todo lo que se pinta en #plates
+const shots = []; // planos a pantalla completa o en marco (se pintan en #plates)
 
 // ── 0 · arranque en frío: cuatro planos macro, cortes secos (0–3 s)
 const CO = 3.0;
 shots.push(S.clip("ia-plumilla", { t0: 0, t1: .8, start: .5, from: [1.02, 50, 50], to: [1.14, 50, 50], grade: "calido", parent: $("plates"), z: 0 }));
-const met = S.clip("metronome", { t0: .8, t1: 1.6, start: 1.0, from: [1.55, 50, 34], to: [1.75, 50, 36], grade: "calido", parent: $("plates"), z: 0 });
-shots.push(met);
-shots.push(macro("../assets/foto/tipos-plomo-componedor.jpg", { t0: 1.6, t1: 2.3, f: [.47, .79], to: [.40, .73], z: [1.7, 1.95], grade: "calido", bg: "var(--ink)" }));
-shots.push(S.clip("ia-lacre", { t0: 2.3, t1: CO, start: 3.0, from: [1.0, 50, 50], to: [1.1, 50, 50], grade: "calido", parent: $("plates"), z: 0 }));
+shots.push(S.clip("reloj-bolsillo-waltham", { t0: .8, t1: 1.6, start: 1.0, from: [1.25, 40, 50], to: [1.4, 36, 50], grade: "calido", parent: $("plates"), z: 0 }));
+shots.push(S.clip("maquina-escribir-tipos-macro", { t0: 1.6, t1: 2.3, start: 2.0, from: [1.1, 50, 50], to: [1.25, 50, 50], grade: "calido", parent: $("plates"), z: 0 }));
+shots.push(S.clip("pascalina-laton", { t0: 2.3, t1: CO, start: 2.0, from: [1.3, 30, 50], to: [1.45, 40, 50], grade: "calido", parent: $("plates"), z: 0 }));
 [.8, 1.6, 2.3, CO].forEach((t, i) => cut(t, i));
 
 // ── ciudad
@@ -131,7 +114,7 @@ const qfx = ASK.map(([id, who, lx, ly]) => {
 
 // ── respiro: una plaza vacía, nadie contesta (la música se calla)
 const PZ0 = line("q4").end + .25, PZ1 = T("n2");
-shots.push(macro("../assets/foto/plaza-mayor-medinaceli-soportales.jpg", { t0: PZ0, t1: PZ1, f: [.34, .5], to: [.58, .5], z: [1.12, 1.2], grade: "calido", bg: "var(--ink)" }));
+shots.push(real({ t0: PZ0, t1: PZ1, from: [1.12, 28, 50], to: [1.2, 62, 50], grade: "calido" }, F + "plaza-mayor-medinaceli-soportales.jpg"));
 cut(PZ0, 4); cut(PZ1, 5);
 const QOUT = PZ0; // las preguntas se quedan flotando hasta el respiro
 
@@ -157,48 +140,55 @@ const SEAT = [[176, 392], [214, 392], [252, 392], [290, 392], [328, 392], [366, 
 $("tsv").innerHTML = `<path id="table" d="${S.hand([[150, 412], [392, 412]]) + S.hand([[166, 412], [166, 430]]) + S.hand([[376, 412], [376, 430]])}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>`;
 const dTable = S.dash($("table"));
 for (let k = 1; k <= Math.round((M1 - M0) * 6); k += 2) ev(M0 + k / 6, "step", k);
-const A = "../assets/archivo/";
-const PLATES = [ // [archivo, desde, hasta, foco, destino, zoom, pie]
-  ["../assets/archivo/mapa-castilla-nueva-1785.jpg", wordAt("n3", 12), wordAt("n3", 14), [.5, .5], [.5, .5], [1.02, 1.1], "Mapa de Castilla la Nueva · Tomás López, 1785"],
-  ["../assets/archivo/mapa-toledo-1768.jpg", wordAt("n3", 14), wordAt("n3", 14) + 1.4, [.4, .55], [.3, .6], [1.05, 1.35], "Mapa de la provincia de Toledo · Tomás López, 1768"],
-  ["../assets/archivo/enc-patata.jpg", wordAt("n3", 14) + 1.4, wordAt("n4", 1), [.5, .3], [.5, .45], [1.1, 1.25], "Encyclopédie · Agricultura"],
-  ["../assets/archivo/enc-escritura-ronda.jpg", wordAt("n4", 1), wordAt("n4", 3), [.5, .3], [.5, .4], [1.15, 1.35], "Encyclopédie · Escritura"],
-  ["../assets/archivo/enc-reloj-c.jpg", wordAt("n4", 3), wordAt("n4", 5), [.5, .26], [.5, .32], [1.2, 1.5], "Encyclopédie · Relojería"],
-  ["../assets/archivo/enc-imprenta-pl1.jpg", wordAt("n4", 5), T("n5"), [.5, .18], [.5, .24], [1.15, 1.4], "Encyclopédie · Imprenta"],
-  ["../assets/archivo/campomanes-1777.jpg", T("n5"), wordAt("n5", 2), [.52, .38], [.52, .34], [1.0, 1.12], "Pedro Rodríguez de Campomanes · 1777"],
-  ["../assets/archivo/estatutos-asturias.jpg", wordAt("n5", 2), T("n6"), [.5, .4], [.5, .44], [1.0, 1.1], "Estatutos de la Sociedad Económica de Asturias · 1781"],
-];
-const plates = PLATES.map(([src, t0, t1, f, to, z, cap], i) => {
-  if (i) cut(t0, 6 + i);
-  return { t0, t1, cap, frame: true, upd: macro(src, { t0, t1, f, to, z, box: PB, mult: true, grade: "grabado" }) };
-});
-const P0 = PLATES[0][1];
-// el lacre se estampa en «económicas»
-const SEAL = wordAt("n5", 3);
+const AN = (n) => !!(window.CLIPS || {})[n];   // los clips anim-* (grabados animados con IA) pueden no estar aún
+const plates = []; // lo que lleva marco y pie: { t0, t1, cap, frame, upd }
+const plate = (upd, t0, t1, cap = "", frame = true) => plates.push({ t0, t1, cap, frame, upd });
+const n3 = (i) => wordAt("n3", i), n4 = (i) => wordAt("n4", i);
+// el archivo, palabra a palabra: «mejorar su tierra» (mapas, agricultura) · «escuelas» · «inventos» · «libros»
+[
+  [arch("mapa-castilla-nueva-1785", { t0: n3(12), t1: n3(14), from: [1.02, 50, 50], to: [1.1, 50, 50] }), n3(12), n3(14), "Mapa de Castilla la Nueva · Tomás López, 1785"],
+  [arch("mapa-toledo-1768", { t0: n3(14), t1: n3(14) + 1.4, from: [1.05, 40, 55], to: [1.3, 30, 60] }), n3(14), n3(14) + 1.4, "Mapa de la provincia de Toledo · Tomás López, 1768"],
+  [arch("enc-patata", { t0: n3(14) + 1.4, t1: n4(1), from: [1.1, 50, 30], to: [1.25, 50, 45] }), n3(14) + 1.4, n4(1), "Encyclopédie · Agricultura"],
+  [arch("enc-escritura-pluma", { t0: n4(1), t1: n4(3), from: [1.1, 50, 2], to: [1.3, 50, 16] }), n4(1), n4(3), "Encyclopédie · Escritura"],
+  [arch("enc-glaces-san-ildefonso", { t0: n4(3), t1: n4(5), from: [1.05, 50, 50], to: [1.3, 50, 50] }), n4(3), n4(5), "Encyclopédie · Real Fábrica de Cristales de San Ildefonso"],
+  [AN("anim-imprenta") ? real({ t0: n4(5), t1: T("n5"), box: PB, from: [1.0, 50, 50], to: [1.1, 50, 50], grade: "grabado" }, "anim-imprenta")
+    : arch("imprenta-taller-1769", { t0: n4(5), t1: T("n5"), from: [1.15, 50, 0], to: [1.4, 50, 9] }), n4(5), T("n5"), "Encyclopédie · Imprenta"],
+  [arch("estatutos-asturias", { t0: T("n5"), t1: wordAt("n5", 2), from: [1.0, 50, 40], to: [1.1, 50, 46] }), T("n5"), wordAt("n5", 2), "Estatutos de la Sociedad Económica de Asturias · 1781"],
+].forEach(([u, t0, t1, cap], i) => { plate(u, t0, t1, cap); if (i) cut(t0, 6 + i); });
+// «Se llamaban sociedades económicas»: el sello baja al lacre (el clip, al revés) y, al decir «económicas», se estampa
+const SEAL = wordAt("n5", 3) + .1, SL0 = wordAt("n5", 2);
+const LAC = { box: PB, from: [1.0, 50, 50], to: [1.0, 50, 50], grade: "calido", parent: $("plates"), z: 0 };
+plate(S.clip("ia-lacre", { ...LAC, t0: SL0, t1: SEAL, start: 2.55, rate: -3 }), SL0, SEAL, "Sello y lacre");
+plate(S.clip("ia-lacre", { ...LAC, t0: SEAL, t1: T("n6"), start: 0, rate: 1 }), SEAL, T("n6"), "Sello y lacre");
+cut(SL0, 14);
 ev(SEAL, "seal");
-const seal = macro("../assets/archivo/lacre-sombrereros-1842.jpg", { t0: SEAL, t1: T("n6"), f: [.5, .5], z: [1, 1], zf: (t) => 1 + .45 * (1 - eOut((t - SEAL) / .14)) + .02 * Math.sin(Math.min(1, (t - SEAL) / .5) * Math.PI) * 0,
-  box: { left: 328, top: 398, width: 150, height: 143 }, grade: "lacre", blend: true, mult: false });
 
-// ── hoy: el Tajo de verdad, que se funde en la ciudad dibujada
-const WY0 = T("n6"), WY1 = WY0 + 2.0;
-const hoyPlate = { t0: WY0, t1: WY1, cap: "", frame: false, upd: macro("../assets/foto/talavera-tajo-puente-atardecer.jpg", { t0: WY0, t1: WY1, f: [.28, .5], to: [.52, .5], z: [1.1, 1.25], box: PB, grade: "calido", bg: "var(--ink)", fadeOut: .9 }) };
-plates.push(hoyPlate);
-cut(WY0, 16);
+// ── hoy: Talavera de verdad, que da paso (a saltos) a la ciudad dibujada
+const WY0 = T("n6"), WY1 = WY0 + 1.8, WYM = WY0 + .95;
+const hoyA = real({ t0: WY0, t1: WYM, box: PB, from: [1.05, 40, 50], to: [1.2, 55, 50], grade: "calido" }, F + "talavera-puente-viejo-02.jpg");
+const hoyB = real({ t0: WYM, t1: WY1, box: PB, from: [1.1, 30, 50], to: [1.25, 60, 50], grade: "calido" }, F + "talavera-tajo-puente-atardecer.jpg");
+plate(hoyA, WY0, WYM, "Talavera de la Reina"); plate(hoyB, WYM, WY1, "El Tajo");
+cut(WY0, 16); cut(WYM, 17);
 const BACK0 = WY0 + .7, BACK1 = BACK0 + 1.8;         // la gente vuelve a la ciudad
 const SESMI = wordAt("n6", 4);                         // «idea»: aparece el cuadrado rojo
 ev(SESMI, "stamp");
 
-// ── las tres figuras: entender, hacer, compartir (cada una, antes, medio segundo de su archivo)
-const FIG = [["buho", "Investigación", 30, "n7", "../assets/archivo/buho-great-white-owl-1771.jpg", [.5, .4], [.5, .36], [1.05, 1.28], "grabado"],
-  ["caballo", "Servicios", 195, "n8", "../assets/archivo/geric-derby-epsom-1821.jpg", [.84, .6], [.56, .6], [1.05, 1.12], "calido"],
-  ["paloma", "Divulgación", 360, "n9", "../assets/archivo/paloma-grabado-coloreado-wellcome.jpg", [.30, .5], [.62, .5], [1.0, 1.08], "calido"]];
-const FIG_OUT = line("n9").end + .5, FIGIN = T("n7") - .5;
-const figs = FIG.map(([n, lbl, x, id, arch, f, to, z, grade], i) => {
+// ── las tres figuras: entender, hacer, compartir (cada una, antes, medio segundo de su fuente)
+const FA = .6; // duración del plano de fuente
+const FIG = [
+  ["buho", "Investigación", 30, "n7", () => (AN("anim-buho") ? "anim-buho" : A + "buho-great-white-owl-1771.jpg"), { from: [1.05, 50, 30], to: [1.28, 50, 40] }],
+  ["caballo", "Servicios", 195, "n8", () => (AN("anim-derby") ? "anim-derby" : A + "geric-derby-epsom-1821.jpg"), { from: [1.15, 85, 50], to: [1.25, 55, 50] }],
+  ["paloma", "Divulgación", 360, "n9", () => (AN("anim-palomas") ? "anim-palomas" : A + "aves-1895-structure.jpg"), { from: [1.0, 30, 50], to: [1.15, 62, 50] }],
+];
+const FIG_OUT = line("n9").end + .5, FIGIN = T("n7") - FA;
+const figs = FIG.map(([n, lbl, x, id, src, mv], i) => {
   const h = S.el("div", "abs", $("figs")); h.style.cssText = `left:${x}px;top:250px;width:150px;height:150px`;
   const l = S.el("div", "fl lbl", $("figs"), `<i></i>${lbl}`); l.style.left = x + "px";
   const t0 = line(id).t; ev(t0, "fig", i); S.figEvents(n, t0 + .2, FIG_OUT);
-  shots.push(macro(arch, { t0: t0 - .5, t1: t0, f, to, z, grade, mult: true }));
-  cut(t0 - .5, 20 + i); cut(t0, 30 + i);
+  const o = { t0: t0 - FA, t1: t0, box: FULL, ...mv }, f = src();
+  if (f.startsWith("anim-")) { const u = S.clip(f, { ...o, grade: "grabado", parent: $("plates"), z: 0 }); u.img.style.mixBlendMode = "multiply"; u.box.style.background = "var(--paper-2)"; shots.push(u); }
+  else shots.push(f.includes("aves") ? real({ ...o, grade: "grabado" }, f) : arch(f.replace(/^.*\//, "").replace(".jpg", ""), { ...o, grade: i === 1 ? "calido" : "grabado" }));
+  cut(t0 - FA, 20 + i); cut(t0, 30 + i);
   return { h, l, t0, play: S.fig(h, n) };
 });
 
@@ -215,13 +205,13 @@ for (let r = 0; r < 12; r++) for (let c = 0; c < 11; c++) {
 }
 for (let k = 0; k < 10; k++) ev(C0 + k * (C1 - C0) / 10, "pop");
 
-// ── la bandada: una sociedad abierta se mueve junta (estorninos, en blanco y negro cálido)
-const MU0 = wordAt("n10", 7) , MU1 = T("n11") - .5;
-plates.push({ t0: MU0, t1: MU1, cap: "", frame: true, upd: S.clip("estorninos-murmuracion", { t0: MU0, t1: MU1, start: 2.2, from: [1.0, 62, 40], to: [1.12, 68, 38], grade: "grayscale(1) sepia(.3) contrast(1.25) brightness(1.02)", box: PB, parent: $("plates"), z: 0 }) });
+// ── la bandada: una sociedad abierta se mueve junta (estorninos al amanecer sobre un pueblo)
+const MU0 = wordAt("n10", 7), MU1 = T("n11") - .5;
+plate(S.clip("ia-estorninos", { t0: MU0, t1: MU1, start: 1.4, from: [1.0, 50, 50], to: [1.12, 50, 50], grade: "calido", box: PB, parent: $("plates"), z: 0 }), MU0, MU1, "");
 cut(MU0, 40);
 
 // ── subtítulos de la narradora
-const outAt = { n6: FIGIN, n7: line("n8").t - .5, n8: line("n9").t - .5, n9: T("n10") - .05 };
+const outAt = { n6: FIGIN, n7: line("n8").t - FA, n8: line("n9").t - FA, n9: T("n10") - .05 };
 const subs = ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10"].map((id) =>
   S.sub(id, { parent: $("subs"), hot: id === "n10" ? [1, 2] : id === "n2" ? [8] : [], ...(outAt[id] ? { out: outAt[id] } : {}) }));
 
@@ -232,18 +222,19 @@ const firma = S.firma(SHRINK + .42);
 
 window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
 
-window.renderAt = (t) => {
+window.renderAt = (tr) => {
+  const t = Q12(tr); // trazos y fundidos a 12 fps; lo que va por pasos (tr) sigue su propio ritmo
   // ciudad: se dibuja, se apaga para la historia, vuelve hoy, se va (corte) para las figuras
   city.draw(t, CO + .2, 3.2);
-  const cityOp = t >= FIGIN ? 0 : t < T("n3") ? 1 : t < BACK0 ? 1 - .82 * eIO((t - T("n3")) / 1.2) : .18 + .82 * eIO((t - BACK0) / 1.2);
+  const cityOp = t >= FIGIN ? 0 : t < T("n3") ? 1 : t < BACK0 ? 1 - .82 * qf((t - T("n3")) / 1.2) : .18 + .82 * qf((t - BACK0) / 1.2);
   $("cityL").style.opacity = cityOp;
 
   // gente
   const toTable = (p, i) => {
     const [sx, sy] = SEAT[i];
     if (t < M0) return [p.x, p.y];
-    if (t < BACK0) { const k = clamp(stepN(t, M0, 6) / ((M1 - M0) * 6)); const e = eIO(k); return [p.x + (sx - p.x) * e, p.y + (sy - p.y) * e]; }
-    const k = clamp(stepN(t, BACK0, 6) / ((BACK1 - BACK0) * 6)), e = eIO(k);
+    if (t < BACK0) { const k = clamp(stepN(tr, M0, 6) / ((M1 - M0) * 6)); const e = eIO(k); return [p.x + (sx - p.x) * e, p.y + (sy - p.y) * e]; }
+    const k = clamp(stepN(tr, BACK0, 6) / ((BACK1 - BACK0) * 6)), e = eIO(k);
     return [sx + (p.x - sx) * e, sy + (p.y - sy) * e];
   };
   const pplOp = t < FIGIN ? 1 : 0;
@@ -263,26 +254,26 @@ window.renderAt = (t) => {
     if (!on) return;
     const op = t > L.end + .3 ? .45 : 1;
     lab.style.opacity = op; ln.style.opacity = op * .8;
-    ws.forEach((w, i) => { const x = eOut((t - L.t - L.words[i][1] + .04) / .28); w.style.opacity = x; });
+    ws.forEach((w, i) => { const x = qf((t - L.t - L.words[i][1] + .04) / .28, 3); w.style.opacity = x; });
     const [px, py] = HOME[who], ax = lx > 270 ? lx + lab.offsetWidth - 14 : lx + 10, ay = ly + lab.offsetHeight + 6;
     const p = clamp((t - L.t) / .5);
     ln.setAttribute("d", `M${ax} ${ay} L${ax + (px - ax) * p} ${ay + (py - 10 - ay) * p}`);
   });
 
   // debajo del suelo
-  const uOp = t < T("n3") ? 1 : 1 - .85 * eIO((t - T("n3")) / 1.2);
+  const uOp = t < T("n3") ? 1 : 1 - .85 * qf((t - T("n3")) / 1.2);
   $("under").style.opacity = t < FIGIN ? uOp : 0;
-  dStrata(eIO((t - U0) / 1.4)); dBars(eIO((t - U0 - .7) / 1.4));
-  const dg = $("digger"), dk = Math.min(6, Math.max(0, stepN(t, DIG, 6)));
+  dStrata(qf((t - U0) / 1.4, 12)); dBars(qf((t - U0 - .7) / 1.4, 12));
+  const dg = $("digger"), dk = Math.min(6, Math.max(0, stepN(tr, DIG, 6)));
   dg.setAttribute("x", 265); dg.setAttribute("y", G - 10 + dk * 9);
   dg.style.display = t >= DIG - .3 && t < T("n3") + 1 ? "block" : "none";
 
   // mesa
-  $("tableL").style.opacity = t < BACK0 ? 1 : 1 - eIO((t - BACK0) / .8);
-  dTable(eIO((t - M0 - 1) / 1.6));
+  $("tableL").style.opacity = t < BACK0 ? 1 : 1 - qf((t - BACK0) / .8, 4);
+  dTable(qf((t - M0 - 1) / 1.6, 12));
   const era = $("era");
-  if (t >= T("n3") && t < WY0) { era.textContent = "Siglo XVIII"; era.style.opacity = fade(t, T("n3") + .3, WY0, .8, .05); }
-  else if (t >= WY0 && t < FIGIN) { era.textContent = "Hoy"; era.style.opacity = fade(t, WY0, FIGIN, .3, .05); }
+  if (t >= T("n3") && t < WY0) { era.textContent = "Siglo XVIII"; era.style.opacity = qf(fade(t, T("n3") + .3, WY0, .8, .05), 4); }
+  else if (t >= WY0 && t < FIGIN) { era.textContent = "Hoy"; era.style.opacity = qf(fade(t, WY0, FIGIN, .3, .05), 4); }
   else era.style.opacity = 0;
 
   // el cuadrado rojo de sesmi, hoy, en mitad de la calle
@@ -292,28 +283,29 @@ window.renderAt = (t) => {
   sq.style.opacity = pplOp;
 
   // imagen real (planos macro, láminas, lacre, flashes de archivo)
-  shots.forEach((s) => s(t));
-  plates.forEach((p) => p.upd(t));
-  seal(t);
-  const ap = plates.find((p) => t >= p.t0 && t < p.t1);
+  shots.forEach((s) => s(tr));
+  plates.forEach((p) => p.upd(tr));
+  const ap = plates.find((p) => tr >= p.t0 && tr < p.t1);
+  // el Tajo da paso a la ciudad dibujada en cuatro escalones (sin fundido continuo)
+  hoyB.box.style.opacity = 1 - qf((t - (WY1 - .6)) / .6, 3);
   $("pframe").style.display = ap && ap.frame ? "block" : "none";
   $("cap").textContent = ap ? ap.cap : "";
   $("cap").style.opacity = ap ? 1 : 0;
 
   // figuras (entran de golpe, con el corte desde su archivo)
   figs.forEach(({ h, l, t0, play }) => {
-    const x = t >= t0 && t < FIG_OUT + .1 ? 1 - eIO((t - (FIG_OUT - .4)) / .4) : 0;
+    const x = t >= t0 && t < FIG_OUT + .1 ? 1 - qf((t - (FIG_OUT - .4)) / .4, 3) : 0;
     h.style.opacity = x; l.style.opacity = x;
-    play(t, t0 + .2);
+    play(tr, t0 + .2);
   });
 
   // multitud
-  const cOut = 1 - eIO((t - (FLIP - .5)) / .5);
-  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < MU0 ? "block" : "none"; e.style.opacity = .55 * cOut * eOut((t - at) / .3); });
+  const cOut = 1 - qf((t - (FLIP - .5)) / .5, 3);
+  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < MU0 ? "block" : "none"; e.style.opacity = .55 * cOut * qf((t - at) / .3, 2); });
 
   subs.forEach((f) => f(t));
-  saber(t);
-  firma(t);
+  saber(tr);
+  firma(tr);
 };
 window.renderAt(0);
 })();

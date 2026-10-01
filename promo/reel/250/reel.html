@@ -56,7 +56,7 @@ const GRAB = "grayscale(1) sepia(.34) contrast(1.32) brightness(1.03)"; // etalo
 // src, nat [ancho, alto] en px de la imagen. o: t0, t1, box {l,t,w,h}, f0/f1 [fx,fy] (foco, fracción de la imagen),
 // z0/z1 (zoom sobre «cubrir»), grade, fadeOut, rule (filetes de tinta arriba y abajo), parent.
 const shot = (src, nat, o) => {
-  o = { z0: 1, z1: 1.1, f0: [.5, .5], grade: "grabado", fadeOut: 0, ...o };
+  o = { z0: 1, z1: 1.1, f0: [.5, .5], grade: "grabado", fadeOut: 0, fps: 6, ...o };
   o.f1 = o.f1 || o.f0;
   const b = o.box || { l: 0, t: 0, w: 540, h: 960 };
   const box = S.el("div", o.rule ? "band" : "", o.parent || $("mont"));
@@ -70,12 +70,13 @@ const shot = (src, nat, o) => {
     const on = t >= o.t0 && t < o.t1;
     box.style.display = on ? "block" : "none";
     if (!on) return;
-    const p = clamp((t - o.t0) / (o.t1 - o.t0));
+    const tq = o.fps ? o.t0 + stepN(t, o.t0, o.fps) / o.fps : t;   // paneo y zoom a saltos (pocos fps)
+    const p = clamp((tq - o.t0) / (o.t1 - o.t0));
     const z = o.z0 + (o.z1 - o.z0) * p, fx = o.f0[0] + (o.f1[0] - o.f0[0]) * p, fy = o.f0[1] + (o.f1[1] - o.f0[1]) * p;
     const iw = nat[0] * base * z, ih = nat[1] * base * z;
     const x = Math.min(0, Math.max(b.w - iw, b.w / 2 - fx * iw)), y = Math.min(0, Math.max(b.h - ih, b.h / 2 - fy * ih));
     img.style.transform = `translate(${x}px,${y}px) scale(${z})`;
-    box.style.opacity = o.fadeOut ? 1 - eIO((t - (o.t1 - o.fadeOut)) / o.fadeOut) : 1;
+    box.style.opacity = (o.fadeOut ? 1 - eIO((tq - (o.t1 - o.fadeOut)) / o.fadeOut) : 1) * (o.opf ? o.opf(tq) : 1);
   };
   upd.o = o;
   return upd;
@@ -91,9 +92,12 @@ ev(.02, "open"); ev(1.0, "seal");
 
 // ───────────────────────── 1 · «Año 1775» sobre la vista real; se calca a pluma y se desvanece ─────────────────────────
 const DR0 = T("n1") + 2.85;                     // la pluma empieza con «en ciudades como esta»
-const WYN1 = DR0 + 5.0;
-const wyn = shot(A + "talavera-wyngaerde-1567.jpg", [1280, 216], { parent: $("pre"), t0: T("n1"), t1: WYN1, box: { l: 0, t: 250, w: 540, h: 280 }, rule: true,
-  z0: 1.0, z1: 1.12, f0: [.2, .5], f1: [.6, .5], grade: GRAB, fadeOut: 2.4 });
+// La vista real de 1775 es la base de la ciudad vieja: vive dentro de #old (se calca encima y se atenúa a pasos);
+// cuando el año corre, el frente de derribo la borra de izquierda a derecha y la ciudad moderna crece donde estaba.
+const Y0b = T("n6") - .4, WYN1 = Y0b + 4.2;
+const wyn = shot(A + "talavera-wyngaerde-1567.jpg", [1280, 216], { parent: $("old"), t0: T("n1"), t1: WYN1, box: { l: 0, t: 250, w: 540, h: 280 }, rule: true,
+  z0: 1.0, z1: 1.45, f0: [.12, .5], f1: [.9, .5], grade: GRAB, fps: 4,
+  opf: (t) => Math.round((1 - .6 * clamp((t - DR0) / 3.4)) * 5) / 5 });
 ev(T("n1"), "cut", 0);
 
 // ── la ciudad de 1775 (grabado) y la de hoy
@@ -162,7 +166,7 @@ const icons = ICONS.map(([k, t0, t1], i) => {
   tile.innerHTML = `<svg width="66" height="66" viewBox="0 0 66 66"><path d="${S.ICON[k]()}" transform="translate(10 12) scale(1.1)" fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-linecap="round"/></svg>`;
   const draw = S.dash(tile.querySelector("path"));
   ev(t0, "icon", i);
-  return (t) => { const on = t >= t0 && t < t1; tile.style.display = on ? "block" : "none"; if (on) draw(eIO((t - t0 + .05) / .45)); };
+  return (t) => { const on = t >= t0 && t < t1; tile.style.display = on ? "block" : "none"; if (on) draw(eIO((Math.floor(t * 6 + 1e-6) / 6 - t0 + .05) / .45)); };
 });
 const TBL_OUT = T("n5") + .2;
 
@@ -178,9 +182,11 @@ ev(Y0 - .3, "time");
 const tickYear = []; for (let k = 0; k <= Math.ceil((Y1 - Y0) * 12) + 1; k++) tickYear.push([Y0 + k / 12, yearAt(Y0 + k / 12)]);
 const timeOf = (y) => { for (const [t, v] of tickYear) if (v >= y) return t; return Y1; };
 
-// plano real de hoy: el Tajo, el puente viejo y, al fondo, el puente nuevo (breve, al llegar a 2026)
-SHOTS.push(shot(F + "talavera-tajo-puente-atardecer.jpg", [1920, 1460], { t0: Y1, t1: Y1 + .95, box: BAND, rule: true, z0: 1.15, z1: 1.3, f0: [.38, .5], f1: [.62, .46], grade: "calido" }));
-ev(Y1, "cut", 20); ev(Y1 + .95, "cut", 21);
+// planos reales de hoy (breves, cuando la ciudad dibujada ya está completa): el puente viejo con su paseo de hormigón y la Colegiata (recortados los coches)
+const TP = Y1 + .75;
+SHOTS.push(shot(F + "talavera-puente-viejo-01.jpg", [1920, 1282], { t0: TP, t1: TP + .5, box: BAND, rule: true, z0: 1.05, z1: 1.3, f0: [.62, .55], f1: [.45, .6], grade: "calido" }));
+SHOTS.push(shot(F + "talavera-colegiata-fachada.jpg", [1280, 1707], { t0: TP + .5, t1: TP + 1.0, box: BAND, rule: true, z0: 1.1, z1: 1.3, f0: [.5, .27], f1: [.5, .2], grade: "calido" }));
+ev(TP, "cut", 20); ev(TP + .5, "cut", 22); ev(TP + 1.0, "cut", 21);
 
 // ── 2026: bloques de pisos, naves, chimenea, grúas, antenas, viaducto de hormigón, tendido y tren
 const NSV = $("nsv");
@@ -326,8 +332,9 @@ for (let k = 0; k < 10; k++) ev(C0 + k * (C1 - C0) / 10, "pop");
   });
 }
 
-const subs = ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"].map((id) =>
-  S.sub(id, { parent: $("subs"), hot: id === "n9" ? [1, 2] : id === "n7" ? [5] : [] }));
+const SUBIDS = ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10"];
+const subs = SUBIDS.slice(0, 9).map((id, i) =>
+  S.sub(id, { parent: $("subs"), hot: id === "n9" ? [1, 2] : id === "n7" ? [5] : [], out: Math.min(line(id).end + .7, T(SUBIDS[i + 1]) - .02) }));
 
 const FLIP = T("n10") - .5, SHRINK = T("n10") + 2.5;
 const saber = S.saber(FLIP, SHRINK, { a: wordAt("n10", 0), b: wordAt("n10", 1), tag: "Conocimiento en abierto, para cualquiera." });
@@ -372,21 +379,21 @@ const renderNow = (t, yr) => {
 
 window.renderAt = (t) => {
   const yr = yearAt(t);
+  const t6 = Math.floor(t * 6 + 1e-6) / 6;           // todo lo que se dibuja o se atenúa va a 6 pasos por segundo
   // arranque, vista de Wyngaerde y planos de archivo
   SHOTS.forEach((s) => s(t));
   wyn(t); tags.forEach((f) => f(t)); icons.forEach((f) => f(t));
-  $("pre").style.display = t >= T("n1") && t < WYN1 ? "block" : "none";
   $("intro").style.display = t < T("n1") ? "block" : "none";
 
   // ciudades: la de 1775 se calca a pluma sobre el grabado; luego crece la de hoy
-  old.draw(t, DR0, 3.4);
-  $("old").style.opacity = t < T("n2") ? 1 : t < TBL_OUT ? 1 - .75 * eIO((t - T("n2")) / 1) : t < Y0 ? .25 + .75 * eIO((t - TBL_OUT) / 1) : 1;
-  const endOp = 1 - eIO((t - (C0 - .2)) / .8);
+  old.draw(t6, DR0, 3.4);
+  $("osv").style.opacity = t6 < T("n2") ? 1 : t6 < TBL_OUT ? 1 - .5 * eIO((t6 - T("n2")) / 1) : t6 < Y0 ? .5 + .5 * eIO((t6 - TBL_OUT) / 1) : 1;
+  const endOp = 1 - eIO((t6 - (C0 - .2)) / .8);
   $("world").style.opacity = endOp;
   renderNow(t, yr);
 
   // año
-  const yOn = t < FLIP, yA = eOut((t - T("n1") - .1) / .8);
+  const yOn = t < FLIP, yA = eOut((t6 - T("n1") - .1) / .8);
   $("year").textContent = yr;
   $("year").style.opacity = yOn ? yA * endOp : 0;
   $("yl").style.opacity = yOn ? yA * endOp : 0;
@@ -398,11 +405,11 @@ window.renderAt = (t) => {
     const k = clamp(stepN(t, W0, 6) / ((W1 - W0) * 6)), e = eIO(k);
     d.style.left = hx + (sx - hx) * e + "px"; d.style.top = hy + (sy - hy) * e + (k < 1 && stepN(t, W0, 6) % 2 ? -3 : 0) + "px";
     d.style.display = t >= W0 && t < TBL_OUT + .6 ? "block" : "none";
-    d.style.opacity = 1 - eIO((t - TBL_OUT) / .6);
+    d.style.opacity = 1 - eIO((t6 - TBL_OUT) / .6);
   });
-  $("tableL").style.opacity = 1 - eIO((t - TBL_OUT) / .6);
-  dTable(eIO((t - W0 - 1.5) / 1.5));
-  jobs.forEach(({ e, at }) => { e.style.opacity = t < TBL_OUT ? eOut((t - at) / .4) : 1 - eIO((t - TBL_OUT) / .6); });
+  $("tableL").style.opacity = 1 - eIO((t6 - TBL_OUT) / .6);
+  dTable(eIO((t6 - W0 - 1.5) / 1.5));
+  jobs.forEach(({ e, at }) => { e.style.opacity = t6 < TBL_OUT ? eOut((t6 - at) / .4) : 1 - eIO((t6 - TBL_OUT) / .6); });
 
   // la idea (rojo) en mitad de la calle, de 1775 a hoy
   let sq = $("idea");
@@ -410,7 +417,7 @@ window.renderAt = (t) => {
   sq.style.display = t >= IDEA ? "block" : "none";
 
   today.forEach(({ d, at }) => (d.style.display = t >= at ? "block" : "none"));
-  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < FLIP + .5 ? "block" : "none"; e.style.opacity = .55 * (1 - eIO((t - (FLIP - .5)) / .5)) * eOut((t - at) / .3); });
+  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < FLIP + .5 ? "block" : "none"; e.style.opacity = .55 * (1 - eIO((t6 - (FLIP - .5)) / .5)) * eOut((t6 - at) / .3); });
 
   subs.forEach((f) => f(t));
   saber(t);
