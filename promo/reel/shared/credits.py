@@ -12,14 +12,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 V = sys.argv[1]
 html = (ROOT / V / "reel.html").read_text()
-used = sorted(set(re.findall(r"\.\./assets/(archivo|foto|video)/(?:\.frames/)?([\w.-]+?)(?:\.jpg|\.mp4|/)", html)))
 db = {}
 for d in ("archivo", "foto", "video"):
     p = ROOT / "assets" / d / "credits.json"
     if p.exists():
         for c in json.loads(p.read_text()):
             db[(d, Path(c["file"]).stem)] = c
-lines = ["Imágenes: Wikimedia Commons."]
+# una pieza se usa si su nombre aparece en el HTML (rutas literales o compuestas: «'ia-lacre'», «slug + '.jpg'»…)
+used = sorted(k for k in db if re.search(r"(?<![\w-])" + re.escape(k[1]) + r"(?![\w-])", html))
+lines = ["Imágenes: Wikimedia Commons (salvo las indicadas como generadas con IA)."]
 missing = []
 for d, stem in used:
     c = db.get((d, stem))
