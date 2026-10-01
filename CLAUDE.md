@@ -1,5 +1,5 @@
 # CLAUDE.md — sesmi.org
-> Agent reference for the sesmi.org frontend repo. Last updated: 2026-09-30.
+> Agent reference for the sesmi.org frontend repo. Last updated: 2026-10-01.
 
 ---
 
@@ -57,17 +57,26 @@ Titles/favicons live in the `META` map in `SiteLayout.tsx` — add new routes th
 | `RowLink.tsx` | Numbered grid row that is one link (internal `<Link>` or `mailto:`) |
 | `WaitlistRow.tsx` | Waitlist form row — **mock** (preventDefault, «Apuntado. Te avisamos cuando salga.») |
 
-### Promo video (`promo/reel/`)
+### Promo videos (`promo/reel/`)
 
-Vertical reel/story (1080×1920, 30 fps, 51 s, with sound) built from the site's own brand assets —
-not part of the Vite build. Concept piece, not a feature list: the red square (the i-dot) lives in a
-hand-drawn mid-size city, leaves, learns and comes back; manifesto, the three figures as three verbs,
-«debemos saber.», and the ink shrinks into the dot of the wordmark. Felt piano + strings, no drums. `reel.html` draws every scene as a pure function of time (fonts from
-`public/fonts/`, figures and wordmark from `src/brand/brand.json`, scene times in `timeline.json`);
-`render.mjs` screenshots it frame by frame with Playwright/Chromium and pipes to ffmpeg, also dumping the
-page's sound events; `audio.py` (numpy) synthesises the soundtrack synced to those events.
-`./promo/reel/build.sh` regenerates `promo/reel/sesmi-reel.mp4` at −14 LUFS; paper grain is added by ffmpeg at
-encode time (intermediate files go to the ignored `out/`).
+Vertical reels/stories (1080×1920, 30 fps, −14 LUFS) built from the site's own brand assets — not part
+of the Vite build. One folder per version, shared pieces in `shared/`:
+
+| Version | Video | Idea |
+|---------|-------|------|
+| `sociedad/` | `sesmi-sociedad.mp4` (58 s) | Neighbours' questions (own voices), answers underground, the 18th-c. Sociedades Económicas, «una sociedad abierta» |
+| `preguntas/` | `sesmi-preguntas.mp4` (41 s) | Night city, each window lights with a question, «¿Y si nos quedamos?», dawn |
+| `250/` | `sesmi-250.mp4` (57 s) | The same city in 1775 (engraving + harpsichord), the year runs to 2026, «la idea sigue siendo buena» |
+| `vuelta/` | `sesmi-vuelta.mp4` (51 s) | Earlier text-only version (red square leaves and comes back) |
+
+Each version: `reel.html` (every scene a pure function of time), `timeline.json`, `script.json`
+(voice lines: who, text, start time) and `audio.py` (score). `shared/`: `common.js` (city, figures,
+word-synced subtitles, ink face, sign-off), `base.css`, `render.mjs` (Playwright → ffmpeg, adds paper
+grain), `vo.py` (ElevenLabs TTS with word timestamps; each take is transcribed and retried if it
+doesn't match the script; cached in `out/vo/`), `voices.json` (Spanish voices added to the account),
+`synth.py` (piano, harpsichord, strings…, music ducked under the voice).
+`./promo/reel/shared/build.sh <version>` rebuilds one video; needs `ELEVENLABS_API_KEY` in the
+environment only when a voice line changed (never commit the key). Intermediate files go to ignored `out/`.
 
 Brand data: `src/brand/brand.json` (figure paths in a 100×100 box, animation frames, wordmark) and
 `src/brand/index.ts` (typed access + `SEQ` animation sequences). SVG exports in `public/brand/`.
