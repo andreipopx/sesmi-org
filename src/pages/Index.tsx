@@ -3,14 +3,15 @@ import type { FigName } from "@/brand";
 import { Arrow } from "@/components/Sprite";
 import { Fig } from "@/components/Fig";
 import { Hero } from "@/components/Hero";
+import { RowLink } from "@/components/RowLink";
 import { Illustration } from "@/components/Illustration";
 import { WaitlistRow } from "@/components/WaitlistRow";
 import { Sesmi } from "@/components/Wordmark";
 
 const DOORS: { to: string; fig: FigName; title: string; lema: string; text: string }[] = [
-  { to: "/investigacion", fig: "buho", title: "Investigación", lema: "Debemos saber", text: "Análisis económico independiente sobre territorios y mercados locales. En abierto, sin paywalls." },
-  { to: "/servicios", fig: "caballo", title: "Servicios", lema: "Fuerza aplicada", text: "Valoraciones, análisis de impacto y diagnósticos para empresas y organismos públicos." },
-  { to: "/divulgacion", fig: "paloma", title: "Divulgación", lema: "Socorre enseñando", text: "Datos, herramientas y materiales para estudiantes y profesores de economía." },
+  { to: "/investigacion", fig: "buho", title: "Investigación", lema: "Debemos saber", text: "Investigación independiente y en abierto, sin paywalls." },
+  { to: "/servicios", fig: "caballo", title: "Servicios", lema: "Fuerza aplicada", text: "Análisis riguroso para empresas y organismos públicos." },
+  { to: "/divulgacion", fig: "paloma", title: "Divulgación", lema: "Socorre enseñando", text: "Datos, herramientas y materiales para quien quiera aprender." },
 ];
 
 const Index = () => (
@@ -54,6 +55,13 @@ const Index = () => (
       </div>
       <div className="a"><Arrow /></div>
     </Link>
+
+    <RowLink
+      to="/nosotros#abierta"
+      n="+"
+      title="Una sociedad abierta"
+      sub={<><Sesmi /> es de quien quiera aprender o aportar.</>}
+    />
 
     <WaitlistRow id="aviso-inicio" inputId="wl-1" sub="Déjanos tu email y te avisamos. Sin spam." />
   </>

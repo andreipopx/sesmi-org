@@ -14,13 +14,19 @@ const Servicios = () => (
     <PillarHeader
       fig="caballo"
       label="Servicios"
-      title="Consultoría económica para ciudades reales"
+      title="Análisis riguroso para ciudades reales"
       lema="Fuerza aplicada"
-      intro="El tipo de análisis que hasta ahora solo podían permitirse las grandes ciudades. El rigor de las grandes firmas, sin sus tarifas ni su distancia."
+      intro="El tipo de análisis que hasta ahora solo podían permitirse las grandes ciudades: el rigor de las grandes firmas, sin sus tarifas ni su distancia."
     />
     {SERVICES.map(([t, s, w], i) => (
       <RowLink key={t} to="/servicios#hablamos" n={String(i + 1).padStart(2, "0")} title={t} sub={s} who={w} />
     ))}
+    <RowLink
+      to="mailto:hola@sesmi.org?subject=Otra%20cosa"
+      n="+"
+      title="¿Necesitas otra cosa?"
+      sub="Cuéntanoslo y vemos cómo hacerlo."
+    />
     <div className="bh sm" id="hablamos">
       <div className="f" />
       <div className="tt"><h2>Cada proyecto es distinto. Hablamos.</h2></div>

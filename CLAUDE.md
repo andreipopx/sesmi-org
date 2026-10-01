@@ -104,7 +104,7 @@ Liberation Mono are gone.
 
 ### Tone and Voice
 
-Independent economic research for mid-sized Spanish cities. Editorial, rigorous, and direct — written for any intelligent reader, not just economists. Founding principle: *"debemos saber."* The site is Spanish only.
+An open society: knowledge in the open, for anyone. Keep it light — say it is open, never present sesmi as closed or economics-only, and don't over-explain which disciplines it starts with. Editorial, rigorous, and direct — written for any intelligent reader, not just economists. Founding principle: *"debemos saber."* The site is Spanish only.
 
 ### Design Rules
 

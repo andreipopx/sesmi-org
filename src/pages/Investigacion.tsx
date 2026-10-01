@@ -26,9 +26,9 @@ const Investigacion = () => (
     <PillarHeader
       fig="buho"
       label="Investigación"
-      title="Análisis económico independiente"
+      title="Investigación independiente, en abierto"
       lema="Debemos saber"
-      intro="Publicamos nuestros trabajos de forma abierta. Sin paywalls. El conocimiento económico es un bien público."
+      intro="Publicamos todo en abierto, sin paywalls: el conocimiento es un bien público."
     />
 
     <article className="pub" id="sesmi-001" aria-labelledby="p1-h">
@@ -73,7 +73,7 @@ const Investigacion = () => (
       <div className="f" />
       <div className="tt"><h2>Cómo trabajamos</h2></div>
       <div className="pp">
-        <p>Se puede hacer economía rigurosa sin renunciar a que la entienda la gente. Cada investigación sigue el mismo camino y termina en dos documentos.</p>
+        <p>Se puede investigar con rigor sin renunciar a que lo entienda la gente. Cada investigación sigue el mismo camino y termina en dos documentos.</p>
       </div>
     </div>
     <MethodDiagram />
