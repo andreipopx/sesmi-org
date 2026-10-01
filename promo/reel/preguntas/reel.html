@@ -7,8 +7,15 @@
   Versión B · «Preguntas». De noche, cada vecino enciende su ventana con una pregunta (con su voz);
   se acumulan, se encienden todas, silencio, y queda una: «¿Y si nos quedamos?». Amanece mientras
   la narradora responde. Tiempos de voz en script.json (+ out/vo.json).
-  Imagen de archivo (assets/archivo): arranque en frío con tres planos nocturnos (etalonaje 'noche'), un destello
-  tras cada pregunta (detalle del oficio al que se refiere) y, al amanecer, la vista de 1567 y las palomas ('calido').
+  Material usado (rutas literales para shared/credits.py):
+    ../assets/archivo/enc-glaces-san-ildefonso.jpg
+    ../assets/foto/abaco-madera.jpg  ../assets/foto/balanza-boticario.jpg  ../assets/foto/plaza-mayor-medinaceli-soportales.jpg
+    ../assets/foto/paloma-vuelo-atardecer.jpg  ../assets/foto/reloj-torre-engranajes.jpg  ../assets/foto/palomas-cielo-melocoton.jpg
+    ../assets/foto/talavera-tajo-puente-atardecer.jpg  ../assets/foto/talavera-puente-ceramica-noche.jpg
+    ../assets/video/burgos-plaza-noche.mp4  ../assets/video/llama-hoguera.mp4  ../assets/video/estorninos-murmuracion.mp4
+    ../assets/video/imprenta-tipografica-roja.mp4  ../assets/video/ia-estorninos.mp4
+  Arranque en frío con tres planos nocturnos (etalonaje 'noche'), un destello tras cada pregunta (detalle real del oficio
+  al que se refiere), estorninos en el murmullo y, al amanecer, estorninos sobre tejados, palomas y el Tajo ('calido').
 -->
 <link rel="stylesheet" href="../shared/base.css">
 <style>
@@ -124,8 +131,8 @@ const C = { grade: NOCHE, parent: $("cold"), z: 1 };
 const COLD_SHOTS = [
   HAS("burgos-plaza-noche") ? ["clip", "burgos-plaza-noche", [1.5, 62, 35], [1.7, 62, 35], { ...C, t0: 0, t1: .6, start: 0 }]
     : ["foto", "reloj-torre-engranajes", [1.25, 60, 40], [1.5, 60, 40], { ...C, t0: 0, t1: .6 }],
-  ["foto", "talavera-puente-ceramica-noche", [1.3, 62, 55], [1.55, 62, 55], { ...C, t0: .6, t1: 1.15 }],
-  ["foto", "caballo-bronce-galopando", [1.15, 50, 50], [1.3, 50, 50], { ...C, t0: 1.15, t1: 1.7 }],
+  ["clip", "llama-hoguera", [1.1, 63, 50], [1.25, 63, 50], { ...C, t0: .6, t1: 1.15, start: 1.0 }],
+  ["foto", "talavera-puente-ceramica-noche", [1.3, 62, 55], [1.55, 62, 55], { ...C, t0: 1.15, t1: 1.7 }],
 ].map(shot).filter(Boolean);
 S.ev(0.0, "cut", 0); S.ev(0.6, "cut", 1); S.ev(1.15, "cut", 2); S.ev(CITY0 - .02, "cut", 3);
 
@@ -155,13 +162,13 @@ const flashes = qs.filter((q) => FL[q.L.id]).map((q) => {
   return p;
 }).filter(Boolean);
 
-// ── amanecer: el Tajo con luz de alba, palomas, estorninos (cortes secos en el cielo vacío, al ritmo de la frase)
+// ── amanecer: estorninos sobre los tejados, palomas, el Tajo (cortes secos en el cielo vacío, al ritmo de la frase)
 const DB = { left: 0, top: 110, width: 540, height: 300 };
 const D = { grade: CALIDO, parent: $("dawnph"), z: 1, box: DB };
 const dawnDefs = [
-  [DAWN + .4, DAWN + 2.0, ["foto", "talavera-tajo-puente-atardecer", [1.05, 30, 50], [1.2, 55, 50], {}]],
+  [DAWN + .4, DAWN + 2.0, ["clip", "ia-estorninos", [1.0, 50, 40], [1.1, 50, 58], { start: .4 }]],
   [DAWN + 2.0, DAWN + 3.0, ["foto", "palomas-cielo-melocoton", [1.0, 50, 70], [1.2, 50, 35], {}]],
-  [DAWN + 3.0, DAWN + 4.6, ["clip", "estorninos-murmuracion", [1.1, 50, 50], [1.3, 50, 50], { start: 2.4 }]],
+  [DAWN + 3.0, DAWN + 4.6, ["foto", "talavera-tajo-puente-atardecer", [1.05, 30, 50], [1.2, 65, 50], {}]],
 ];
 const dawnShots = dawnDefs.map(([t0, t1, [k, n, f, to, o]], i) => { S.ev(t0, "dcut", i); return shot([k, n, f, to, { ...o, ...D, t0, t1 }]); }).filter(Boolean);
 

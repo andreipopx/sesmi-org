@@ -5,8 +5,8 @@
 <title>sesmi · Una sociedad abierta</title>
 <!--
   Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
-  ../assets/foto/pluma-tinta-carta.jpg  ../assets/video/metronome.mp4  ../assets/foto/tipos-plomo-componedor.jpg
-  ../assets/foto/lacre-sellos-cartas.jpg  ../assets/foto/plaza-mayor-medinaceli-soportales.jpg  ../assets/foto/talavera-tajo-puente-atardecer.jpg
+  ../assets/video/ia-plumilla.mp4  ../assets/video/metronome.mp4  ../assets/foto/tipos-plomo-componedor.jpg
+  ../assets/video/ia-lacre.mp4  ../assets/foto/plaza-mayor-medinaceli-soportales.jpg  ../assets/foto/talavera-tajo-puente-atardecer.jpg
   ../assets/video/estorninos-murmuracion.mp4
 -->
 <!--
@@ -62,8 +62,8 @@ const DIM = { // anchura × altura de cada imagen
   "mapa-castilla-nueva-1785": [1280, 1054], "mapa-toledo-1768": [1920, 1868], "enc-patata": [1204, 2000], "enc-escritura-ronda": [1424, 2000],
   "enc-reloj-c": [1354, 2000], "enc-imprenta-pl1": [1286, 2000], "campomanes-1777": [960, 1273], "estatutos-asturias": [1236, 2000],
   "buho-great-white-owl-1771": [1234, 2000], "geric-derby-epsom-1821": [1920, 1402], "paloma-grabado-coloreado-wellcome": [1920, 1218],
-  "lacre-sombrereros-1842": [1280, 1222], "pluma-tinta-carta": [1920, 1280], "tipos-plomo-componedor": [1920, 1276],
-  "lacre-sellos-cartas": [1920, 956], "plaza-mayor-medinaceli-soportales": [1920, 1228], "talavera-tajo-puente-atardecer": [1920, 1460],
+  "lacre-sombrereros-1842": [1280, 1222], "tipos-plomo-componedor": [1920, 1276],
+  "plaza-mayor-medinaceli-soportales": [1920, 1228], "talavera-tajo-puente-atardecer": [1920, 1460],
 };
 const FULL = { left: 0, top: 0, width: 540, height: 960 }, PB = { left: 30, top: 130, width: 480, height: 430 };
 const GR = { // etalonajes: grabado = blanco y negro cálido sobre papel; calido = color apagado y cálido
@@ -100,11 +100,11 @@ const shots = []; // todo lo que se pinta en #plates
 
 // ── 0 · arranque en frío: cuatro planos macro, cortes secos (0–3 s)
 const CO = 3.0;
-shots.push(macro("../assets/foto/pluma-tinta-carta.jpg", { t0: 0, t1: .8, f: [.45, .41], to: [.52, .43], z: [1.9, 2.15], grade: "calido", bg: "var(--ink)" }));
+shots.push(S.clip("ia-plumilla", { t0: 0, t1: .8, start: .5, from: [1.02, 50, 50], to: [1.14, 50, 50], grade: "calido", parent: $("plates"), z: 0 }));
 const met = S.clip("metronome", { t0: .8, t1: 1.6, start: 1.0, from: [1.55, 50, 34], to: [1.75, 50, 36], grade: "calido", parent: $("plates"), z: 0 });
 shots.push(met);
 shots.push(macro("../assets/foto/tipos-plomo-componedor.jpg", { t0: 1.6, t1: 2.3, f: [.47, .79], to: [.40, .73], z: [1.7, 1.95], grade: "calido", bg: "var(--ink)" }));
-shots.push(macro("../assets/foto/lacre-sellos-cartas.jpg", { t0: 2.3, t1: CO, f: [.29, .465], to: [.28, .455], z: [2.45, 2.7], grade: "calido", bg: "var(--ink)" }));
+shots.push(S.clip("ia-lacre", { t0: 2.3, t1: CO, start: 3.0, from: [1.0, 50, 50], to: [1.1, 50, 50], grade: "calido", parent: $("plates"), z: 0 }));
 [.8, 1.6, 2.3, CO].forEach((t, i) => cut(t, i));
 
 // ── ciudad
@@ -159,14 +159,14 @@ const dTable = S.dash($("table"));
 for (let k = 1; k <= Math.round((M1 - M0) * 6); k += 2) ev(M0 + k / 6, "step", k);
 const A = "../assets/archivo/";
 const PLATES = [ // [archivo, desde, hasta, foco, destino, zoom, pie]
-  [A + "mapa-castilla-nueva-1785.jpg", wordAt("n3", 12), wordAt("n3", 14), [.5, .5], [.5, .5], [1.02, 1.1], "Mapa de Castilla la Nueva · Tomás López, 1785"],
-  [A + "mapa-toledo-1768.jpg", wordAt("n3", 14), wordAt("n3", 14) + 1.4, [.4, .55], [.3, .6], [1.05, 1.35], "Mapa de la provincia de Toledo · Tomás López, 1768"],
-  [A + "enc-patata.jpg", wordAt("n3", 14) + 1.4, wordAt("n4", 1), [.5, .3], [.5, .45], [1.1, 1.25], "Encyclopédie · Agricultura"],
-  [A + "enc-escritura-ronda.jpg", wordAt("n4", 1), wordAt("n4", 3), [.5, .3], [.5, .4], [1.15, 1.35], "Encyclopédie · Escritura"],
-  [A + "enc-reloj-c.jpg", wordAt("n4", 3), wordAt("n4", 5), [.5, .26], [.5, .32], [1.2, 1.5], "Encyclopédie · Relojería"],
-  [A + "enc-imprenta-pl1.jpg", wordAt("n4", 5), T("n5"), [.5, .18], [.5, .24], [1.15, 1.4], "Encyclopédie · Imprenta"],
-  [A + "campomanes-1777.jpg", T("n5"), wordAt("n5", 2), [.52, .38], [.52, .34], [1.0, 1.12], "Pedro Rodríguez de Campomanes · 1777"],
-  [A + "estatutos-asturias.jpg", wordAt("n5", 2), T("n6"), [.5, .4], [.5, .44], [1.0, 1.1], "Estatutos de la Sociedad Económica de Asturias · 1781"],
+  ["../assets/archivo/mapa-castilla-nueva-1785.jpg", wordAt("n3", 12), wordAt("n3", 14), [.5, .5], [.5, .5], [1.02, 1.1], "Mapa de Castilla la Nueva · Tomás López, 1785"],
+  ["../assets/archivo/mapa-toledo-1768.jpg", wordAt("n3", 14), wordAt("n3", 14) + 1.4, [.4, .55], [.3, .6], [1.05, 1.35], "Mapa de la provincia de Toledo · Tomás López, 1768"],
+  ["../assets/archivo/enc-patata.jpg", wordAt("n3", 14) + 1.4, wordAt("n4", 1), [.5, .3], [.5, .45], [1.1, 1.25], "Encyclopédie · Agricultura"],
+  ["../assets/archivo/enc-escritura-ronda.jpg", wordAt("n4", 1), wordAt("n4", 3), [.5, .3], [.5, .4], [1.15, 1.35], "Encyclopédie · Escritura"],
+  ["../assets/archivo/enc-reloj-c.jpg", wordAt("n4", 3), wordAt("n4", 5), [.5, .26], [.5, .32], [1.2, 1.5], "Encyclopédie · Relojería"],
+  ["../assets/archivo/enc-imprenta-pl1.jpg", wordAt("n4", 5), T("n5"), [.5, .18], [.5, .24], [1.15, 1.4], "Encyclopédie · Imprenta"],
+  ["../assets/archivo/campomanes-1777.jpg", T("n5"), wordAt("n5", 2), [.52, .38], [.52, .34], [1.0, 1.12], "Pedro Rodríguez de Campomanes · 1777"],
+  ["../assets/archivo/estatutos-asturias.jpg", wordAt("n5", 2), T("n6"), [.5, .4], [.5, .44], [1.0, 1.1], "Estatutos de la Sociedad Económica de Asturias · 1781"],
 ];
 const plates = PLATES.map(([src, t0, t1, f, to, z, cap], i) => {
   if (i) cut(t0, 6 + i);
@@ -176,7 +176,7 @@ const P0 = PLATES[0][1];
 // el lacre se estampa en «económicas»
 const SEAL = wordAt("n5", 3);
 ev(SEAL, "seal");
-const seal = macro(A + "lacre-sombrereros-1842.jpg", { t0: SEAL, t1: T("n6"), f: [.5, .5], z: [1, 1], zf: (t) => 1 + .45 * (1 - eOut((t - SEAL) / .14)) + .02 * Math.sin(Math.min(1, (t - SEAL) / .5) * Math.PI) * 0,
+const seal = macro("../assets/archivo/lacre-sombrereros-1842.jpg", { t0: SEAL, t1: T("n6"), f: [.5, .5], z: [1, 1], zf: (t) => 1 + .45 * (1 - eOut((t - SEAL) / .14)) + .02 * Math.sin(Math.min(1, (t - SEAL) / .5) * Math.PI) * 0,
   box: { left: 328, top: 398, width: 150, height: 143 }, grade: "lacre", blend: true, mult: false });
 
 // ── hoy: el Tajo de verdad, que se funde en la ciudad dibujada
@@ -189,9 +189,9 @@ const SESMI = wordAt("n6", 4);                         // «idea»: aparece el c
 ev(SESMI, "stamp");
 
 // ── las tres figuras: entender, hacer, compartir (cada una, antes, medio segundo de su archivo)
-const FIG = [["buho", "Investigación", 30, "n7", A + "buho-great-white-owl-1771.jpg", [.5, .4], [.5, .36], [1.05, 1.28], "grabado"],
-  ["caballo", "Servicios", 195, "n8", A + "geric-derby-epsom-1821.jpg", [.84, .6], [.56, .6], [1.05, 1.12], "calido"],
-  ["paloma", "Divulgación", 360, "n9", A + "paloma-grabado-coloreado-wellcome.jpg", [.30, .5], [.62, .5], [1.0, 1.08], "calido"]];
+const FIG = [["buho", "Investigación", 30, "n7", "../assets/archivo/buho-great-white-owl-1771.jpg", [.5, .4], [.5, .36], [1.05, 1.28], "grabado"],
+  ["caballo", "Servicios", 195, "n8", "../assets/archivo/geric-derby-epsom-1821.jpg", [.84, .6], [.56, .6], [1.05, 1.12], "calido"],
+  ["paloma", "Divulgación", 360, "n9", "../assets/archivo/paloma-grabado-coloreado-wellcome.jpg", [.30, .5], [.62, .5], [1.0, 1.08], "calido"]];
 const FIG_OUT = line("n9").end + .5, FIGIN = T("n7") - .5;
 const figs = FIG.map(([n, lbl, x, id, arch, f, to, z, grade], i) => {
   const h = S.el("div", "abs", $("figs")); h.style.cssText = `left:${x}px;top:250px;width:150px;height:150px`;
@@ -309,7 +309,7 @@ window.renderAt = (t) => {
 
   // multitud
   const cOut = 1 - eIO((t - (FLIP - .5)) / .5);
-  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < FLIP + .5 ? "block" : "none"; e.style.opacity = .55 * cOut * eOut((t - at) / .3); });
+  crowd.forEach(([e, at]) => { e.style.display = t >= at && t < MU0 ? "block" : "none"; e.style.opacity = .55 * cOut * eOut((t - at) / .3); });
 
   subs.forEach((f) => f(t));
   saber(t);

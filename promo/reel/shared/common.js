@@ -254,9 +254,11 @@ S.GRADE = {
  *   t0, t1        cuándo está en pantalla
  *   from, to      [escala, x%, y%] al principio y al final (paneo/zoom lento, lineal)
  *   grade         clave de S.GRADE · fadeIn/fadeOut (s; 0 = corte seco) · box {left, top, width, height} (px)
+ *   fps           el movimiento va a saltos (6 por defecto; 5, 6, 10, 12… dividen a 60). 0 = continuo
  */
 S.photo = (src, opts = {}) => {
-  const o = { from: [1.08, 50, 50], to: [1.0, 50, 50], grade: "calido", fadeIn: 0, fadeOut: 0, ...opts };
+  // fps: el movimiento del plano va a saltos (estética de la marca: pocos fps, que dividan a 60). 0 = continuo.
+  const o = { from: [1.08, 50, 50], to: [1.0, 50, 50], grade: "calido", fadeIn: 0, fadeOut: 0, fps: 6, ...opts };
   const box = S.el("div", "photo", opts.parent);
   const b = o.box || { left: 0, top: 0, width: 540, height: 960 };
   box.style.cssText = `position:absolute;overflow:hidden;left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px;display:none;z-index:${o.z ?? 2}`;
@@ -267,7 +269,8 @@ S.photo = (src, opts = {}) => {
     const on = t >= o.t0 && t < o.t1;
     box.style.display = on ? "block" : "none";
     if (!on) return;
-    const p = S.clamp((t - o.t0) / (o.t1 - o.t0));
+    const tq = o.fps ? o.t0 + S.stepN(t, o.t0, o.fps) / o.fps : t;
+    const p = S.clamp((tq - o.t0) / (o.t1 - o.t0));
     const [s, x, y] = o.from.map((v, i) => v + (o.to[i] - v) * p);
     img.style.objectPosition = `${x}% ${y}%`;
     img.style.transform = `scale(${s})`;
@@ -279,6 +282,7 @@ S.photo = (src, opts = {}) => {
 /**
  * Clip de vídeo: assets/video/<slug>.mp4, pintado desde sus fotogramas (assets/video/.frames/<slug>/,
  * los genera shared/frames.sh). opts como S.photo + start (s dentro del clip) y rate (velocidad).
+ * Se reproduce a opts.fps (6 por defecto): vídeo real o de IA a pocos fps, como stop-motion.
  */
 S.clip = (slug, opts = {}) => {
   const meta = (window.CLIPS || {})[slug];
@@ -289,7 +293,8 @@ S.clip = (slug, opts = {}) => {
   const upd = (t) => {
     f(t);
     if (t < o.t0 || t >= o.t1) return;
-    const k = Math.min(meta.n, Math.max(1, 1 + Math.floor((o.start + (t - o.t0) * o.rate) * meta.fps + 1e-6)));
+    const tq = o.fps ? S.stepN(t, o.t0, o.fps) / o.fps : t - o.t0;  // a saltos, como las figuras
+    const k = Math.min(meta.n, Math.max(1, 1 + Math.floor((o.start + tq * o.rate) * meta.fps + 1e-6)));
     const name = String(k).padStart(4, "0") + ".jpg";
     if (!f.img.src.endsWith("/" + name)) f.img.src = dir + name;
   };
