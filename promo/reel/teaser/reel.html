@@ -7,12 +7,12 @@
   Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
   ../assets/video/ia-plumilla.mp4  ../assets/video/reloj-bolsillo-waltham.mp4  ../assets/video/maquina-escribir-tipos-macro.mp4
   ../assets/video/calculadora-mecanismo.mp4  ../assets/video/ia-lacre.mp4  ../assets/video/metronome.mp4
-  ../assets/video/planetario-eisinga-engranajes.mp4  ../assets/video/imprenta-tipografica-roja.mp4  ../assets/video/buho-cornudo-otono.mp4
-  ../assets/video/telar-jacquard-cintas.mp4  ../assets/video/pascalina-laton.mp4  ../assets/video/ia-estorninos.mp4
-  ../assets/foto/caballo-bronce-galopando.jpg  ../assets/foto/palomas-cielo-melocoton.jpg
+  ../assets/video/planetario-eisinga-engranajes.mp4  ../assets/video/anim-imprenta.mp4  ../assets/video/anim-buho.mp4
+  ../assets/video/telar-jacquard-cintas.mp4  ../assets/video/anim-derby.mp4  ../assets/video/anim-labranza.mp4
+  ../assets/video/anim-palomas.mp4  ../assets/video/ia-estorninos.mp4
 -->
 <!--
-  Versión «teaser» (17,6 s): al estilo de un vídeo de lanzamiento. 13 planos macro de objetos de oficio
+  Versión «teaser» (18,2 s): al estilo de un vídeo de lanzamiento. 13 planos macro de objetos de oficio
   (escribir, medir, imprimir, sellar, enseñar) con cortes secos al pulso de la música (96 bpm: 1 tiempo = 0,625 s),
   todo a pocos fps (clips a 6 fps, zoom y paneo a saltos). Un plano que se queda (la bandada al amanecer) con
   «Debemos saber.» (voz + texto) y corte a papel: el wordmark se escribe a saltos y el cuadrado rojo cae
@@ -60,16 +60,13 @@ const SHOTS = [
   clip("calculadora-mecanismo", 1920 / 1080, [1.9, .58, .52], [2.2, .58, .50], 1, 3.6),            // calcular: peines y ruedas
   clip("ia-lacre", 720 / 1280, [1.2, .45, .55], [1.45, .45, .62], 2, .5, "natural"),              // sellar: el sello y el lacre
   clip("metronome", 1920 / 1080, [2.3, .48, .40], [2.5, .48, .42], 1, .3),                         // medir el tiempo
-  clip("planetario-eisinga-engranajes", 1920 / 1080, [1.5, .55, .55], [1.7, .55, .55], 1, .5),    // medir: engranajes
-  clip("imprenta-tipografica-roja", 854 / 480, [1.1, .20, .60], [1.25, .18, .62], 1, 0),            // imprimir: la prensa y la tinta roja
-  has("anim-buho") ? clip("anim-buho", 720 / 1280, [1.15, .5, .5], [1.3, .5, .48], 2, 0, "natural")
-    : clip("buho-cornudo-otono", 1920 / 1080, [2.2, .56, .42], [2.4, .56, .44], 2, 1.5),          // el búho (Investigación)
+  clip("planetario-eisinga-engranajes", 1920 / 1080, [1.6, .45, .35], [1.8, .45, .35], 1, .5),    // medir: engranajes
+  clip("anim-imprenta", 720 / 1280, [2.6, .28, .50], [2.6, .40, .50], 1, 1.0, "natural"),         // imprimir: los impresores de la Encyclopédie
+  clip("anim-buho", 720 / 1280, [2.0, .38, .30], [1.8, .40, .34], 2, .6, "natural"),             // el búho (Investigación)
   clip("telar-jacquard-cintas", 1920 / 1080, [1.5, .52, .62], [1.7, .52, .62], 1, 4.6),            // tejer: las cintas
-  has("anim-derby") ? clip("anim-derby", 720 / 1280, [1.1, .5, .5], [1.25, .5, .5], 1, 0, "natural")
-    : photo(FO + "caballo-bronce-galopando.jpg", 1920 / 1280, [1.8, .56, .40], [2.1, .56, .40], 1),  // el caballo (Servicios)
-  clip("pascalina-laton", 1920 / 1080, [2.2, .40, .55], [2.5, .40, .55], 1, 3.4),                  // calcular: ruedas de latón
-  has("anim-palomas") ? clip("anim-palomas", 720 / 1280, [1.1, .5, .5], [1.25, .5, .5], 2, 0, "natural")
-    : photo(FO + "palomas-cielo-melocoton.jpg", 1280 / 1706, [1.2, .5, .62], [1.5, .5, .45], 2),     // la paloma (Divulgación)
+  clip("anim-derby", 720 / 1280, [2.5, .28, .50], [2.5, .50, .50], 2, .5, "natural"),             // el caballo (Servicios): el galope
+  clip("anim-labranza", 720 / 1280, [1.8, .30, .50], [1.8, .45, .50], 1, 1.5, "natural"),         // labrar: «mejorar la tierra»
+  clip("anim-palomas", 720 / 1280, [2.6, .50, .50], [2.6, .50, .50], 2, .5, "natural"),           // la paloma (Divulgación)
 ];
 const HOLD = clip("ia-estorninos", 720 / 1280, [1.0, .5, .62], [1.3, .52, .56], 0, 1.0, "natural");  // el plano que se queda
 

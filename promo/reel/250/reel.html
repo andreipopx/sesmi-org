@@ -118,15 +118,21 @@ const JOBS = [["boticario", 0, 1, -18], ["maestra", 2, 3, -18], ["labrador", 7, 
 const tags = [];
 const mkTag = (txt, t0, t1) => { const e = S.el("div", "tile tag", $("mont"), txt); tags.push((t) => (e.style.display = t >= t0 && t < t1 ? "block" : "none")); };
 const nameT = (i) => wordAt("n3", [1, 3, 5, 7][i]);
-const endT = (i) => (i < 3 ? wordAt("n3", [2, 4, 6][i]) - .08 : wordAt("n3", 7) + 1.65);
+const endT = (i) => (i < 3 ? nameT(i + 1) : wordAt("n3", 7) + 1.65);   // corte seco de un oficio al siguiente
 const OFSH = [
   { w: 0, a: nameT(0), b: endT(0), dir: F, src: "balanza-boticario.jpg", nat: [1920, 1278], z0: 1.45, z1: 1.7, f0: [.3, .38], f1: [.3, .5], grade: "calido" }, // boticario: la balanza de boticario
   { w: 1, a: nameT(1), b: endT(1), src: "enc-escritura-pluma.jpg", nat: [1228, 2000], z0: 1.7, z1: 2.0, f0: [.5, .15], f1: [.5, .21] },     // maestra: la mano y la pluma
-  { w: 2, a: nameT(2), b: endT(2), src: "enc-labourage.jpg", nat: [1390, 2000], z0: 1.9, z1: 2.1, f0: [.62, .6], f1: [.74, .6] },          // labrador: el arado
+  { w: 2, a: nameT(2), b: endT(2), src: "enc-labourage.jpg", nat: [1390, 2000], z0: 1.9, z1: 2.1, f0: [.62, .6], f1: [.74, .6],
+    clip: "anim-labranza", start: 1.3, from: [1.25, 45, 56], to: [1.5, 36, 62] },          // labrador: la lámina de labranza animada (clip con IA; si no está, el grabado del arado)
   { w: 3, a: nameT(3), b: nameT(3) + .8, dir: F, src: "balanza-laton.jpg", nat: [1920, 1440], z0: 1.1, z1: 1.25, f0: [.5, .4], grade: "calido" }, // comerciante: la balanza
   { w: 3, a: nameT(3) + .8, b: endT(3), src: "atenas-tetradracma-lechuza-a.jpg", nat: [1920, 1920], z0: 1.3, z1: 1.5, f0: [.58, .4], grade: "grabado" }, // …y la moneda
 ];
 OFSH.forEach((s, i) => {
+  if (s.clip && (window.CLIPS || {})[s.clip]) {
+    // ../assets/video/anim-labranza.mp4 (lámina de la Encyclopédie animada con IA para sesmi, ver credits.json)
+    const c = S.clip(s.clip, { t0: s.a, t1: s.b, start: s.start, from: s.from, to: s.to, box: { left: 0, top: 190, width: 540, height: 390 }, grade: "grabado", z: 1 });
+    c.box.classList.add("band"); SHOTS.push(c); ev(s.a, "cut", i + 1); return;
+  }
   SHOTS.push(shot((s.dir || A) + s.src, s.nat, { t0: s.a, t1: s.b, box: BAND, rule: true, z0: s.z0, z1: s.z1, f0: s.f0, f1: s.f1, grade: s.grade === "calido" ? "calido" : GRAB }));
   ev(s.a, "cut", i + 1);
 });
@@ -146,9 +152,14 @@ const MONT = [
   [0, N4(1), "enc-escritura-batarda.jpg", [1276, 2000], 2.0, 2.2, [.5, .57], [.5, .6]],
   [1, N4(2), "enc-escritura-ronda.jpg", [1424, 2000], 1.9, 2.1, [.45, .89], [.55, .89]],
   [4, N4(5), "badius-vineta-1523.jpg", [1320, 2000], 2.3, 2.6, [.5, .56], [.5, .54]],
-  [5, N4END, "enc-imprenta-pl1.jpg", [1286, 2000], 1.7, 1.9, [.45, .77], [.55, .77]],
+  [5, N4END, "enc-imprenta-pl1.jpg", [1286, 2000], 1.7, 1.9, [.45, .77], [.55, .77]],  // (si existe anim-imprenta, este plano es el clip)
 ];
 MONT.forEach(([i, b, f, nat, z0, z1, f0, f1], k) => {
+  if (i === 5 && (window.CLIPS || {})["anim-imprenta"]) {
+    // ../assets/video/anim-imprenta.mp4 (lámina de la imprenta animada con IA para sesmi)
+    const c = S.clip("anim-imprenta", { t0: N4(i), t1: b, start: 1.2, from: [1.12, 50, 50], to: [1.35, 52, 50], box: { left: 0, top: 190, width: 540, height: 390 }, grade: "grabado", z: 1 });
+    c.box.classList.add("band"); SHOTS.push(c); ev(N4(i), "cut", 6 + k); return;
+  }
   SHOTS.push(shot(A + f, nat, { t0: N4(i), t1: b, box: BAND, rule: true, z0, z1, f0, f1, grade: GRAB }));
   ev(N4(i), "cut", 6 + k);
 });
@@ -328,7 +339,7 @@ for (let k = 0; k < 10; k++) ev(C0 + k * (C1 - C0) / 10, "pop");
     else if (id >= 40 && id < 50) { ev(t, "via", id - 40); last = t; }
     else if (id === 95) ev(t, "train");
     else if (id === 92) ev(t, "chimney");
-    else if (t - last >= .1) { ev(t, "build", id); last = t; }
+    else if (t - last >= .07) { ev(t, "build", id); last = t; }
   });
 }
 

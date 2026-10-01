@@ -62,4 +62,4 @@ for e in m.events:
             m.both(t, thud(70, 42, 0.8, 0.2), 0.22, 0.08)
 
 m.voice(gains={"narradora": 1.0})
-m.master(duck=0.6)
+m.master(duck=0.8, fade_out=2.0)
