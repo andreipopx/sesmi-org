@@ -240,11 +240,11 @@ sum.innerHTML = "100 + 50 + 25 + 12,5 + … = <span style='color:var(--red)'>200
 sum2.textContent = "En movimiento, a partir de 100 €";
 form.innerHTML = "multiplicador <span style='color:var(--red)'>≈</span> 1 / <span style='font-family:var(--text);font-style:italic;font-weight:400'>fuga</span>";
 sum2.className = "lbl"; sum2.id = "sum2";
-const SQ0 = W("n6", 4), SQDT = .33;
+const SQ0 = W("n6", 5), SQDT = .25;
 AA.forEach((_, k) => ev(SQ0 + k * SQDT, "sq", k));
-const SUM0 = W("n6", 10), MULT = SUM0 + .45;
+const SUM0 = W("n6", 9), MULT = SUM0 + .45;
 ev(SUM0, "sum"); ev(MULT, "mult");
-const TR0 = T("n6") + 5.83, TRN = [0, 1, 2, 3].map((k) => TR0 + k / 6);        // 4 posiciones de la transición (3 saltos)
+const TR0 = T("n6") + 8.01, TRN = [0, 1, 2, 3].map((k) => TR0 + k / 6);        // 4 posiciones de la transición (3 saltos)
 TRN.slice(1).forEach((t, k) => ev(t, "shrinkrow", k));
 const RA0 = W("n7", 0) + .1, NA = W("n7", 1) - .25;
 AB.forEach((_, k) => ev(RA0 + k * .12, "rowA", k));
