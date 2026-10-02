@@ -4,55 +4,55 @@
    "id": "n1",
    "who": "narradora",
    "text": "¿Sabes algo que tu ciudad debería saber?",
-   "t": 0
+   "t": 2.0
   },
   {
    "id": "v2",
    "who": "abuela",
    "text": "Yo me acuerdo de cómo era todo esto.",
-   "t": 0
+   "t": 7.0
   },
   {
    "id": "v3",
    "who": "joven",
    "text": "Yo sé programar.",
-   "t": 0
+   "t": 10.2
   },
   {
    "id": "v4",
    "who": "madre",
    "text": "Yo doy clase en el instituto.",
-   "t": 0
+   "t": 12.3
   },
   {
    "id": "v5",
    "who": "tendero",
    "text": "Yo sé lo que se vende y lo que no.",
-   "t": 0
+   "t": 14.9
   },
   {
    "id": "v6",
    "who": "chica",
    "text": "Y yo solo quiero aprender.",
-   "t": 0
+   "t": 17.7
   },
   {
    "id": "n7",
    "who": "narradora",
    "text": "Una sociedad abierta se hace así: cada uno aporta lo que sabe.",
-   "t": 0
+   "t": 20.1
   },
   {
    "id": "n8",
    "who": "narradora",
    "text": "Escríbenos.",
-   "t": 0
+   "t": 27.0
   },
   {
    "id": "n9",
    "who": "narradora",
    "text": "Debemos saber.",
-   "t": 0
+   "t": 31.0
   }
  ]
 }

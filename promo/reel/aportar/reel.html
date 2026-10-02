@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · ¿Quieres aportar?</title>
+<!--
+  Versión «aportar» · «¿Quieres aportar?». Una llamada a colaborar: cada vecino sabe algo; la retícula de la web
+  se va llenando celda a celda (una por voz) hasta que queda la celda libre: la tuya. Cierre: «Escríbenos.» y el correo.
+  Tiempos de voz en script.json (+ out/vo.json).
+  Material usado (rutas literales para shared/credits.py):
+    ../assets/video/ia-plumilla.mp4  ../assets/video/papel-washi-manos.mp4  ../assets/archivo/plantin-portada-compas-1564.jpg
+    ../assets/video/ia-lacre.mp4  ../assets/archivo/talavera-wyngaerde-1567.jpg  ../assets/video/calculadora-mecanismo.mp4
+    ../assets/archivo/enc-escritura-pluma.jpg  ../assets/foto/balanza-boticario.jpg  ../assets/foto/pluma-tinta-carta.jpg
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.scr{position:absolute;inset:0;display:none}
+#q{z-index:3} #grid{z-index:3} #close{z-index:3} #cold{z-index:6}
+.cell{position:absolute;width:270px;height:190px;overflow:hidden;display:none;background:var(--paper-2)}
+.cell .tab{position:absolute;left:0;top:0;z-index:3;padding:6px 9px 5px 9px;background:var(--paper);border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);color:var(--ink)}
+.cell .tab.on{color:var(--red)}
+.cell .sbox{position:absolute;inset:0;z-index:4;pointer-events:none}
+.cell .flash{position:absolute;inset:0;z-index:6;background:var(--ink);display:none}
+.cell .you{position:absolute;inset:0;z-index:5;background:var(--red);color:var(--paper);display:none;align-items:center;justify-content:center;font:500 64px/1 var(--display);letter-spacing:-.03em}
+.plus{position:absolute;width:19px;height:19px;display:none;z-index:1}
+.plus:before,.plus:after{content:"";position:absolute;background:var(--ink);opacity:.38}
+.plus:before{left:9px;top:0;width:1px;height:19px}
+.plus:after{top:9px;left:0;height:1px;width:19px}
+#mk{position:absolute;width:16px;height:16px;background:var(--red);z-index:9;display:none}
+.cnt{position:absolute;top:706px;left:30px;right:30px;display:flex;justify-content:space-between;color:var(--ink-3)}
+.cnt b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+#mail{position:absolute;left:0;right:0;top:372px;text-align:center;font:500 62px/1 var(--display);letter-spacing:-.03em;color:var(--ink);white-space:nowrap}
+#web{position:absolute;left:0;right:0;top:446px;text-align:center;font:500 24px/1 var(--display);color:var(--ink-3)}
+.fcell{position:absolute;top:600px;width:180px;height:120px;display:none}
+.fcell .fg{position:absolute;left:58px;top:16px;width:64px;height:64px;color:var(--ink)}
+.fcell .lbl{position:absolute;left:0;right:0;top:92px;text-align:center;color:var(--ink-2);font-size:11px}
+.fcell .lbl i{display:inline-block;width:7px;height:7px;background:var(--red);margin-right:7px;vertical-align:1px}
+.photo img{max-width:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="scr" id="cold"></div>
+
+  <div class="scr" id="q">
+    <div class="layer"><svg id="csv" viewBox="0 0 540 960"></svg></div>
+  </div>
+
+  <div class="scr" id="grid">
+    <svg id="gl" viewBox="0 0 540 960" style="position:absolute;inset:0;width:540px;height:960px;z-index:8;overflow:visible">
+      <path id="gh0" d="M0 120.5H540" stroke="#1C1814" stroke-width="1" fill="none"/>
+      <path id="gh1" d="M0 310.5H540" stroke="#1C1814" stroke-width="1" fill="none"/>
+      <path id="gh2" d="M0 500.5H540" stroke="#1C1814" stroke-width="1" fill="none"/>
+      <path id="gh3" d="M0 690.5H540" stroke="#1C1814" stroke-width="1" fill="none"/>
+      <path id="gv" d="M270.5 120V691" stroke="#1C1814" stroke-width="1" fill="none"/>
+    </svg>
+    <div id="mk"></div>
+    <div class="cnt lbl" id="cnt"><span>Lo que sabe la ciudad</span><b id="cn">00 / 06</b></div>
+  </div>
+
+  <div class="scr" id="close">
+    <svg id="fl" viewBox="0 0 540 960" style="position:absolute;inset:0;width:540px;height:960px;overflow:visible">
+      <path id="fh0" d="M0 600.5H540" stroke="#1C1814" stroke-width="1" fill="none"/>
+      <path id="fh1" d="M0 720.5H540" stroke="#1C1814" stroke-width="1" fill="none"/>
+      <path id="fv0" d="M180.5 600V721" stroke="#1C1814" stroke-width="1" fill="none"/>
+      <path id="fv1" d="M360.5 600V721" stroke="#1C1814" stroke-width="1" fill="none"/>
+    </svg>
+    <div id="mail"></div>
+    <div id="web">sesmi.org</div>
+  </div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, eOut, eIO, clamp, stepN, line, wordAt } = S;
+const T = (id) => line(id).t, END = (id) => line(id).end;
+const A = "../assets/archivo/", F = "../assets/foto/";
+const Q12 = (t) => Math.floor(t * 12 + 1e-6) / 12;   // lo continuo (trazo, fundidos) se redondea a 12 fps
+
+// ── tiempos clave
+const CO = 1.92;                 // fin de la apertura (cuatro planos macro)
+const G0 = 6.5;                  // corte a la retícula vacía
+const CLOSE = 26.0;              // corte a papel limpio: correo
+const FLIP = 30.5, SHRINK = FLIP + 1.9;
+const cuts = [];
+const cut = (t, v) => { cuts.push(t); ev(t, "cut", v); };
+
+// ── 0 · apertura: macro de archivo a cortes secos (0–1,9 s)
+const CS = { parent: $("cold"), z: 0, grade: "calido" };
+const cold = [
+  S.clip("ia-plumilla", { ...CS, t0: 0, t1: .48, start: .7, from: [1.04, 50, 50], to: [1.16, 50, 50] }),
+  S.clip("papel-washi-manos", { ...CS, t0: .48, t1: .96, start: 2.2, from: [1.1, 45, 50], to: [1.25, 50, 50] }),
+  S.photo(A + "plantin-portada-compas-1564.jpg", { ...CS, t0: .96, t1: 1.44, from: [1.2, 60, 38], to: [1.5, 62, 40] }),
+  S.clip("ia-lacre", { ...CS, t0: 1.44, t1: CO, start: 1.2, from: [1.0, 50, 33], to: [1.0, 50, 33] }),
+];
+[.48, .96, 1.44, CO].forEach((t, i) => cut(t, i));
+
+// ── 1 · la pregunta (n1) sobre papel, con la ciudad dibujándose debajo
+const city = S.drawCity($("csv"), { G: 690 });
+ev(CO + .05, "draw0");
+const sub1 = S.sub("n1", { parent: $("q"), hot: [6], out: 1e3,
+  style: "left:34px;right:34px;top:215px;text-align:left;font:500 74px/1.0 var(--display);letter-spacing:-.035em;text-wrap:balance" });
+
+// ── 2 · la retícula: una celda por voz
+const mkMedia = {
+  v2: (o) => S.photo(A + "talavera-wyngaerde-1567.jpg", { ...o, from: [1.5, 96, 85], to: [1.5, 52, 85], grade: "grabado" }),
+  v3: (o) => S.clip("calculadora-mecanismo", { ...o, start: 1.0, from: [1.15, 50, 50], to: [1.3, 50, 50], grade: "calido" }),
+  v4: (o) => S.photo(A + "enc-escritura-pluma.jpg", { ...o, from: [1.0, 50, 4], to: [1.0, 50, 36], grade: "grabado" }),
+  v5: (o) => S.photo(F + "balanza-boticario.jpg", { ...o, from: [1.2, 40, 18], to: [1.0, 45, 35], grade: "calido" }),
+  v6: (o) => S.photo(F + "pluma-tinta-carta.jpg", { ...o, from: [1.35, 40, 45], to: [1.1, 60, 55], grade: "calido" }),
+};
+const CELLS = [
+  { id: "v2", k: "Memoria", col: 0, row: 0 }, { id: "v3", k: "Código", col: 1, row: 0 },
+  { id: "v4", k: "Enseñar", col: 0, row: 1 }, { id: "v5", k: "Oficio", col: 1, row: 1 },
+  { id: "v6", k: "Ganas", col: 0, row: 2 }, { id: "you", k: "Tú", col: 1, row: 2 },
+];
+const FLASH = .17; // la celda entra con un bloque de tinta (2–3 pasos) y luego la imagen
+CELLS.forEach((c, i) => {
+  c.x = c.col * 270; c.y = 120 + c.row * 190;
+  const el = S.el("div", "cell", $("grid")); el.style.left = c.x + "px"; el.style.top = c.y + "px"; c.el = el;
+  c.tab = S.el("div", "tab lbl", el, c.k); c.tab.style.display = "none";
+  c.flash = S.el("div", "flash", el);
+  const p = S.el("div", "plus", $("grid")); p.style.left = c.x + 125 + "px"; p.style.top = c.y + 85 + "px"; c.plus = p;
+  if (c.id === "you") { c.youEl = S.el("div", "you", el, "tú"); return; }
+  c.at = T(c.id); c.L = line(c.id);
+  c.med = mkMedia[c.id]({ t0: c.at, t1: 1e3, parent: el, z: 1, box: { left: 0, top: 0, width: 270, height: 190 } });
+  if (c.id !== "v3" && c.id !== "v5" && c.id !== "v6") c.med.img.style.mixBlendMode = "multiply";
+  const box = S.el("div", "sbox", el);
+  c.sub = S.sub(c.id, { parent: box, out: 1e3,
+    style: "position:absolute;left:0;right:0;top:auto;bottom:0;padding:7px 11px 8px;background:var(--paper);border-top:1px solid var(--ink);font:italic 400 19px/1.2 var(--text);letter-spacing:0;text-align:left;text-wrap:wrap" });
+  c.box = box;
+  ev(c.at - FLASH, "cell", i);
+});
+const YOU = CELLS[5];
+// n7: primera pasada (una palabra, un salto del cuadrado) y segunda (cada celda destella al decir lo que aporta)
+const N7 = T("n7");
+const RUN1 = [0, 1, 2, 3, 4, 5].map((c, i) => ({ t: wordAt("n7", i), c }));
+const RUN2 = [0, 1, 2, 3, 4, 5].map((c, i) => ({ t: wordAt("n7", 6 + i), c }));
+RUN1.forEach((h, i) => ev(h.t, "hop", i));
+RUN2.forEach((h, i) => (i < 5 ? ev(h.t, "pulse", i) : ev(h.t, "you")));
+YOU.landAt = RUN1[5].t; YOU.fillAt = RUN2[5].t;
+const MARK = [
+  ...CELLS.slice(0, 5).map((c, i) => ({ t: c.at - FLASH, c: i })), { t: G0, c: 0 }, ...RUN1, ...RUN2.slice(0, 5), { t: YOU.fillAt, c: -1 },
+].sort((a, b) => a.t - b.t);
+const sub7 = S.sub("n7", { parent: $("grid"), hot: [8], out: 1e3,
+  style: "left:30px;right:30px;top:704px;text-align:center;font:500 29px/1.08 var(--display);letter-spacing:-.025em" });
+const GRID_END = CLOSE;
+
+// ── 3 · cierre: «Escríbenos.» y el correo (4 s en pantalla), las tres figuras debajo
+cut(G0, 4); cut(CLOSE, 5);
+const MAIL = "hola@sesmi.org", MT0 = CLOSE + .04;
+const TYPE_STEPS = [3, 6, 9, 12, 14];
+TYPE_STEPS.forEach((_, k) => ev(MT0 + k / 12, "type", k));
+const sub8 = S.sub("n8", { parent: $("close"), out: 1e3,
+  style: "left:20px;right:20px;top:262px;text-align:center;font:500 88px/1 var(--display);letter-spacing:-.04em" });
+const FIGS = [["buho", "Investigación", .72], ["caballo", "Servicios", .84], ["paloma", "Divulgación", .96]].map(([n, lbl, dt], i) => {
+  const c = S.el("div", "fcell", $("close")); c.style.left = i * 180 + "px";
+  const h = S.el("div", "fg", c);
+  S.el("div", "lbl", c, `<i></i>${lbl}`);
+  const t0 = CLOSE + dt; ev(t0, "fig", i);
+  return { c, t0, play: S.fig(h, n) };
+});
+
+// ── 4 · «debemos saber.» y firma (el correo se queda en la firma, sin duplicar la web)
+const saber = S.saber(FLIP, SHRINK, { a: wordAt("n9", 0), b: wordAt("n9", 1), tag: "Aporta lo que sabes." });
+const firma = S.firma(SHRINK + .42);
+(() => { // la última línea de la firma lleva el correo (en minúsculas, sin la mayúscula de .lbl)
+  const e3 = document.querySelectorAll(".firma .lbl")[1];
+  e3.textContent = "hola@sesmi.org";
+  e3.style.cssText += ";text-transform:none;letter-spacing:0;font:500 22px/1 var(--display);color:var(--ink);top:648px";
+})();
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+const markCell = (tr) => { let c = -2; for (const m of MARK) if (tr >= m.t - 1e-6) c = m.c; return c; };
+
+window.renderAt = (tr) => {
+  const t = Q12(tr);
+  // apertura
+  $("cold").style.display = tr < CO ? "block" : "none";
+  cold.forEach((f) => f(tr));
+
+  // pregunta
+  const inQ = tr >= CO && tr < G0;
+  $("q").style.display = inQ ? "block" : "none";
+  if (inQ) { city.draw(t, CO + .05, 3.7); sub1(t); }
+
+  // retícula
+  const inG = tr >= G0 && tr < GRID_END;
+  $("grid").style.display = inG ? "block" : "none";
+  if (inG) {
+    // las líneas se trazan en cinco pasos
+    ["gh0", "gh1", "gh2", "gh3", "gv"].forEach((id, i) => ($(id).style.display = tr >= G0 + i * .07 ? "block" : "none"));
+    let filled = 0;
+    CELLS.forEach((c, i) => {
+      const isYou = c.id === "you";
+      const on = isYou ? true : tr >= c.at - FLASH;
+      c.el.style.display = on ? "block" : "none";
+      c.plus.style.display = tr >= G0 + .35 && tr < (isYou ? YOU.fillAt : c.at - FLASH) ? "block" : "none";
+      if (isYou) {
+        const filledY = tr >= c.fillAt;
+        c.el.style.background = filledY ? "var(--red)" : "var(--paper)";
+        c.tab.style.display = tr >= c.landAt && !filledY ? "block" : "none";
+        c.tab.classList.toggle("on", tr >= c.landAt);
+        c.youEl.style.display = filledY ? "flex" : "none";
+        c.el.style.display = tr >= c.landAt - 1e-6 ? "block" : "none";
+        c.flash.style.display = tr >= c.fillAt - FLASH && tr < c.fillAt ? "block" : "none";
+        if (filledY) filled++;
+        return;
+      }
+      if (tr >= c.at) filled++;
+      c.med(tr);
+      const speaking = tr >= c.L.t - .05 && tr < c.L.end + .12;
+      c.tab.style.display = tr >= c.at ? "block" : "none";
+      c.tab.classList.toggle("on", speaking);
+      // destello de entrada + destello al ser nombrada en n7
+      const pulse = RUN2[i].t;
+      const flashing = (tr >= c.at - FLASH && tr < c.at) || (tr >= pulse && tr < pulse + FLASH);
+      c.flash.style.display = flashing ? "block" : "none";
+      const showSub = tr < c.L.end + .45;
+      c.box.style.display = showSub ? "block" : "none";
+      if (showSub) c.sub(t);
+    });
+    // cuadrado rojo: marca la celda que habla / la que se nombra
+    const mc = markCell(tr), mk = $("mk");
+    if (mc < 0) mk.style.display = "none";
+    else { mk.style.display = "block"; mk.style.left = CELLS[mc].x + 270 - 16 - 12 + "px"; mk.style.top = CELLS[mc].y + 12 + "px"; }
+    const cnt = Math.min(6, filled);
+    $("cn").textContent = String(cnt).padStart(2, "0") + " / 06";
+    const n7on = tr >= N7 - .3;
+    $("cnt").style.display = n7on ? "none" : "flex";
+    sub7(t);
+  }
+  // cierre
+  const inC = tr >= CLOSE && tr < FLIP + .6;
+  $("close").style.display = inC ? "block" : "none";
+  if (inC) {
+    const k = clamp(stepN(tr, MT0, 12) + 1, 0, 5), nch = k >= 1 ? TYPE_STEPS[Math.min(4, k - 1)] : 0;
+    $("mail").innerHTML = MAIL.slice(0, nch) + '<span style="visibility:hidden">' + MAIL.slice(nch) + "</span>";
+    $("web").style.opacity = tr >= CLOSE + .55 ? 1 : 0;
+    sub8(t);
+    FIGS.forEach((f, i) => { f.c.style.display = tr >= f.t0 ? "block" : "none"; f.play(tr, f.t0 + .1); });
+    [["fh0", .72], ["fh1", .72], ["fv0", .84], ["fv1", .96]].forEach(([id, d]) => ($(id).style.display = tr >= CLOSE + d ? "block" : "none"));
+  }
+  saber(tr);
+  firma(tr);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>
