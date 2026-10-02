@@ -33,7 +33,8 @@ SETTINGS = {  # narradora: serena y estable; vecinos: más expresivos
     "*": {"stability": 0.38, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": True},
 }
 NUM = {"2.500": "dos mil quinientos", "2500": "dos mil quinientos", "250": "doscientos cincuenta", "1953": "mil novecientos cincuenta y tres",
-       "1878": "mil ochocientos setenta y ocho", "1775": "mil setecientos setenta y cinco", "750": "setecientos cincuenta"}
+       "1878": "mil ochocientos setenta y ocho", "2010": "dos mil diez", "2017": "dos mil diecisiete", "89.000": "ochenta y nueve mil", "89000": "ochenta y nueve mil",
+       "5.000": "cinco mil", "50.000": "cincuenta mil", "100": "cien", "1775": "mil setecientos setenta y cinco", "750": "setecientos cincuenta"}
 
 
 def post(url, body=None, files=None):
