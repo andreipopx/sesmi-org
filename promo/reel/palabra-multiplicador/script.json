@@ -4,55 +4,55 @@
    "id": "n1",
    "who": "narradora",
    "text": "Una palabra: el efecto multiplicador.",
-   "t": 0
+   "t": 1.5
   },
   {
    "id": "n2",
    "who": "narradora",
    "text": "Imagina que una empresa gasta cien euros en tu ciudad.",
-   "t": 0
+   "t": 6.5
   },
   {
    "id": "n3",
    "who": "narradora",
    "text": "Se los paga a un proveedor de aquí. El proveedor paga un sueldo. Y con ese sueldo, alguien hace la compra en la tienda de la esquina.",
-   "t": 0
+   "t": 11.5
   },
   {
    "id": "n4",
    "who": "narradora",
    "text": "En cada vuelta, el mismo dinero mueve un poco más de economía.",
-   "t": 0
+   "t": 23.4
   },
   {
    "id": "n5",
    "who": "narradora",
    "text": "Pero en cada vuelta, una parte se escapa: impuestos, ahorro, compras fuera.",
-   "t": 0
+   "t": 30.4
   },
   {
    "id": "n6",
    "who": "narradora",
    "text": "El multiplicador mide cuántas vueltas da el dinero antes de irse.",
-   "t": 0
+   "t": 40.5
   },
   {
    "id": "n7",
    "who": "narradora",
    "text": "Cuanto más se queda dentro, mayor es el efecto.",
-   "t": 0
+   "t": 46.7
   },
   {
    "id": "n8",
    "who": "narradora",
    "text": "Es lo que estamos midiendo en nuestro primer estudio.",
-   "t": 0
+   "t": 51.5
   },
   {
    "id": "n9",
    "who": "narradora",
    "text": "Debemos saber.",
-   "t": 0
+   "t": 57.0
   }
  ]
 }

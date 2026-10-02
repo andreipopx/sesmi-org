@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · Una palabra: el efecto multiplicador</title>
+<!--
+  Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
+  ../assets/archivo/tetradracma-lechuza-reverso.jpg  ../assets/foto/abaco-madera.jpg
+  ../assets/archivo/atenas-tetradracma-lechuza-b.jpg  ../assets/foto/balanza-boticario.jpg
+-->
+<!--
+  «Una palabra · 01»: el efecto multiplicador, como entrada de diccionario (~63 s). Todo es función de t, a pocos fps.
+  0–1,5       tres planos macro (tetradracma, ábaco, tetradracma) a corte seco
+  1,5–6,45    ficha de diccionario: «multiplicador» se escribe a saltos; «efecto ~. (econ.)»
+  6,45–23,35  100 € = un cuadrado rojo que salta por la ciudad dibujada: empresa → proveedor → sueldo → tienda
+  23,35–30,3  cada vuelta, un anillo; el contador suma lo movido (100 → 150 → 175 → …, tiende a 200)
+  30,3–40,4   en cada vuelta, trozos del cuadrado salen de la ciudad: impuestos, ahorro, compras fuera
+  40,4–51,45  laps como cuadrados (area ∝ euros): × 2 · y si se queda más dentro: × 1,4 frente a × 2
+  51,45–56,7  macro de la balanza (midiendo) y titular de SESMI-001
+  56,7–       «debemos saber.» (S.saber) y firma.
+  Ejemplo ilustrativo: se escapa el 50 % en cada vuelta (100 + 50 + 25 + … = 200 €; multiplicador ≈ 1 / fuga).
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.sc{display:none}
+#sc1,#sc2,#sc3,#sc4,#sc5,#sc6{z-index:1}
+#kick{z-index:4}
+#plates{z-index:6}
+#subs{z-index:12}
+.kick{position:absolute;left:30px;top:126px;font:500 12px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.sqi{display:inline-block;width:8px;height:8px;background:var(--red);margin-right:9px;vertical-align:0}
+.abs.c{left:0;right:0;text-align:center}
+/* ficha de diccionario */
+#hw{position:absolute;left:54px;top:262px;font:500 58px/1 var(--display);letter-spacing:-.035em;color:var(--ink);white-space:nowrap}
+#hw .l{visibility:hidden}
+#hw.hot{color:var(--red)}
+#hw .cur{display:inline-block;width:0;height:0;position:relative;visibility:hidden}
+#hw .cur::after{content:"";position:absolute;left:5px;bottom:0;width:12px;height:12px;background:var(--red)}
+#entry{position:absolute;left:54px;top:358px;font:italic 400 25px/1.2 var(--text);color:var(--ink);visibility:hidden}
+#entry b{font:500 12px/1 var(--display);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-left:6px}
+#def{position:absolute;left:54px;width:400px;top:434px;font:400 21px/1.42 var(--text);color:var(--ink-2);visibility:hidden}
+#def em{color:var(--ink);font-style:italic}
+#cfig{position:absolute;left:440px;top:186px;width:48px;height:48px;color:var(--ink)}
+/* ciudad */
+.stop{position:absolute;transform:translateX(-50%);text-align:center;white-space:nowrap;font:500 11px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);display:none}
+.stop::after{content:"";position:absolute;left:50%;top:15px;width:1px;height:9px;background:var(--ink-3)}
+#euro{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;background:var(--red);color:var(--paper);display:none;align-items:center;justify-content:center;font:500 12.5px/1 var(--display);letter-spacing:.02em}
+#town{position:absolute;left:0;right:0;top:514px;text-align:center;color:var(--ink-3);display:none}
+/* anillos */
+.mk{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;background:var(--ink);display:none}
+#cnt{position:absolute;left:0;right:0;top:470px;height:84px;text-align:center;font:500 84px/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--ink)}
+#cnt small{font:500 34px/1 var(--display);letter-spacing:-.02em;color:var(--ink-3);margin-left:6px}
+#dlt{position:absolute;left:372px;top:488px;font:500 26px/1 var(--display);color:var(--red);display:none}
+#lap{position:absolute;left:0;right:0;top:166px;text-align:center;color:var(--ink-2)}
+#ill{position:absolute;left:0;right:0;top:566px;text-align:center;color:var(--ink-3)}
+#lim{position:absolute;left:404px;top:200px;width:110px;color:var(--ink-3);display:none}
+/* fugas */
+.chk{position:absolute;background:var(--red);color:var(--paper);display:none;align-items:center;justify-content:center;font:500 12px/1 var(--display)}
+.chl{position:absolute;transform:translateX(-50%);text-align:center;white-space:nowrap;color:var(--ink);display:none}
+.chl i{display:block;font:italic 400 14px/1 var(--text);letter-spacing:0;text-transform:none;color:var(--red);margin-top:5px}
+#main{position:absolute;background:var(--red);color:var(--paper);display:flex;align-items:center;justify-content:center;font:500 24px/1 var(--display);letter-spacing:-.01em;display:none}
+#bcity{position:absolute;left:130px;top:164px;color:var(--ink-3);display:none}
+/* filas de cuadrados */
+.sqr{position:absolute;border:1.3px solid var(--ink);background:var(--paper-2);display:none}
+.sqr.r{background:var(--red);border-color:var(--red)}
+.al{position:absolute;text-align:center;width:44px;margin-left:0;color:var(--ink-3);font:500 11px/1 var(--display);display:none}
+.rowl{position:absolute;left:44px;color:var(--ink-2);display:none}
+.num{position:absolute;width:240px;margin-left:-120px;text-align:center;font:500 100px/1 var(--display);letter-spacing:-.04em;color:var(--red);font-variant-numeric:tabular-nums;display:none}
+#sum{position:absolute;left:0;right:0;top:456px;text-align:center;font:500 21px/1.2 var(--display);letter-spacing:-.01em;color:var(--ink);display:none}
+#sum2{position:absolute;left:0;right:0;top:490px;text-align:center;color:var(--ink-3);display:none}
+#form{position:absolute;left:0;right:0;top:520px;text-align:center;font:500 20px/1 var(--display);letter-spacing:-.01em;color:var(--ink-2);display:none}
+/* titular */
+#sc6{background:var(--paper)}
+#cSt{top:192px;font:500 13px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+#cSt i{display:inline-block;width:9px;height:9px;background:var(--red);margin-right:10px;vertical-align:0}
+#cH{margin:0;position:absolute;left:0;right:0;top:246px;text-align:center;font:500 50px/1.02 var(--display);letter-spacing:-.035em;color:var(--ink)}
+#cH div{visibility:hidden}
+#cSb{top:370px;font:italic 400 19px/1.3 var(--text);color:var(--ink-2)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- 1 · ficha de diccionario -->
+  <div class="layer sc" id="sc1">
+    <svg id="svCard" viewBox="0 0 540 960"></svg>
+    <div class="abs lbl" id="clab" style="left:54px;top:196px;color:var(--ink-2)"><i class="sqi"></i>Una palabra · 01</div>
+    <div id="cfig"></div>
+    <div id="hw"></div>
+    <div id="entry">efecto <span style="font-style:normal">~</span>. <b>(econ.)</b></div>
+    <div id="def">Lo que mueve un gasto cuando pasa <em>de mano en mano</em> dentro de un mismo sitio.</div>
+  </div>
+  <!-- 2 · el recorrido de 100 € por la ciudad -->
+  <div class="layer sc" id="sc2"><svg id="svCity" viewBox="0 0 540 960"></svg><div id="stops"></div><div class="lbl" id="town">Tu ciudad</div><div id="euro">100 €</div></div>
+  <!-- 3 · vueltas = anillos -->
+  <div class="layer sc" id="sc3"><svg id="svRing" viewBox="0 0 540 960"></svg><div class="lbl" id="lap"></div><div class="lbl" id="lim">Tiende a<br>200 €</div><div id="cnt"></div><div id="dlt"></div><div class="lbl" id="ill">Ejemplo ilustrativo · se escapa el 50 % en cada vuelta</div><div class="mk" id="mk3"></div></div>
+  <!-- 4 · fugas -->
+  <div class="layer sc" id="sc4"><svg id="svLeak" viewBox="0 0 540 960"></svg><div class="lbl" id="bcity">Tu ciudad</div><div id="main"></div><div id="chunks"></div><div class="mk" id="mk4"></div></div>
+  <!-- 5 · filas de cuadrados -->
+  <div class="layer sc" id="sc5"><svg id="svRow" viewBox="0 0 540 960"></svg><div id="rows"></div><div id="sum"></div><div id="sum2" class="lbl"></div><div id="form"></div></div>
+  <!-- 6 · titular -->
+  <div class="layer sc" id="sc6">
+    <div class="abs c" id="cSt"><i></i>SESMI-001 · En elaboración</div>
+    <h1 id="cH"><div id="cH1">¿Cuánto se queda</div><div id="cH2">en la ciudad?</div></h1>
+    <svg id="svIll" viewBox="0 0 540 960"></svg>
+  </div>
+  <div class="kick" id="kick"><i class="sqi"></i>Una palabra · 01</div>
+  <div class="layer" id="plates"></div>
+  <div class="layer" id="subs"></div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, clamp, stepN, line, wordAt } = S;
+const NS = "http://www.w3.org/2000/svg";
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const T = (id) => line(id).t, W = (id, i) => wordAt(id, i), E = (id) => line(id).end;
+/** progreso a saltos: 0 antes de t0 y luego n pasos hasta 1. */
+const steps = (t, t0, n, fps = 6) => (t < t0 ? 0 : Math.min(n, stepN(t, t0, fps) + 1) / n);
+const show = (e, on, d = "block") => (e.style.display = on ? d : "none");
+const fmt = (x) => String(+x.toFixed(1)).replace(".", ",");
+const INK = "var(--ink)", RED = "#7A1F10";
+let CUTN = 0;
+const cut = (t) => ev(t, "cut", CUTN++);
+const A = "../assets/archivo/", F = "../assets/foto/";
+
+// ── tiempos de las escenas (todos colgados de la voz)
+const C1 = T("n2") - .05, C2 = T("n4") - .05, C3 = T("n5") - .1, C4 = T("n6") - .1, C5 = T("n8") - .05;
+const C6 = W("n8", 5) - .1, OPEN = T("n9") - .3, SHRINK = OPEN + 3.0, LAND = SHRINK + .42;
+window.REEL_DURATION = LAND + 3.3;
+
+// ═════════ 0 · planos macro (0–1,5 s): cortes secos
+const plates = $("plates");
+const shots = [
+  S.photo(A + "tetradracma-lechuza-reverso.jpg", { t0: 0, t1: .5, from: [1.45, 46, 44], to: [1.7, 46, 44], grade: "grabado", parent: plates, z: 2 }),
+  S.photo(F + "abaco-madera.jpg", { t0: .5, t1: 1.0, from: [1.7, 70, 40], to: [1.95, 56, 40], grade: "calido", parent: plates, z: 2 }),
+  S.photo(A + "atenas-tetradracma-lechuza-b.jpg", { t0: 1.0, t1: T("n1"), from: [1.4, 56, 50], to: [1.65, 50, 50], grade: "grabado", parent: plates, z: 2 }),
+];
+cut(.5); cut(1.0);
+
+// ═════════ 1 · ficha de diccionario
+const svCard = $("svCard");
+const cardBorder = svgEl("path", { d: S.box(30, 170, 480, 372) + S.hand([[54, 228], [486, 228]]) + S.hand([[54, 412], [486, 412]]), fill: "none", stroke: INK, "stroke-width": 1.6, "stroke-linecap": "round", "stroke-linejoin": "round" }, svCard);
+const dCard = S.dash(cardBorder);
+const HW = "multiplicador", hw = $("hw");
+const hwl = [...HW].map((c) => { const s = S.el("span", "l", hw, c); const cu = S.el("i", "cur", hw); return { s, cu }; });
+const hwUnder = svgEl("path", { d: S.hand([[54, 336], [54 + 394, 336]]), fill: "none", stroke: RED, "stroke-width": 2.2, "stroke-linecap": "round" }, svCard);
+const dHw = S.dash(hwUnder);
+const HW0 = W("n1", 1) + .05, HWRED = W("n1", 4), ENTRY = W("n1", 3), DEF = HWRED + 1.2;
+for (let i = 0; i < HW.length; i++) ev(HW0 + i / 10, "key", i);
+ev(ENTRY, "entry"); ev(HWRED, "hot"); ev(DEF, "entry");
+cut(T("n1")); cut(C1); cut(C2); cut(C3);
+const dove = S.fig($("cfig"), "paloma"), DOVE0 = HWRED + .7;
+S.figEvents("paloma", DOVE0, DOVE0 + 1);
+
+// ═════════ 2 · el recorrido de 100 €
+const G = 470, svCity = $("svCity");
+const city = S.drawCity(svCity, { G, era: "hoy" });
+["bridge", "water"].forEach((c) => (city.g.querySelector("." + c).style.display = "none"));
+// la tienda de la esquina (propia, a pluma): caja, toldo, puerta y escaparate
+const shop = svgEl("path", { d: S.box(46, G - 34, 60, 34) + S.hand([[41, G - 34], [48, G - 47], [60, G - 34], [72, G - 47], [84, G - 34], [96, G - 47], [111, G - 34]]) + S.box(52, G - 22, 12, 22) + S.box(72, G - 25, 26, 13), fill: "none", stroke: INK, "stroke-width": 1.6, "stroke-linecap": "round", "stroke-linejoin": "round" }, svCity);
+const dShop = S.dash(shop);
+const CT0 = C1 + .05;
+ev(CT0, "draw0");
+const STOPS = [
+  { x: 462, y: G - 172 - 30, name: "Empresa", t: W("n2", 3) },
+  { x: 281, y: G - 78 - 30, name: "Proveedor", t: W("n3", 5) },
+  { x: 184, y: G - 44 - 30, name: "Sueldo", t: W("n3", 12) },
+  { x: 76, y: G - 47 - 30, name: "Tienda", t: W("n3", 23) },
+];
+const stopEls = STOPS.map((s) => { const e = S.el("div", "stop", $("stops"), s.name); e.style.left = s.x + "px"; e.style.top = s.y + "px"; return e; });
+const EURO0 = W("n2", 5), HOPN = 4;
+const HOPS = [{ a: 0, b: 1, t: W("n3", 5) - 4 / 6 }, { a: 1, b: 2, t: W("n3", 12) - 4 / 6 }, { a: 2, b: 3, t: W("n3", 23) + .1 - 4 / 6 }];
+HOPS.forEach((h, i) => { ev(h.t, "hop", i); ev(h.t + HOPN / 6, "stop", i + 1); h.t1 = h.t + HOPN / 6; });
+ev(EURO0, "stop", 0);
+const sy0 = G - 20, ARC = 62;
+const trails = HOPS.map((h) => {
+  const A0 = STOPS[h.a].x, B0 = STOPS[h.b].x, pts = [];
+  for (let k = 0; k <= 12; k++) { const u = k / 12; pts.push([A0 + (B0 - A0) * u, sy0 - ARC * Math.sin(Math.PI * u) - 22]); }
+  return svgEl("path", { d: S.hand(pts), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1.3, "stroke-dasharray": "2 5", "stroke-linecap": "round" }, svCity);
+});
+const TOWN0 = W("n2", 9);
+const townLine = svgEl("path", { d: S.hand([[16, G + 22], [16, G + 30], [524, G + 30], [524, G + 22]]), fill: "none", stroke: INK, "stroke-width": 1.4, "stroke-linecap": "round", "stroke-linejoin": "round" }, svCity);
+const dTown = S.dash(townLine);
+const euro = $("euro");
+
+// ═════════ 3 · vueltas = anillos (se escapa el 50 %: 100, 50, 25, 12,5, …)
+const CX = 270, CY = 325, K = 1.25;
+const AMT = [100, 50, 25, 12.5, 6.25], CUM = AMT.map((_, i) => AMT.slice(0, i + 1).reduce((a, b) => a + b, 0));
+const VAL = ["100", "150", "175", "187,5", "193,8"], DLT = ["", "+50", "+25", "+12,5", "+6,3"];
+const LAPT = [C2 + .2, W("n4", 2) + .55, T("n4") + 2.5, T("n4") + 3.8, T("n4") + 4.9];
+const LAPL = LAPT.map((t) => t + 4 / 6);
+const svRing = $("svRing");
+const side = (i) => CUM[i] * K;
+const lim = svgEl("path", { d: S.box(CX - 125, CY - 125, 250, 250), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1.2, "stroke-dasharray": "3 5" }, svRing);
+const rings = CUM.map((_, i) => {
+  const s = side(i), p = svgEl("path", { d: S.box(CX - s / 2, CY - s / 2, s, s), fill: "none", stroke: INK, "stroke-width": 1.4, "stroke-linejoin": "round", "stroke-linecap": "round" }, svRing);
+  return { p, dash: S.dash(p), s };
+});
+const core = svgEl("rect", { x: CX - side(0) / 2, y: CY - side(0) / 2, width: side(0), height: side(0), fill: RED }, svRing);
+const coreT = svgEl("text", { x: CX, y: CY + 7, "text-anchor": "middle", fill: "var(--paper)", "font-size": 21, "font-family": "Apfel" }, svRing); coreT.textContent = "100 €";
+LAPT.forEach((t, i) => { ev(t, "hop2", i); ev(LAPL[i], "lap", i); });
+ev(LAPL[4], "limit");
+
+// ═════════ 4 · fugas: se escapan trozos del cuadrado
+const MC = [CX, CY], MS = 120, svLeak = $("svLeak");
+const BS = 280;
+const bound = svgEl("path", { d: S.box(MC[0] - BS / 2, MC[1] - BS / 2, BS, BS), fill: "none", stroke: "var(--ink-3)", "stroke-width": 1.4, "stroke-dasharray": "3 5", "stroke-linecap": "round" }, svLeak);
+const piece = S.el("div", "", $("sc4")); piece.style.cssText = `position:absolute;display:none;width:46px;height:46px;border:2px dashed var(--paper);left:${MC[0] + MS / 2 - 52}px;top:${MC[1] - MS / 2 + 6}px`;
+const mainEl = $("main");
+const MAINS = [[120, "100 €"], [Math.sqrt(.85) * 120, "85 €"], [Math.sqrt(.7) * 120, "70 €"], [Math.sqrt(.5) * 120, "50 €"]];
+const CHK = [
+  { name: "impuestos", amt: 15, to: [462, CY], t: W("n5", 8), lx: 462, ly: -1 },
+  { name: "ahorro", amt: 15, to: [CX, 522], t: W("n5", 9), lx: CX, ly: +1 },
+  { name: "compras<br>fuera", amt: 20, to: [78, CY], t: W("n5", 10) - .15, lx: 78, ly: -1 },
+].map((c, i) => {
+  c.side = MS * Math.sqrt(c.amt / 100);
+  c.el = S.el("div", "chk", $("chunks")); c.el.textContent = `−${c.amt}`;
+  c.lb = S.el("div", "chl lbl", $("chunks"), `${c.name}<i>−${c.amt} €</i>`);
+  ev(c.t, "leak", i);
+  return c;
+});
+const HOPB = [W("n5", 3) - .1, CHK[2].t + 1.45];
+const LK0 = W("n5", 7);
+ev(HOPB[0], "hop2", 5); ev(HOPB[0], "motif", 4); ev(HOPB[1], "hop2", 6); ev(HOPB[1], "motif", 2);
+const mk4 = $("mk4");
+
+// ═════════ 5 · filas de cuadrados: × 2 y, si se queda más dentro, × 1,4 → × 2
+const rowsEl = $("rows");
+const amts = (keep, n) => Array.from({ length: n }, (_, k) => 100 * Math.pow(keep, k));
+const AA = amts(.5, 8), AB = amts(.3, 6);                       // se escapa 50 % · se escapa 70 %
+const mkRow = (am, red0) => am.map((_, i) => { const d = S.el("div", "sqr" + (i === 0 && red0 ? " r" : ""), rowsEl); return d; });
+const rowB = mkRow(AA, true), rowA = mkRow(AB, true);           // rowB = 50 % (la de n6), rowA = 70 % (nueva, arriba)
+const alab = AA.slice(0, 5).map((a) => S.el("div", "al", rowsEl, fmt(a)));
+const dots = S.el("div", "al", rowsEl, "…");
+const numB = S.el("div", "num", rowsEl, "× ?"), numA = S.el("div", "num", rowsEl, "× 1,4");
+const lblA = S.el("div", "rowl lbl", rowsEl, "Se escapa el 70 %"), lblB = S.el("div", "rowl lbl", rowsEl, "Se escapa el 50 %");
+const sum = $("sum"), sum2 = $("sum2"), form = $("form");
+sum.innerHTML = "100 + 50 + 25 + 12,5 + … = <span style='color:var(--red)'>200 €</span>";
+sum2.textContent = "En movimiento, a partir de 100 €";
+form.innerHTML = "multiplicador <span style='color:var(--red)'>≈</span> 1 / <span style='font-family:var(--text);font-style:italic;font-weight:400'>fuga</span>";
+sum2.className = "lbl"; sum2.id = "sum2";
+const SQ0 = W("n6", 4), SQDT = .33;
+AA.forEach((_, k) => ev(SQ0 + k * SQDT, "sq", k));
+const SUM0 = W("n6", 10), MULT = SUM0 + .45;
+ev(SUM0, "sum"); ev(MULT, "mult");
+const TR0 = T("n6") + 5.83, TRN = [0, 1, 2, 3].map((k) => TR0 + k / 6);        // 4 posiciones de la transición (3 saltos)
+TRN.slice(1).forEach((t, k) => ev(t, "shrinkrow", k));
+const RA0 = W("n7", 0) + .1, NA = W("n7", 1) - .25;
+AB.forEach((_, k) => ev(RA0 + k * .12, "rowA", k));
+ev(W("n7", 4), "keep"); ev(W("n7", 5), "x2");
+const FORM0 = W("n7", 8);
+ev(FORM0, "form");
+const SCs = [1.2, .95, .7, .5], BASEB = [410, 425, 440, 450];
+const NBX = [270, 310, 370, 435], NBY = [166, 232, 306, 378], NBS = [100, 94, 88, 80];
+const rowPos = (am, sc, x0, base) => { let x = x0; return am.map((a) => { const s = sc * 10 * Math.sqrt(a); const r = { x, y: base - s, s }; x += s + 8 * sc; return r; }); };
+cut(C4); cut(C5);
+
+// ═════════ 6 · macro de la balanza y titular de SESMI-001
+const bal = S.photo(F + "balanza-boticario.jpg", { t0: C5, t1: C6, from: [1.7, 36, 56], to: [2.1, 40, 62], grade: "grayscale(.7) sepia(.3) brightness(.6) contrast(1.15)", parent: plates, z: 2 });
+cut(C6 - 0);
+const svIll = $("svIll");
+const IRS = [40, 76, 112, 148, 184].map((s) => svgEl("rect", { x: 270 - s / 2, y: 520 - s / 2, width: s, height: s, fill: "none", stroke: INK, "stroke-width": 1.3, "vector-effect": "non-scaling-stroke" }, svIll));
+svgEl("rect", { x: 270 - 9, y: 520 - 9, width: 18, height: 18, fill: RED }, svIll);
+const HSTEP = [C6, W("n8", 7), W("n8", 8)];
+ev(HSTEP[1], "title"); ev(HSTEP[2], "title");
+const IR0 = W("n8", 8) + .2;
+IRS.forEach((_, i) => ev(IR0 + i * .2, "ring", i));
+const saber = S.saber(OPEN, SHRINK, { a: W("n9", 0), b: W("n9", 1), tag: "Conocimiento en abierto, para cualquiera." });
+const firma = S.firma(LAND);
+
+// ── subtítulos (la voz, palabra a palabra)
+const subs = {};
+const mkSub = (id, top, o = {}) => { const p = S.el("div", "layer", $("subs")); subs[id] = { p, u: S.sub(id, { parent: p, style: `top:${top}px`, ...o }) }; };
+mkSub("n1", 622); mkSub("n2", 640, { hot: [5] }); mkSub("n3", 628); mkSub("n4", 628, {});
+mkSub("n5", 640, { hot: [7] }); mkSub("n6", 628, { hot: [1] }); mkSub("n7", 628, { hot: [3, 4, 8] });
+mkSub("n8", 628, { out: E("n8") + .3 });
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+// ═════════ render
+window.renderAt = (t) => {
+  const tq = S.q(t);
+  const in1 = t >= T("n1") - .05 && t < C1, in2 = t >= C1 && t < C2, in3 = t >= C2 && t < C3, in4 = t >= C3 && t < C4, in5 = t >= C4 && t < C5, in6 = t >= C6 && t < OPEN;
+  show($("sc1"), in1); show($("sc2"), in2); show($("sc3"), in3); show($("sc4"), in4); show($("sc5"), in5); show($("sc6"), in6);
+  shots.forEach((s) => s(t)); bal(t);
+  const onMac = t >= C5 && t < C6;
+  show($("kick"), t >= C1 && t < C5 - 0.01 && !onMac, "block");
+
+  // ── 1 · ficha
+  if (in1) {
+    dCard(steps(t, T("n1") - .05, 4));
+    const n = t < HW0 ? 0 : Math.min(HW.length, stepN(t, HW0, 10) + 1);
+    hwl.forEach((h, i) => { h.s.style.visibility = i < n ? "visible" : "hidden"; h.cu.style.visibility = i === n - 1 && t < HWRED ? ((stepN(t, 0, 5) % 2 === 0 || n < HW.length) ? "visible" : "hidden") : "hidden"; });
+    hw.classList.toggle("hot", t >= HWRED);
+    dHw(steps(t, HWRED, 4));
+    $("entry").style.visibility = t >= ENTRY ? "visible" : "hidden";
+    $("def").style.visibility = t >= DEF ? "visible" : "hidden";
+    dove(t, t >= DOVE0 && t < DOVE0 + 1 ? DOVE0 : null);
+  }
+
+  // ── 2 · ciudad
+  if (in2) {
+    city.draw(tq, CT0, 1.3);
+    dShop(S.eIO((tq - CT0 - .5) / .8));
+    stopEls.forEach((e, i) => show(e, t >= STOPS[i].t));
+    // el cuadrado de 100 €: aparece con «cien», salta de parada en parada
+    let x = STOPS[0].x, y = sy0, on = t >= EURO0, big = 1;
+    HOPS.forEach((h, i) => {
+      if (t >= h.t) {
+        const k = Math.min(HOPN, stepN(t, h.t, 6) + 1), u = k / HOPN, a = STOPS[h.a].x, b = STOPS[h.b].x;
+        x = a + (b - a) * u; y = sy0 - ARC * Math.sin(Math.PI * u);
+      }
+      show(trails[i], t >= h.t1);
+    });
+    if (t >= EURO0 && t < EURO0 + .34) big = [.6, .85][stepN(t, EURO0, 6)] ?? 1;
+    euro.style.display = on ? "flex" : "none";
+    euro.style.left = x.toFixed(1) + "px"; euro.style.top = y.toFixed(1) + "px"; euro.style.transform = `scale(${big})`;
+    dTown(steps(t, TOWN0, 4)); show($("town"), t >= TOWN0 + .5);
+  }
+
+  // ── 3 · anillos
+  if (in3) {
+    const started = LAPT.filter((x) => t >= x).length, landed = LAPL.filter((x, i) => i > 0 && t >= x).length;
+    $("lap").textContent = `Vuelta ${Math.max(1, started)}`;
+    $("cnt").innerHTML = `${VAL[landed]}<small>€</small>`;
+    show($("dlt"), landed > 0 && t < LAPL[landed] + .5); $("dlt").textContent = DLT[landed];
+    rings.forEach((r, i) => {
+      if (i === 0) { r.p.style.display = "none"; return; }
+      const p = steps(t, LAPT[i], 4);
+      r.dash(p); r.p.style.display = p > 0 ? "" : "none";
+      const fresh = t < LAPL[i] + .35;
+      r.p.setAttribute("stroke", fresh ? RED : "var(--ink)"); r.p.setAttribute("stroke-width", fresh ? 2.2 : 1.4);
+      r.p.setAttribute("stroke-opacity", Math.max(.35, 1 - .13 * (landed - i + (t >= LAPL[i] ? 0 : 1))));
+    });
+    // marcador: da la vuelta al cuadrado de la vuelta en curso (cuatro saltos, a las esquinas)
+    let cur = -1; LAPT.forEach((x, i) => { if (t >= x && t < LAPL[i] + .17) cur = i; });
+    const mk = $("mk3");
+    if (cur < 0) mk.style.display = "none";
+    else {
+      const s = side(cur) / 2, k = Math.min(4, stepN(t, LAPT[cur], 6) + 1), C = [[-s, -s], [s, -s], [s, s], [-s, s], [-s, -s]][k];
+      mk.style.display = "block"; mk.style.left = CX + C[0] + "px"; mk.style.top = CY + C[1] + "px";
+    }
+    show(lim, t >= LAPL[4] - .01); show($("lim"), t >= LAPL[4]);
+    core.setAttribute("opacity", 1); coreT.style.display = "";
+  }
+
+  // ── 4 · fugas
+  if (in4) {
+    const ls = CHK.filter((c) => t >= c.t).length;
+    const [ms, mt] = MAINS[ls];
+    mainEl.style.display = "flex"; mainEl.style.width = mainEl.style.height = ms + "px";
+    mainEl.style.left = MC[0] - ms / 2 + "px"; mainEl.style.top = MC[1] - ms / 2 + "px"; mainEl.textContent = mt;
+    mainEl.style.fontSize = ls === 3 ? "20px" : "24px";
+    show($("bcity"), t >= C3 + .1);
+    // la frontera de la ciudad «late» (a saltos) cuando se habla de lo que se escapa
+    bound.setAttribute("stroke-dashoffset", t < LK0 ? 0 : -(stepN(t, LK0, 6) % 8) * 2);
+    // «una parte»: un trozo marcado en la esquina, parpadeando
+    show(piece, t >= W("n5", 4) && t < CHK[0].t && stepN(t, W("n5", 4), 6) % 2 === 0);
+    CHK.forEach((c) => {
+      const on = t >= c.t;
+      c.el.style.display = on ? "flex" : "none"; c.lb.style.display = on ? "block" : "none";
+      if (!on) return;
+      const k = Math.min(5, stepN(t, c.t, 6) + 1) / 5;
+      const dir = [c.to[0] - MC[0], c.to[1] - MC[1]], d = Math.hypot(...dir), ux = dir[0] / d, uy = dir[1] / d;
+      const x0 = MC[0] + ux * (MAINS[0][0] / 2 - c.side / 2), y0 = MC[1] + uy * (MAINS[0][0] / 2 - c.side / 2);
+      const x = x0 + (c.to[0] - x0) * k, y = y0 + (c.to[1] - y0) * k;
+      c.el.style.width = c.el.style.height = c.side + "px"; c.el.style.left = x - c.side / 2 + "px"; c.el.style.top = y - c.side / 2 + "px";
+      c.lb.style.left = x + "px"; c.lb.style.top = (c.ly < 0 ? y - c.side / 2 - (c.name.includes("<br>") ? 50 : 40) : y + c.side / 2 + 10) + "px";
+      c.lb.style.opacity = steps(t, c.t, 2);
+    });
+    // marcador: da la vuelta a la frontera, antes de las fugas y otra vez con lo que queda
+    let cur = -1; HOPB.forEach((x, i) => { if (t >= x && t < x + 4 / 6 + .17) cur = i; });
+    if (cur < 0) mk4.style.display = "none";
+    else { const h = BS / 2, k = Math.min(4, stepN(t, HOPB[cur], 6) + 1), C = [[-h, -h], [h, -h], [h, h], [-h, h], [-h, -h]][k]; mk4.style.display = "block"; mk4.style.left = MC[0] + C[0] + "px"; mk4.style.top = MC[1] + C[1] + "px"; }
+  }
+
+  // ── 5 · filas
+  if (in5) {
+    const tk = t < TRN[1] ? 0 : t < TRN[2] ? 1 : t < TRN[3] ? 2 : 3, sc = SCs[tk], baseB = BASEB[tk];
+    const pB = rowPos(AA, sc, 44, baseB);
+    rowB.forEach((d, i) => {
+      const vis = t >= SQ0 + i * SQDT, p = pB[i];
+      d.style.display = vis ? "block" : "none";
+      d.style.left = p.x.toFixed(1) + "px"; d.style.top = p.y.toFixed(1) + "px"; d.style.width = d.style.height = p.s.toFixed(1) + "px";
+    });
+    alab.forEach((l, i) => { l.style.display = tk === 0 && t >= SQ0 + i * SQDT ? "block" : "none"; l.style.left = (pB[i].x + pB[i].s / 2 - 22).toFixed(1) + "px"; l.style.top = baseB + 10 + "px"; });
+    show(dots, tk === 0 && t >= SQ0 + 5 * SQDT); dots.style.left = (pB[5].x - 8) + "px"; dots.style.top = baseB - 14 + "px";
+    // número grande: «× ?» hasta que acaba el reparto; luego «× 2»
+    const hasMult = t >= MULT, big = tk === 0 && t >= W("n6", 1);
+    numB.style.display = t >= W("n6", 1) ? "block" : "none";
+    numB.textContent = hasMult ? "× 2" : "× ?";
+    const popK = tk === 3 && t >= W("n7", 5) && t < W("n7", 5) + .5 ? stepN(t, W("n7", 5), 6) : 9;
+    numB.style.left = NBX[tk] + "px"; numB.style.top = NBY[tk] + "px"; numB.style.fontSize = NBS[tk] + ([16, 10, 4][popK] || 0) + "px";
+    numB.style.color = t >= W("n7", 5) ? "var(--red)" : (tk > 0 || hasMult ? "var(--red)" : "var(--ink-3)");
+    numB.style.opacity = hasMult || big ? 1 : 1;
+    // resumen (solo en n6)
+    show(sum, t >= SUM0 && tk === 0 && t < TRN[1]); show(sum2, t >= SUM0 + .2 && tk === 0 && t < TRN[1]);
+    // fila de «se escapa el 70 %» (arriba) y comparación
+    const pA = rowPos(AB, .5, 44, 310);
+    rowA.forEach((d, i) => {
+      const vis = t >= RA0 + i * .12, p = pA[i];
+      d.style.display = vis ? "block" : "none";
+      d.style.left = p.x.toFixed(1) + "px"; d.style.top = p.y.toFixed(1) + "px"; d.style.width = d.style.height = p.s.toFixed(1) + "px";
+    });
+    show(lblA, t >= RA0); lblA.style.top = "236px";
+    show(lblB, tk === 3); lblB.style.top = "372px"; lblB.style.color = t >= W("n7", 4) ? "var(--red)" : "";
+    numA.style.display = t >= NA ? "block" : "none"; numA.style.left = "435px"; numA.style.top = "238px"; numA.style.fontSize = "62px";
+    numA.style.color = t >= W("n7", 5) ? "var(--ink-3)" : "var(--ink)";
+    show(form, t >= FORM0);
+    // al llegar a la comparación, la etiqueta de la fila inferior sustituye al «× ?»
+  }
+
+  // ── 6 · titular (sobre papel) tras el macro
+  if (in6) {
+    $("cH1").style.visibility = t >= HSTEP[1] ? "visible" : "hidden";
+    $("cH2").style.visibility = t >= HSTEP[2] ? "visible" : "hidden";
+    IRS.forEach((r, i) => {
+      const on = t >= IR0 + i * .2;
+      r.style.display = on ? "" : "none";
+      const f = t < IR0 + 1 ? -1 : stepN(t, IR0 + 1, 5) % 6;
+      r.setAttribute("stroke", f === i + 1 ? RED : "var(--ink)"); r.setAttribute("stroke-width", f === i + 1 ? 2.2 : 1.3);
+    });
+  }
+  const onMacSub = onMac;
+  subs.n8.p.style.color = onMacSub ? "var(--paper)" : "";
+  Object.values(subs).forEach((s) => s.u(t));
+
+  saber(t); firma(t);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>
