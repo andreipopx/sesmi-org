@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>sesmi · Un dato de la ciudad</title>
+<!--
+  Material real (créditos en assets/*/credits.json; shared/credits.py lee estas rutas):
+  ../assets/archivo/talavera-wyngaerde-1567.jpg  ../assets/archivo/mapa-toledo-1768.jpg
+  ../assets/foto/talavera-puente-viejo-02.jpg
+-->
+<!--
+  «Un dato de la ciudad» · 01 (37,6 s). Pieza de datos sobre la ciudad (aquí Talavera sí se nombra). Fuente: INE, Padrón
+  municipal (población a 1 de enero), tabla 2902 (datos.json; no hay cifras de 1997: el primer tramo va a trazos).
+  Apertura: tres cortes secos de archivo (la vista de Wyngaerde, 1567; el mapa de Tomás López, 1768; el puente) y corte a papel.
+  n1: Talavera 1996–2025 a pluma, año a año (10 pasos/s); el cuadrado rojo (la punta de la pluma) llega al máximo, 2010 = 88.986.
+  n2: la pluma sigue hasta 2025 (6 pasos/s), la cifra baja a 83.803 y se mide la caída: −5.183 (−5,8 %).
+  n3: otra escala, índice 2010 = 100: la provincia sube (+7,6 %, +52.856 hab.), Talavera baja (−5,8 %).
+  n4: Toledo (ciudad) y Talavera en habitantes; las líneas se cruzan en 2017 (marcado en rojo).
+  n5: la pregunta en grande; el gráfico se encoge a un lado en tinta-3. n6: «Una pregunta para investigar».
+  n7: «debemos saber.» y la firma. Todo a pocos fps (pluma a 10 y 6, cifras a saltos, fotos a 6); todo es función de t.
+  Los eventos (cut, pen, peak, drop, gain, cross, qw, tag…) suenan en audio.py. Tiempos de la voz en script.json.
+-->
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+.photo img{max-width:none}
+#op{position:absolute;inset:0;background:var(--ink);z-index:1;display:none}
+#opcap{position:absolute;left:0;right:0;top:626px;text-align:center;color:color-mix(in srgb,var(--paper) 62%,var(--ink));z-index:3;display:none}
+#main{position:absolute;inset:0;background:var(--paper);z-index:6;display:none}
+#main>svg{position:absolute;inset:0;width:540px;height:960px;overflow:visible}
+#hd{position:absolute;left:32px;right:32px;top:60px;color:var(--ink-2);display:flex;justify-content:space-between;white-space:nowrap}
+#hd i{display:inline-block;width:8px;height:8px;background:var(--red);margin-right:10px;vertical-align:0}
+#hd .r{color:var(--ink-3)}
+.rule{position:absolute;left:0;right:0;height:1px;background:var(--ink)}
+.ro{position:absolute;inset:0}
+.ro .lbl{position:absolute;white-space:nowrap}
+.ro .lbl.m{color:var(--ink-3)}
+.big{position:absolute;font:700 68px/1 var(--strong);letter-spacing:-.02em;white-space:nowrap}
+.big .d{display:inline-block;width:.62em;text-align:center}
+.big .p{display:inline-block;width:.3em;text-align:center}
+.big .sg{display:inline-block;margin-right:.05em}
+.big.s{font-size:44px}
+.big.m{color:var(--ink-3)}
+.big.r{color:var(--red)}
+#q{position:absolute;left:32px;top:122px;width:490px;font:700 54px/1.02 var(--strong);letter-spacing:-.04em;display:none}
+#q span{visibility:hidden}
+#q .hot{color:var(--red)}
+#tag{position:absolute;left:0;right:0;top:622px;text-align:center;color:var(--ink-2);visibility:hidden}
+#tag i{display:inline-block;width:8px;height:8px;background:var(--red);margin-right:10px}
+#src{position:absolute;left:32px;top:768px;font:500 10.5px/1.3 var(--display);letter-spacing:.02em;color:var(--ink-3);white-space:nowrap}
+#subs{position:absolute;inset:0;pointer-events:none}
+#subs .sub{top:648px;font-size:30px;left:32px;right:32px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="shots" style="z-index:2;overflow:hidden"><div id="op"></div></div>
+  <div class="lbl" id="opcap">Wyngaerde · 1567</div>
+  <div id="main">
+    <div id="hd" class="lbl"><span><i></i>Un dato de la ciudad · 01</span><span class="r">INE · Padrón municipal</span></div>
+    <div class="rule" id="r1" style="top:92px"></div>
+    <div class="rule" id="r2" style="top:762px"></div>
+    <div class="ro" id="roA">
+      <div class="lbl" style="left:32px;top:112px;color:var(--ink-2)">Talavera de la Reina · habitantes</div>
+      <div class="lbl m" style="right:32px;top:112px">1 de enero</div>
+      <div class="big" id="aN" style="left:32px;top:136px"></div>
+      <div class="big m" id="aY" style="right:32px;top:136px"></div>
+    </div>
+    <div class="ro" id="roB">
+      <div class="lbl" style="left:32px;top:112px;color:var(--ink-2)">Provincia de Toledo · ganados desde 2010</div>
+      <div class="lbl m" style="right:32px;top:112px">1 de enero</div>
+      <div class="big" id="bN" style="left:32px;top:136px"></div>
+      <div class="big m" id="bY" style="right:32px;top:136px"></div>
+    </div>
+    <div class="ro" id="roC">
+      <div class="lbl m" style="left:32px;top:112px">Talavera</div>
+      <div class="lbl" style="left:196px;top:112px;color:var(--ink-2)">Toledo (ciudad)</div>
+      <div class="lbl m" style="right:32px;top:112px">1 de enero</div>
+      <div class="big s m" id="cT" style="left:32px;top:140px"></div>
+      <div class="big s" id="cO" style="left:196px;top:140px"></div>
+      <div class="big s m" id="cY" style="right:32px;top:140px"></div>
+    </div>
+    <svg id="ch" viewBox="0 0 540 960"></svg>
+    <div id="q"></div>
+    <div class="lbl" id="tag"><i></i>Una pregunta para investigar</div>
+    <div id="src">Fuente: INE, Padrón municipal (1 de enero), tabla 2902</div>
+    <div id="subs"></div>
+  </div>
+  <div id="vig"></div>
+</div>
+<script src="../shared/common.js"></script>
+<script>
+(() => {
+const { $, ev, clamp, stepN, line, wordAt } = S;
+const NS = "http://www.w3.org/2000/svg", B = window.BRAND;
+const show = (el, on, how = "block") => { const d = on ? how : "none"; if (el.style.display !== d) el.style.display = d; };
+const vis = (el, on) => { const v = on ? "visible" : "hidden"; if (el.style.visibility !== v) el.style.visibility = v; };
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const txt = (parent, x, y, s, st, anchor = "start") => { const e = svgEl("text", { x, y, "text-anchor": anchor }, parent); e.setAttribute("style", st); e.textContent = s; return e; };
+const setHTML = (el, h) => { if (el._h !== h) { el._h = h; el.innerHTML = h; } };
+
+// ═════ datos (INE, Padrón municipal, tabla 2902 · datos.json)
+const D = {"fuente":"INE · Cifras oficiales de población de los municipios españoles: Revisión del Padrón Municipal (población a 1 de enero). Tabla 2902 «Toledo: Población por municipios y sexo».","talavera":{"2025":83803,"2024":84738,"2023":84137,"2022":83247,"2021":83477,"2020":83663,"2019":83417,"2018":83009,"2017":83303,"2016":84119,"2015":85150,"2014":86779,"2013":88548,"2012":88755,"2011":88674,"2010":88986,"2009":88856,"2008":87763,"2007":85549,"2006":83793,"2005":82975,"2004":80305,"2003":79916,"2002":77519,"2001":76011,"2000":74241,"1999":73204,"1998":72208,"1996":70922},"toledo_ciudad":{"2025":87216,"2024":86526,"2023":86070,"2022":85085,"2021":85449,"2020":85811,"2019":84873,"2018":84282,"2017":83741,"2016":83459,"2015":83226,"2014":83334,"2013":83593,"2012":84019,"2011":83108,"2010":82489,"2009":82291,"2008":80810,"2007":78618,"2006":77601,"2005":75533,"2004":73485,"2003":72549,"2002":70893,"2001":69450,"2000":68537,"1999":67617,"1998":66989,"1996":66006},"provincia_toledo":{"2025":750815,"2024":740148,"2023":728496,"2022":713453,"2021":709403,"2020":703772,"2019":694844,"2018":687391,"2017":686841,"2016":688672,"2015":693371,"2014":699136,"2013":706407,"2012":711228,"2011":707242,"2010":697959,"2009":689635,"2008":670203,"2007":639621,"2006":615618,"2005":598256,"2004":578060,"2003":563099,"2002":546538,"2001":536131,"2000":527965,"1999":523459,"1998":519664,"1996":515880},"hechos":{"talavera_maximo":{"anyo":2010,"habitantes":88986},"talavera_ultimo":{"anyo":2025,"habitantes":83803},"talavera_cambio_desde_maximo":-5183,"talavera_cambio_pct":-5.8,"provincia_cambio_mismo_periodo":52856,"provincia_cambio_pct":7.6,"toledo_ciudad_cambio_mismo_periodo":4727,"toledo_ciudad_cambio_pct":5.7,"toledo_adelanta_a_talavera":{"anyo":2017,"toledo":83741,"talavera":83303},"peso_talavera_en_provincia_pct":{"1996":13.7,"2010":12.7,"2025":11.2},"talavera_1996_2025":{"de":70922,"a":83803}}};
+const YRS = Object.keys(D.talavera).map(Number).sort((a, b) => a - b);     // 1996, 1998 … 2025 (no hay 1997)
+const TAL = YRS.map((y) => D.talavera[y]), TOL = YRS.map((y) => D.toledo_ciudad[y]), PRO = YRS.map((y) => D.provincia_toledo[y]);
+const I10 = YRS.indexOf(2010), I17 = YRS.indexOf(2017), I25 = YRS.indexOf(2025);
+const H = D.hechos;
+// comprobaciones: la pieza solo dice lo que dicen los datos
+if (YRS.length !== 29 || YRS.includes(1997) || I10 !== 13 || I17 !== 20 || I25 !== 28) throw new Error("serie de años inesperada");
+if (TAL[I10] !== H.talavera_maximo.habitantes || Math.max(...TAL) !== TAL[I10] || TAL[I25] - TAL[I10] !== H.talavera_cambio_desde_maximo) throw new Error("Talavera no cuadra");
+if (PRO[I25] - PRO[I10] !== H.provincia_cambio_mismo_periodo || TOL[I25] - TOL[I10] !== H.toledo_ciudad_cambio_mismo_periodo) throw new Error("provincia/Toledo no cuadra");
+if (!(TOL[I17] > TAL[I17] && TOL[I17 - 1] < TAL[I17 - 1] && TOL[I17] === H.toledo_adelanta_a_talavera.toledo && TAL[I17] === H.toledo_adelanta_a_talavera.talavera)) throw new Error("el cruce no es en 2017");
+const fmt = (n) => (n < 0 ? "−" : "") + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const fmtS = (n) => (n > 0 ? "+" : "") + fmt(n);
+const pct = (x) => (x > 0 ? "+" : "−") + Math.abs(x).toFixed(1).replace(".", ",") + " %";
+const dig = (s) => [...s].map((c) => (/\d/.test(c) ? `<span class="d">${c}</span>` : c === "." ? `<span class="p">.</span>` : /[+−]/.test(c) ? `<span class="sg">${c}</span>` : c)).join("");
+const PCT_T = (TAL[I25] / TAL[I10] - 1) * 100, PCT_P = (PRO[I25] / PRO[I10] - 1) * 100;
+if (pct(PCT_T) !== "−5,8 %" || pct(PCT_P) !== "+7,6 %") throw new Error("porcentajes");
+
+// ═════ tiempos (la voz manda)
+const P0 = 1.5;                                  // corte a papel
+const N1 = line("n1").t, N2 = line("n2").t, N3 = line("n3").t, N4 = line("n4").t, N5 = line("n5").t, N6 = line("n6").t, N7 = line("n7").t;
+const PA = P0 + .2, PA2 = N2 + .1;               // pluma de n1 (10 pasos/s) y de n2 (6 pasos/s)
+const T_PEAK = PA + 13 / 10, T_DROP = PA2 + 14 / 6;
+const TB0 = N3 - .1, PB = N3 + .85;              // escena del índice
+const TC0 = N4 - .4, PC = N4 - .3, PC2 = N4 + 2.2;  // Toledo y Talavera
+const T_CROSS = PC + 20 / 10;
+const TD0 = N5 - .1;                             // la pregunta
+const OPEN = N7 - .5;
+const SHRINK = line("n7").end + .4;
+const T_FIRMA = SHRINK + .42;
+const DUR = T_FIRMA + 2.45;
+window.DATO_DURATION = DUR;
+
+// ═════ 1 · apertura: tres cortes secos de archivo (0 → 1,5 s), todo a 6 fps
+const FPS = 6;
+const SHOTS = [
+  { src: "../assets/archivo/talavera-wyngaerde-1567.jpg", w: 1280, h: 216, t0: 0, t1: .5, box: { left: 0, top: 350, width: 540, height: 260 }, k0: 1.2, k1: 1.3, from: [.86, .5], to: [.74, .5], grade: "grabado" },
+  { src: "../assets/archivo/mapa-toledo-1768.jpg", w: 1920, h: 1868, t0: .5, t1: 1.0, box: { left: 0, top: 0, width: 540, height: 960 }, k0: 2.0, k1: 2.4, from: [.125, .462], to: [.125, .466], grade: "grabado" },
+  { src: "../assets/foto/talavera-puente-viejo-02.jpg", w: 1920, h: 1282, t0: 1.0, t1: P0, box: { left: 0, top: 0, width: 540, height: 960 }, k0: .95, k1: 1.08, from: [.40, .56], to: [.46, .56], grade: "grabado" },
+];
+const mkShot = (s, i) => {
+  const base = S.photo(s.src, { t0: s.t0, t1: s.t1, grade: s.grade, fps: FPS, parent: $("shots"), z: 2, box: s.box });
+  const img = base.img; img.style.objectFit = "fill"; img.style.inset = "auto"; img.style.maxWidth = "none";
+  ev(s.t0, "cut", i);
+  return (t) => {
+    base(t);
+    if (t < s.t0 || t >= s.t1) return;
+    const tq = s.t0 + stepN(t, s.t0, FPS) / FPS, p = clamp((tq - s.t0) / (s.t1 - s.t0));
+    const cover = Math.max(s.box.width / s.w, s.box.height / s.h), k = cover * (s.k0 + (s.k1 - s.k0) * p);
+    const W = s.w * k, Hh = s.h * k, fx = s.from[0] + (s.to[0] - s.from[0]) * p, fy = s.from[1] + (s.to[1] - s.from[1]) * p;
+    const L = clamp(s.box.width / 2 - fx * W, s.box.width - W, 0), T = clamp(s.box.height / 2 - fy * Hh, s.box.height - Hh, 0);
+    const st = img.style; st.transform = "none"; st.width = W.toFixed(1) + "px"; st.height = Hh.toFixed(1) + "px"; st.left = L.toFixed(1) + "px"; st.top = T.toFixed(1) + "px";
+  };
+};
+const shotFns = SHOTS.map(mkShot);
+ev(P0, "cut", 3);
+
+// ═════ 2 · gráfico
+const ch = $("ch");
+const INK = "#1C1814", RED = "#7A1F10", INK3 = "var(--ink-3)", INK2 = "var(--ink-2)";
+const TXT = "font:500 11px var(--display);letter-spacing:.04em;fill:var(--ink-3)";
+// niveles (escenas A y C): x por año, y por habitantes
+const LX = (i) => 60 + (YRS[i] - 1996) * 436 / 29, LY = (v) => 600 - (v - 66000) * 350 / 26000;
+const lpt = (S_, i) => [LX(i), LY(S_[i])];
+const pathK = (S_, k, X, Y) => ({ solid: k >= 1 ? S.hand(Array.from({ length: k }, (_, j) => [X(j + 1), Y(S_[j + 1])])) : "", dash: k >= 1 ? S.hand([[X(0), Y(S_[0])], [X(1), Y(S_[1])]]) : "" });
+
+/** rejilla de niveles: devuelve las filas (de abajo arriba) para poder subirlas a saltos */
+const levelsGrid = (g) => {
+  const rows = [];
+  const base = svgEl("g", {}, g);
+  const ax = svgEl("path", { d: S.hand([[0, 600], [540, 600]]), fill: "none", stroke: INK, "stroke-opacity": .55, "stroke-width": 1 }, base);
+  const axT = [1996, 2000, 2005, 2010, 2015, 2020, 2025].map((y) => txt(base, 60 + (y - 1996) * 436 / 29, 618, String(y), TXT, "middle"));
+  rows.push({ els: [ax, ...axT] });
+  [70000, 75000, 80000, 85000, 90000].forEach((v) => {
+    const l = svgEl("path", { d: S.hand([[0, LY(v)], [540, LY(v)]]), fill: "none", stroke: INK, "stroke-opacity": .14, "stroke-width": 1 }, g);
+    const t = txt(g, 52, LY(v) + 3.5, fmt(v), TXT, "end");
+    rows.push({ els: [l, t] });
+  });
+  return { rows, ax, axT };
+};
+const gap = (g) => txt(g, 60, 636, "1997: sin cifra · tramo a trazos", TXT);
+const mk = (g, w, col = INK, extra = {}) => ({
+  solid: svgEl("path", { fill: "none", stroke: col, "stroke-width": w, "stroke-linejoin": "round", "stroke-linecap": "round", ...extra }, g),
+  dash: svgEl("path", { fill: "none", stroke: col, "stroke-width": Math.max(1.3, w - .6), "stroke-dasharray": "3 5", "stroke-linecap": "butt", ...extra }, g),
+});
+const setP = (L, p) => { L.solid.setAttribute("d", p.solid); L.dash.setAttribute("d", p.dash); };
+
+// ── A · Talavera 1996–2025 (n1, n2)
+const gA = svgEl("g", {}, ch);
+const GA = levelsGrid(gA);
+const aGap = gap(gA);
+const aLine = mk(gA, 2.3);
+const aRef = svgEl("path", { d: S.hand([[LX(I10), LY(TAL[I10])], [LX(I25) + 8, LY(TAL[I10])]]), fill: "none", stroke: INK, "stroke-opacity": .45, "stroke-width": 1.2, "stroke-dasharray": "3 5" }, gA);
+const dRef = S.dash(aRef);
+const aPk = svgEl("rect", { width: 9, height: 9, fill: RED, x: LX(I10) - 4.5, y: LY(TAL[I10]) - 4.5 }, gA);
+const aPkT = txt(gA, LX(I10), LY(TAL[I10]) - 17, "2010 · máximo", "font:500 11px var(--display);letter-spacing:.08em;text-transform:uppercase;fill:#7A1F10", "middle");
+const aBr = svgEl("path", { d: S.hand([[LX(I25) + 2, LY(TAL[I10])], [LX(I25) + 2, LY(TAL[I25])]]) + S.hand([[LX(I25) - 6, LY(TAL[I25])], [LX(I25) + 8, LY(TAL[I25])]]), fill: "none", stroke: RED, "stroke-width": 2, "stroke-linecap": "round" }, gA);
+const dBr = S.dash(aBr);
+const aDrop = txt(gA, LX(I25) - 12, 322, fmt(TAL[I25] - TAL[I10]), "font:700 31px var(--strong);letter-spacing:-.02em;fill:#7A1F10;font-variant-numeric:tabular-nums", "end");
+const aDropP = txt(gA, 383, 345, pct(PCT_T), "font:500 12px var(--display);letter-spacing:.06em;fill:var(--ink-2)");
+const aTip = svgEl("rect", { width: 12, height: 12, fill: RED }, gA);
+const kA = (t) => (t < PA ? -1 : t < PA2 ? Math.min(I10, stepN(t, PA, 10)) : Math.min(I25, I10 + 1 + stepN(t, PA2, 6)));
+for (let k = 0; k <= I10; k++) ev(PA + k / 10, "pen", { s: 0, f: 1, k, x: (TAL[k] - 70000) / 19000 });
+for (let k = I10 + 1; k <= I25; k++) ev(PA2 + (k - I10 - 1) / 6, "pen", { s: 0, f: 0, k, x: (TAL[k] - 70000) / 19000 });
+ev(T_PEAK, "peak"); ev(T_DROP, "drop");
+for (let i = 0; i < 6; i++) ev(P0 + .17 + i / 6, "grid", i);
+let aLastK = -2;
+
+// ── B · índice 2010 = 100 (n3)
+const gB = svgEl("g", {}, ch);
+const IX = (j) => 60 + j * 364 / 15, IY = (v) => 600 - (v - 90) * 16;
+[90, 95, 100, 105, 110].forEach((v) => {
+  svgEl("path", { d: S.hand([[0, IY(v)], [540, IY(v)]]), fill: "none", stroke: INK, "stroke-opacity": v === 100 ? .55 : v === 90 ? .55 : .14, "stroke-width": 1 }, gB);
+  txt(gB, 52, IY(v) + 3.5, String(v), TXT, "end");
+});
+[2010, 2015, 2020, 2025].forEach((y) => txt(gB, IX(y - 2010), 618, String(y), TXT, "middle"));
+txt(gB, 60, 262, "Índice · 2010 = 100", "font:500 11px var(--display);letter-spacing:.08em;text-transform:uppercase;fill:var(--ink-3)");
+const idx = (S_, j) => S_[I10 + j] / S_[I10] * 100;
+const bTal = svgEl("path", { fill: "none", stroke: INK2, "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round" }, gB);
+const bPro = svgEl("path", { fill: "none", stroke: INK, "stroke-width": 3.2, "stroke-linejoin": "round", "stroke-linecap": "round" }, gB);
+const bTip = svgEl("rect", { width: 12, height: 12, fill: RED }, gB);
+const bLabP = svgEl("g", {}, gB), bLabT = svgEl("g", {}, gB);
+const LBL = "font:500 11px var(--display);letter-spacing:.08em;text-transform:uppercase";
+const FIG = "font:700 26px var(--strong);letter-spacing:-.02em;font-variant-numeric:tabular-nums";
+txt(bLabP, IX(15) + 14, IY(idx(PRO, 15)) - 8, "Provincia", `${LBL};fill:#1C1814`);
+txt(bLabP, IX(15) + 14, IY(idx(PRO, 15)) + 18, pct(PCT_P), `${FIG};fill:#1C1814`);
+txt(bLabT, IX(15) + 14, IY(idx(TAL, 15)) - 8, "Talavera", `${LBL};fill:var(--ink-3)`);
+txt(bLabT, IX(15) + 14, IY(idx(TAL, 15)) + 18, pct(PCT_T), `${FIG};fill:#7A1F10`);
+const kB = (t) => (t < PB ? 0 : Math.min(15, stepN(t, PB, 6) + 1));
+for (let j = 1; j <= 15; j++) ev(PB + (j - 1) / 6, "pen", { s: 1, f: 0, k: j, x: .4 + .6 * (j / 15) });
+ev(PB + 14 / 6, "gain");
+ev(TB0, "cut", "b");
+let bLastK = -2;
+
+// ── C · Toledo (ciudad) y Talavera, en habitantes (n4)
+const gC = svgEl("g", {}, ch);
+const GC = levelsGrid(gC);
+const gCT = svgEl("g", {}, gC);                  // textos y marcas: se van con la pregunta
+const cGap = gap(gCT);
+const NSE = { "vector-effect": "non-scaling-stroke" };
+const cTal = mk(gC, 2.1, "#1C1814", NSE), cTol = mk(gC, 2.8, "#1C1814", NSE);
+cTal.solid.style.stroke = INK3; cTal.dash.style.stroke = INK3;
+setP(cTal, pathK(TAL, I25, LX, LY));
+txt(gCT, LX(I10), LY(TAL[I10]) - 14, "Talavera", `${LBL};fill:var(--ink-3)`, "middle");
+const cLabO = txt(gCT, LX(I25), LY(TOL[I25]) - 14, "Toledo", `${LBL};fill:#1C1814`, "end");
+const cX = LX(I17), cY = (LY(TOL[I17]) + LY(TAL[I17])) / 2;
+const cV = svgEl("path", { d: S.hand([[cX, cY + 10], [cX, 508]]), fill: "none", stroke: RED, "stroke-width": 1.4, "stroke-dasharray": "3 4" }, gCT);
+const cYr = txt(gCT, cX, 540, "2017", "font:700 30px var(--strong);letter-spacing:-.02em;fill:#7A1F10;font-variant-numeric:tabular-nums", "middle");
+const cAd = txt(gCT, cX, 560, "Toledo la adelanta", `${LBL};fill:#7A1F10`, "middle");
+const cTip = svgEl("rect", { width: 12, height: 12, fill: RED }, gC);
+const kC = (t) => (t < PC ? 0 : t < PC2 ? Math.min(I17, stepN(t, PC, 10)) : Math.min(I25, I17 + 1 + stepN(t, PC2, 6)));
+for (let k = 1; k <= I17; k++) ev(PC + k / 10, "pen", { s: 2, f: 1, k, x: (TOL[k] - 66000) / 21000 });
+for (let k = I17 + 1; k <= I25; k++) ev(PC2 + (k - I17 - 1) / 6, "pen", { s: 2, f: 0, k, x: (TOL[k] - 66000) / 21000 });
+ev(T_CROSS, "cross");
+ev(TC0, "cut", "c");
+let cLastK = -2;
+
+// ── D · la pregunta (n5): el gráfico se retira a un lado, en tinta-3
+const dMark = svgEl("rect", { width: 11, height: 11, fill: RED }, ch);
+ev(TD0, "cut", "d");
+const DS = [.85, .7, .55];
+
+// ═════ la pregunta, palabra a palabra (n5)
+const QW = ["¿Por", "qué", "una<br>", "ciudad", "pierde<br>", "vecinos", "mientras<br>", "su", "provincia<br>", "crece?"];
+const q = $("q");
+q.innerHTML = QW.map((w, i) => `<span${i === 9 ? ' class="hot"' : ""}>${w.replace("<br>", "")}</span>${w.includes("<br>") ? "<br>" : " "}`).join("");
+const qw = [...q.querySelectorAll("span")];
+const L5 = line("n5");
+if (L5.words.length !== QW.length) throw new Error("palabras de n5");
+L5.words.forEach((_, i) => ev(wordAt("n5", i), "qw", i));
+const tag = $("tag"), T_TAG = wordAt("n6", 4);
+ev(T_TAG, "tag");
+
+// ═════ cara de tinta y firma
+const saber = S.saber(OPEN, SHRINK, { a: N7, b: wordAt("n7", 1) });
+const firma = S.firma(T_FIRMA);
+
+// ═════ subtítulos (la voz, palabra a palabra; debajo del gráfico)
+const subs = $("subs");
+const sb = (id, hot) => S.sub(id, { parent: subs, hot, out: line(id).end + .35 });
+const sub1 = sb("n1", [7, 8, 9, 10]), sub2 = sb("n2", [3, 4, 5]), sub3 = sb("n3", [12, 13]), sub4 = sb("n4", [2, 3, 4]), sub6 = sb("n6", [7]);
+
+window.EVENTS = S.EVENTS.sort((a, b) => a.t - b.t);
+
+// ═════ todo es función de t
+window.renderAt = (t) => {
+  // apertura
+  shotFns.forEach((f) => f(t));
+  show($("op"), t < .5); show($("opcap"), t < .5);
+  const onMain = t >= P0 && t < OPEN + .6;
+  show($("main"), onMain);
+  if (onMain) {
+    const r = Math.min(3, stepN(t, P0, 6) + 1);
+    vis($("hd"), true); vis($("r1"), r >= 2); vis($("r2"), r >= 3);
+    const inA = t < TB0, inB = t >= TB0 && t < TC0, inC = t >= TC0, inD = t >= TD0;
+    show($("roA"), inA); show($("roB"), inB); show($("roC"), inC && !inD);
+    show(gA, inA); show(gB, inB); show(gC, inC);
+    show(dMark, inD);
+
+    // ── A
+    if (inA) {
+      const gn = t < P0 + .17 ? 0 : Math.min(6, stepN(t, P0 + .17, 6) + 1);        // la rejilla sube a saltos
+      GA.rows.forEach((r_, i) => r_.els.forEach((e) => vis(e, i < gn)));
+      show($("roA"), t >= P0 + .17);
+      const k = kA(t), kk = Math.max(0, k);
+      if (kk !== aLastK) {
+        aLastK = kk;
+        setP(aLine, pathK(TAL, kk, LX, (v) => LY(v)));
+        setHTML($("aN"), dig(fmt(TAL[kk]))); setHTML($("aY"), dig(String(YRS[kk])));
+      }
+      vis(aGap, k >= 1 && gn >= 1);
+      const [x, y] = lpt(TAL, kk);
+      aTip.setAttribute("x", (x - 6).toFixed(1)); aTip.setAttribute("y", (y - 6).toFixed(1));
+      vis(aTip, k >= 0);
+      vis(aPk, k > I10); vis(aPkT, t >= wordAt("n1", 4) - .02);
+      const rf = t < wordAt("n1", 7) ? 0 : Math.min(3, stepN(t, wordAt("n1", 7), 6) + 1) / 3;
+      dRef(rf); vis(aRef, rf > 0);
+      const br = t < T_DROP ? 0 : Math.min(2, stepN(t, T_DROP, 6) + 1) / 2;
+      dBr(br); vis(aBr, br > 0);
+      vis(aDrop, t >= T_DROP + .17); vis(aDropP, t >= T_DROP + .17);
+    }
+
+    // ── B
+    if (inB) {
+      const k = kB(t);
+      if (k !== bLastK) {
+        bLastK = k;
+        const pp = Array.from({ length: k + 1 }, (_, j) => [IX(j), IY(idx(PRO, j))]), pt = Array.from({ length: k + 1 }, (_, j) => [IX(j), IY(idx(TAL, j))]);
+        bPro.setAttribute("d", k ? S.hand(pp) : ""); bTal.setAttribute("d", k ? S.hand(pt) : "");
+        setHTML($("bN"), dig(fmtS(PRO[I10 + k] - PRO[I10]))); setHTML($("bY"), dig(String(2010 + k)));
+      }
+      bTip.setAttribute("x", (IX(k) - 6).toFixed(1)); bTip.setAttribute("y", (IY(idx(PRO, k)) - 6).toFixed(1));
+      vis(bLabP, k === 15); vis(bLabT, k === 15 && t >= PB + 14 / 6 + .17);
+    }
+
+    // ── C y D
+    if (inC) {
+      const k = kC(t);
+      if (k !== cLastK) {
+        cLastK = k;
+        setP(cTol, pathK(TOL, k, LX, LY));
+        setHTML($("cT"), dig(fmt(TAL[k]))); setHTML($("cO"), dig(fmt(TOL[k]))); setHTML($("cY"), dig(String(YRS[k])));
+      }
+      const [x, y] = lpt(TOL, k);
+      cTip.setAttribute("x", (x - 6).toFixed(1)); cTip.setAttribute("y", (y - 6).toFixed(1));
+      vis(cTip, !inD);
+      vis(cGap, k >= 1 && !inD);
+      vis(cV, t >= T_CROSS && !inD); vis(cYr, t >= T_CROSS + .17 && !inD); vis(cAd, t >= T_CROSS + .33 && !inD);
+      vis(cLabO, k >= I25 && !inD);
+      GC.rows.forEach((r_, i) => r_.els.forEach((e) => vis(e, !inD || (i === 0 && e === GC.ax))));
+      if (inD) {
+        const s = DS[Math.min(2, stepN(t, TD0, 6))];
+        gC.setAttribute("transform", `translate(270 600) scale(${s}) translate(-270 -600)`);
+        cTol.solid.style.stroke = INK3; cTol.dash.style.stroke = INK3;
+        dMark.setAttribute("x", (270 + (cX - 270) * s - 5.5).toFixed(1)); dMark.setAttribute("y", (600 + (cY - 600) * s - 5.5).toFixed(1));
+      } else {
+        gC.removeAttribute("transform");
+        cTol.solid.style.stroke = ""; cTol.dash.style.stroke = "";
+      }
+    }
+    // pregunta y etiqueta
+    show(q, inD, "block");
+    if (inD) qw.forEach((w, i) => vis(w, t >= wordAt("n5", i) - .02));
+    vis(tag, t >= T_TAG - .02);
+    // subtítulos
+    sub1(t); sub2(t); sub3(t); sub4(t); sub6(t);
+  }
+  saber(t);
+  firma(t);
+};
+window.renderAt(0);
+})();
+</script>
+</body>
+</html>
