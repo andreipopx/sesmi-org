@@ -68,7 +68,7 @@
 .num{position:absolute;width:240px;margin-left:-120px;text-align:center;font:500 100px/1 var(--display);letter-spacing:-.04em;color:var(--red);font-variant-numeric:tabular-nums;display:none}
 #sum{position:absolute;left:0;right:0;top:456px;text-align:center;font:500 21px/1.2 var(--display);letter-spacing:-.01em;color:var(--ink);display:none}
 #sum2{position:absolute;left:0;right:0;top:490px;text-align:center;color:var(--ink-3);display:none}
-#form{position:absolute;left:0;right:0;top:520px;text-align:center;font:500 20px/1 var(--display);letter-spacing:-.01em;color:var(--ink-2);display:none}
+#form{position:absolute;left:0;right:0;top:166px;text-align:center;font:500 23px/1 var(--display);letter-spacing:-.01em;color:var(--ink-2);display:none}
 /* titular */
 #sc6{background:var(--paper)}
 #cSt{top:192px;font:500 13px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
@@ -154,7 +154,7 @@ const dove = S.fig($("cfig"), "paloma"), DOVE0 = HWRED + .7;
 S.figEvents("paloma", DOVE0, DOVE0 + 1);
 
 // ═════════ 2 · el recorrido de 100 €
-const G = 470, svCity = $("svCity");
+const G = 500, svCity = $("svCity");
 const city = S.drawCity(svCity, { G, era: "hoy" });
 ["bridge", "water"].forEach((c) => (city.g.querySelector("." + c).style.display = "none"));
 // la tienda de la esquina (propia, a pluma): caja, toldo, puerta y escaparate
@@ -173,7 +173,7 @@ const EURO0 = W("n2", 5), HOPN = 4;
 const HOPS = [{ a: 0, b: 1, t: W("n3", 5) - 4 / 6 }, { a: 1, b: 2, t: W("n3", 12) - 4 / 6 }, { a: 2, b: 3, t: W("n3", 23) + .1 - 4 / 6 }];
 HOPS.forEach((h, i) => { ev(h.t, "hop", i); ev(h.t + HOPN / 6, "stop", i + 1); h.t1 = h.t + HOPN / 6; });
 ev(EURO0, "stop", 0);
-const sy0 = G - 20, ARC = 62;
+const sy0 = G - 20, ARC = 150;
 const trails = HOPS.map((h) => {
   const A0 = STOPS[h.a].x, B0 = STOPS[h.b].x, pts = [];
   for (let k = 0; k <= 12; k++) { const u = k / 12; pts.push([A0 + (B0 - A0) * u, sy0 - ARC * Math.sin(Math.PI * u) - 22]); }
@@ -251,8 +251,8 @@ AB.forEach((_, k) => ev(RA0 + k * .12, "rowA", k));
 ev(W("n7", 4), "keep"); ev(W("n7", 5), "x2");
 const FORM0 = W("n7", 8);
 ev(FORM0, "form");
-const SCs = [1.2, .95, .7, .5], BASEB = [410, 425, 440, 450];
-const NBX = [270, 310, 370, 435], NBY = [166, 232, 306, 378], NBS = [100, 94, 88, 80];
+const SCs = [1.2, 1.0, .82, .65], BASEB = [410, 440, 470, 500];
+const NBX = [270, 310, 370, 435], NBY = [166, 250, 340, 412], NBS = [100, 96, 92, 88];
 const rowPos = (am, sc, x0, base) => { let x = x0; return am.map((a) => { const s = sc * 10 * Math.sqrt(a); const r = { x, y: base - s, s }; x += s + 8 * sc; return r; }); };
 cut(C4); cut(C5);
 
@@ -261,7 +261,7 @@ const bal = S.photo(F + "balanza-boticario.jpg", { t0: C5, t1: C6, from: [1.7, 3
 cut(C6 - 0);
 const svIll = $("svIll");
 const IRS = [40, 76, 112, 148, 184].map((s) => svgEl("rect", { x: 270 - s / 2, y: 520 - s / 2, width: s, height: s, fill: "none", stroke: INK, "stroke-width": 1.3, "vector-effect": "non-scaling-stroke" }, svIll));
-svgEl("rect", { x: 270 - 9, y: 520 - 9, width: 18, height: 18, fill: RED }, svIll);
+const ICORE = svgEl("rect", { x: 270 - 9, y: 520 - 9, width: 18, height: 18, fill: RED }, svIll);
 const HSTEP = [C6, W("n8", 7), W("n8", 8)];
 ev(HSTEP[1], "title"); ev(HSTEP[2], "title");
 const IR0 = W("n8", 8) + .2;
@@ -397,15 +397,15 @@ window.renderAt = (t) => {
     // resumen (solo en n6)
     show(sum, t >= SUM0 && tk === 0 && t < TRN[1]); show(sum2, t >= SUM0 + .2 && tk === 0 && t < TRN[1]);
     // fila de «se escapa el 70 %» (arriba) y comparación
-    const pA = rowPos(AB, .5, 44, 310);
+    const pA = rowPos(AB, .65, 44, 330);
     rowA.forEach((d, i) => {
       const vis = t >= RA0 + i * .12, p = pA[i];
       d.style.display = vis ? "block" : "none";
       d.style.left = p.x.toFixed(1) + "px"; d.style.top = p.y.toFixed(1) + "px"; d.style.width = d.style.height = p.s.toFixed(1) + "px";
     });
-    show(lblA, t >= RA0); lblA.style.top = "236px";
-    show(lblB, tk === 3); lblB.style.top = "372px"; lblB.style.color = t >= W("n7", 4) ? "var(--red)" : "";
-    numA.style.display = t >= NA ? "block" : "none"; numA.style.left = "435px"; numA.style.top = "238px"; numA.style.fontSize = "62px";
+    show(lblA, t >= RA0); lblA.style.top = "238px";
+    show(lblB, tk === 3); lblB.style.top = "408px"; lblB.style.color = t >= W("n7", 4) ? "var(--red)" : "";
+    numA.style.display = t >= NA ? "block" : "none"; numA.style.left = "435px"; numA.style.top = "252px"; numA.style.fontSize = "70px";
     numA.style.color = t >= W("n7", 5) ? "var(--ink-3)" : "var(--ink)";
     show(form, t >= FORM0);
     // al llegar a la comparación, la etiqueta de la fila inferior sustituye al «× ?»
@@ -415,6 +415,7 @@ window.renderAt = (t) => {
   if (in6) {
     $("cH1").style.visibility = t >= HSTEP[1] ? "visible" : "hidden";
     $("cH2").style.visibility = t >= HSTEP[2] ? "visible" : "hidden";
+    show(ICORE, t >= IR0);
     IRS.forEach((r, i) => {
       const on = t >= IR0 + i * .2;
       r.style.display = on ? "" : "none";
